@@ -15,7 +15,7 @@ import Settings from "./components/pages/Settings";
 import Followers from "./components/pages/Followers";
 import UserCaseDetails from "./components/pages/PagesUser/CaseDetails";
 import Suspended from "./components/pages/PagesUser/Suspended";
-
+import 'boxicons/css/boxicons.min.css';
 import LoginRegister from "./components/pages/LoginRegister";
 
 // ADMIN

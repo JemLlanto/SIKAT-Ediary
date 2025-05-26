@@ -113,20 +113,20 @@ const CenterLayout = () => {
 
   const fetchEntries = async (userID, filters) => {
     try {
-      console.log("Fetching entries for user:", userID);
-      console.log("Applied filters:", filters);
+      // console.log("Fetching entries for user:", userID);
+      // console.log("Applied filters:", filters);
 
       const response = await axios.get("http://localhost:8081/entries", {
         params: { userID: userID, filters: filters },
       });
 
-      console.log("Entries response:", response.data);
+      // console.log("Entries response:", response.data);
 
       const gadifyStatusResponse = await axios.get(
         `http://localhost:8081/gadifyStatus/${userID}`
       );
 
-      console.log("Gadify status response:", gadifyStatusResponse.data);
+      // console.log("Gadify status response:", gadifyStatusResponse.data);
 
       const updatedEntries = response.data.map((entry) => {
         const isGadified = gadifyStatusResponse.data.some(
@@ -151,7 +151,7 @@ const CenterLayout = () => {
     });
 
     setFilters(activeFilters);
-    console.log("Active Filters:", activeFilters);
+    // console.log("Active Filters:", activeFilters);
   };
 
   const handleGadify = (entryID) => {

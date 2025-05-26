@@ -19,7 +19,7 @@ const DiaryDetails = ({ entry, user }) => {
         const response = await axios.get(
           "http://localhost:8081/fetchFlaggedDiaryReasons"
         );
-        console.log("API Response:", response.data);
+        // console.log("API Response:", response.data);
         setFlaggedDiaryReasons(response.data);
       } catch (error) {
         console.error("Error fetching alarming words:", error);

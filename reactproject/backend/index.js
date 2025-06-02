@@ -14,7 +14,7 @@ const crypto = require("crypto");
 require("dotenv").config();
 
 const allowedOrigins = [
-  "http://localhost:5173/",
+  "http://localhost:5173",
   "https://sikat-react-js-backend.vercel.app", // Original domain
   "https://sikat-react-js-iota.vercel.app", // New domain you're requesting from
   process.env.VITE_REACT_APP_FRONTEND_BASEURL,

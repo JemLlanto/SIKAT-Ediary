@@ -66,7 +66,9 @@ const CenterLayout = () => {
   const fetchUserData = async (userID) => {
     try {
       const response = await fetch(
-        `http://localhost:8081/fetchUser/user/${userID}`
+        `${
+          import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+        }/fetchUser/user/${userID}`
       );
 
       if (!response.ok) {
@@ -102,7 +104,9 @@ const CenterLayout = () => {
   const fetchFollowedUsers = async (userID) => {
     try {
       const response = await axios.get(
-        `http://localhost:8081/followedUsers/${userID}`
+        `${
+          import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+        }/followedUsers/${userID}`
       );
       const followedUsersData = response.data.map((user) => user.userID);
       setFollowedUsers(followedUsersData);
@@ -116,14 +120,19 @@ const CenterLayout = () => {
       // console.log("Fetching entries for user:", userID);
       // console.log("Applied filters:", filters);
 
-      const response = await axios.get("http://localhost:8081/entries", {
-        params: { userID: userID, filters: filters },
-      });
+      const response = await axios.get(
+        `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/entries`,
+        {
+          params: { userID: userID, filters: filters },
+        }
+      );
 
       // console.log("Entries response:", response.data);
 
       const gadifyStatusResponse = await axios.get(
-        `http://localhost:8081/gadifyStatus/${userID}`
+        `${
+          import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+        }/gadifyStatus/${userID}`
       );
 
       // console.log("Gadify status response:", gadifyStatusResponse.data);
@@ -161,9 +170,14 @@ const CenterLayout = () => {
     if (!entry) return;
 
     axios
-      .post(`http://localhost:8081/entry/${entryID}/gadify`, {
-        userID: user.userID,
-      })
+      .post(
+        `${
+          import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+        }/entry/${entryID}/gadify`,
+        {
+          userID: user.userID,
+        }
+      )
       .then((res) => {
         const isGadified =
           res.data.message === "Gadify action recorded successfully";
@@ -183,13 +197,18 @@ const CenterLayout = () => {
 
         if (isGadified && user.userID !== entry.userID) {
           axios
-            .post(`http://localhost:8081/notifications/${entry.userID}`, {
-              actorID: user.userID,
-              entryID: entryID,
-              profile_image: user.profile_image,
-              type: "gadify",
-              message: `${user.firstName} ${user.lastName} gadified your diary entry.`,
-            })
+            .post(
+              `${
+                import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+              }/notifications/${entry.userID}`,
+              {
+                actorID: user.userID,
+                entryID: entryID,
+                profile_image: user.profile_image,
+                type: "gadify",
+                message: `${user.firstName} ${user.lastName} gadified your diary entry.`,
+              }
+            )
             .then((res) => {
               console.log("Notification response:", res.data);
             })
@@ -222,7 +241,9 @@ const CenterLayout = () => {
           onConfirm: async () => {
             try {
               await axios.delete(
-                `http://localhost:8081/unfollow/${followUserId}`,
+                `${
+                  import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+                }/unfollow/${followUserId}`,
                 {
                   data: { followerId: user.userID },
                 }
@@ -253,9 +274,14 @@ const CenterLayout = () => {
           onCancel: () => setConfirmModal({ show: false, message: "" }),
         });
       } else {
-        await axios.post(`http://localhost:8081/follow/${followUserId}`, {
-          followerId: user.userID,
-        });
+        await axios.post(
+          `${
+            import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+          }/follow/${followUserId}`,
+          {
+            followerId: user.userID,
+          }
+        );
 
         // Update followed users list after following
         setFollowedUsers((prev) => [...prev, followUserId]);
@@ -268,7 +294,9 @@ const CenterLayout = () => {
 
         // Send follow notification to the followed user
         await axios.post(
-          `http://localhost:8081/notifications/${followUserId}`,
+          `${
+            import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+          }/notifications/${followUserId}`,
           {
             userID: followUserId,
             actorID: user.userID,
@@ -313,7 +341,10 @@ const CenterLayout = () => {
 
   const updateEngagement = async (entryID) => {
     try {
-      await axios.post("http://localhost:8081/updateEngagement", { entryID });
+      await axios.post(
+        `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/updateEngagement`,
+        { entryID }
+      );
     } catch (error) {
       console.error("Error updating engagement:", error);
     }
@@ -417,7 +448,10 @@ const CenterLayout = () => {
                               <img
                                 src={
                                   entry.profile_image
-                                    ? `http://localhost:8081${entry.profile_image}`
+                                    ? `${
+                                        import.meta.env
+                                          .VITE_REACT_APP_BACKEND_BASEURL
+                                      }${entry.profile_image}`
                                     : userDefaultProfile
                                 }
                                 alt="Profile"
@@ -488,7 +522,10 @@ const CenterLayout = () => {
                                   diarySub={entry.subjects}
                                   imageFile={
                                     entry.diary_image &&
-                                    `http://localhost:8081${entry.diary_image}`
+                                    `${
+                                      import.meta.env
+                                        .VITE_REACT_APP_BACKEND_BASEURL
+                                    }${entry.diary_image}`
                                   }
                                   scheduledDate={entry.scheduledDate}
                                 ></EditPostButton>
@@ -525,7 +562,9 @@ const CenterLayout = () => {
                           <>
                             <img
                               className="DiaryImage mt-1 rounded"
-                              src={`http://localhost:8081${entry.diary_image}`}
+                              src={`${
+                                import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+                              }${entry.diary_image}`}
                               alt="Diary"
                               style={{ cursor: "pointer", opacity: ".5" }} // Add pointer cursor
                               onClick={() => handleShowModal(entry.entryID)} // Open modal on click

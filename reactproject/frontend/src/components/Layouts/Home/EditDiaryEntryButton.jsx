@@ -171,11 +171,17 @@ function EditDiaryEntryButton({
     setServerError("");
 
     axios
-      .put(`http://localhost:8081/editEntry/${entryID}`, formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      })
+      .put(
+        `${
+          import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+        }/editEntry/${entryID}`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      )
       .then((response) => {
         console.log(response.data.message);
         setTitle("");
@@ -239,7 +245,9 @@ function EditDiaryEntryButton({
                 <img
                   src={
                     user?.profile_image
-                      ? `http://localhost:8081${user?.profile_image}`
+                      ? `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}${
+                          user?.profile_image
+                        }`
                       : userDefaultProfile
                   }
                   alt="Profile"

@@ -34,7 +34,9 @@ const IndexCarousel = ({ images }) => {
               className=""
               src={
                 image && image.image_path
-                  ? `http://localhost:8081${image.image_path}`
+                  ? `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}${
+                      image.image_path
+                    }`
                   : sampleImage
               }
               alt={image.title}
@@ -49,7 +51,9 @@ const IndexCarousel = ({ images }) => {
               style={{
                 height: "130%",
                 width: "130%",
-                background: `url(http://localhost:8081${image.image_path})`,
+                background: `url(${
+                  import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+                }${image.image_path})`,
                 filter: "blur(1rem)",
                 backgroundSize: "cover",
                 backgroundPosition: "center",

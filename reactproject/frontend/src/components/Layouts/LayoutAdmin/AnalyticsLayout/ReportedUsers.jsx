@@ -40,7 +40,9 @@ const ReportedComment = ({ reportedUsers }) => {
   useEffect(() => {
     const fetchReportComments = async () => {
       try {
-        const response = await axios.get("http://localhost:8081/reportUsers");
+        const response = await axios.get(
+          `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/reportUsers`
+        );
         setOption(response.data);
       } catch (error) {
         console.error("Error fetching alarming words:", error);
@@ -54,7 +56,9 @@ const ReportedComment = ({ reportedUsers }) => {
     const fetchReportUserReasons = async () => {
       try {
         const response = await axios.get(
-          "http://localhost:8081/fetchReportedUserReasons"
+          `${
+            import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+          }/fetchReportedUserReasons`
         );
         setReportUserReasons(response.data);
       } catch (error) {
@@ -125,7 +129,9 @@ const ReportedComment = ({ reportedUsers }) => {
         setIsLoading(true);
         try {
           await axios.put(
-            `http://localhost:8081/reportingUsersAddress/${userID}`
+            `${
+              import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+            }/reportingUsersAddress/${userID}`
           );
           closeConfirmModal();
           setModal({

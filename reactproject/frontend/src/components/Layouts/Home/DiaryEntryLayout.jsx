@@ -62,7 +62,9 @@ const DiaryEntryLayout = ({
       const fetchComments = async () => {
         try {
           const response = await axios.get(
-            `http://localhost:8081/fetchComments/${entry.entryID}`
+            `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/fetchComments/${
+              entry.entryID
+            }`
           );
           setComments(response.data);
         } catch (error) {
@@ -80,7 +82,9 @@ const DiaryEntryLayout = ({
       const fetchFlaggedCount = async () => {
         try {
           const response = await axios.get(
-            `http://localhost:8081/flaggedCount/${entry.entryID}`
+            `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/flaggedCount/${
+              entry.entryID
+            }`
           );
           const count = response.data.flaggedCount;
           setFlaggedCount(count);
@@ -97,7 +101,9 @@ const DiaryEntryLayout = ({
       const fetchComments = async () => {
         try {
           const response = await axios.get(
-            `http://localhost:8081/fetchComments/${entry.entryID}`
+            `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/fetchComments/${
+              entry.entryID
+            }`
           );
           setComments(response.data);
         } catch (error) {
@@ -110,12 +116,17 @@ const DiaryEntryLayout = ({
 
   const fetchEntries = async (userID, filters) => {
     try {
-      const response = await axios.get("http://localhost:8081/entries", {
-        params: { userID, filters },
-      });
+      const response = await axios.get(
+        `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/entries`,
+        {
+          params: { userID, filters },
+        }
+      );
 
       const gadifyStatusResponse = await axios.get(
-        `http://localhost:8081/gadifyStatus/${userID}`
+        `${
+          import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+        }/gadifyStatus/${userID}`
       );
 
       const updatedEntries = response.data.map((entry) => {
@@ -139,7 +150,11 @@ const DiaryEntryLayout = ({
     );
     if (confirmed) {
       try {
-        await axios.delete(`http://localhost:8081/deleteEntry/${entryID}`);
+        await axios.delete(
+          `${
+            import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+          }/deleteEntry/${entryID}`
+        );
         alert("Diary entry deleted successfully.");
         setEntries((prevEntries) =>
           prevEntries.filter((entry) => entry.entryID !== entryID)
@@ -153,9 +168,12 @@ const DiaryEntryLayout = ({
 
   const updateEngagement = async (entryID) => {
     try {
-      await axios.post("http://localhost:8081/updateEngagement", {
-        entryID,
-      });
+      await axios.post(
+        `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/updateEngagement`,
+        {
+          entryID,
+        }
+      );
     } catch (error) {
       console.error("Error updating engagement:", error);
     }
@@ -311,7 +329,9 @@ const DiaryEntryLayout = ({
       <DiaryDetails
         user={user}
         entry={entry}
-        entryImage={`http://localhost:8081${entry.diary_image}`}
+        entryImage={`${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}${
+          entry.diary_image
+        }`}
       />
 
       <div
@@ -323,7 +343,9 @@ const DiaryEntryLayout = ({
           <>
             <img
               className="DiaryImage mt-1 rounded"
-              src={`http://localhost:8081${entry.diary_image}`}
+              src={`${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}${
+                entry.diary_image
+              }`}
               alt="Diary"
               style={{ cursor: "pointer" }} // Add pointer cursor
               onClick={() => handleShowModal(entry.entryID)} // Open modal on click
@@ -333,7 +355,9 @@ const DiaryEntryLayout = ({
             <ImageModal
               showModal={showModal}
               handleCloseModal={handleCloseModal}
-              diaryImage={`http://localhost:8081${entry.diary_image}`}
+              diaryImage={`${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}${
+                entry.diary_image
+              }`}
             ></ImageModal>
           </>
         )}

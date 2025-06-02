@@ -47,7 +47,9 @@ const CenterLayout = () => {
   const fetchUserData = async (userID) => {
     try {
       const response = await fetch(
-        `http://localhost:8081/fetchUser/user/${userID}`
+        `${
+          import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+        }/fetchUser/user/${userID}`
       );
 
       if (!response.ok) {
@@ -83,7 +85,9 @@ const CenterLayout = () => {
   const fetchFollowedUsers = async (userID) => {
     try {
       const response = await axios.get(
-        `http://localhost:8081/followedUsers/${userID}`
+        `${
+          import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+        }/followedUsers/${userID}`
       );
       const followedUsersData = response.data.map((user) => user.userID);
       setFollowedUsers(followedUsersData);

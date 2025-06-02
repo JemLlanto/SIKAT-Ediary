@@ -30,7 +30,9 @@ const LeftSideAdmin = () => {
   const fetchUserData = async (userID) => {
     try {
       const response = await axios.get(
-        `http://localhost:8081/fetchUser/user/${userID}`
+        `${
+          import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+        }/fetchUser/user/${userID}`
       );
 
       if (response.status !== 200) {
@@ -49,7 +51,9 @@ const LeftSideAdmin = () => {
   const fetchEntries = async () => {
     try {
       const response = await axios.get(
-        `http://localhost:8081/fetchUserEntry/user/${user.userID}`
+        `${
+          import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+        }/fetchUserEntry/user/${user.userID}`
       );
       setEntries(response.data.entries || []);
     } catch (err) {
@@ -105,7 +109,9 @@ const LeftSideAdmin = () => {
             <img
               src={
                 user.profile_image
-                  ? `http://localhost:8081${user.profile_image}`
+                  ? `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}${
+                      user.profile_image
+                    }`
                   : DefaultProfile
               }
               alt="Profile"

@@ -13,7 +13,11 @@ const ActivityLogs = ({ userID }) => {
   useEffect(() => {
     if (userID) {
       axios
-        .get(`http://localhost:8081/actvity_logs/gadify/${userID}`)
+        .get(
+          `${
+            import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+          }/actvity_logs/gadify/${userID}`
+        )
         .then((response) => {
           setGadifyLogs(response.data);
         })
@@ -26,7 +30,11 @@ const ActivityLogs = ({ userID }) => {
   useEffect(() => {
     if (userID) {
       axios
-        .get(`http://localhost:8081/actvity_logs/comments/${userID}`)
+        .get(
+          `${
+            import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+          }/actvity_logs/comments/${userID}`
+        )
         .then((response) => {
           setCommentLogs(response.data);
         })
@@ -39,7 +47,11 @@ const ActivityLogs = ({ userID }) => {
   useEffect(() => {
     if (userID) {
       axios
-        .get(`http://localhost:8081/actvity_logs/flags/${userID}`)
+        .get(
+          `${
+            import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+          }/actvity_logs/flags/${userID}`
+        )
         .then((response) => {
           setFlaggedLogs(response.data);
         })

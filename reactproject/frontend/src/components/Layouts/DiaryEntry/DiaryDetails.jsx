@@ -17,7 +17,9 @@ const DiaryDetails = ({ entry, user }) => {
     const fetchFlaggedReasons = async () => {
       try {
         const response = await axios.get(
-          "http://localhost:8081/fetchFlaggedDiaryReasons"
+          `${
+            import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+          }/fetchFlaggedDiaryReasons`
         );
         // console.log("API Response:", response.data);
         setFlaggedDiaryReasons(response.data);

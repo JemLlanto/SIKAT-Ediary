@@ -42,7 +42,9 @@ const CommentSection = ({ userID, entryID, entry, firstName }) => {
     setLoading(true);
     try {
       const response = await axios.get(
-        `http://localhost:8081/fetchComments/${entryID}`
+        `${
+          import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+        }/fetchComments/${entryID}`
       );
       const fetchedComments = response.data;
       const nestedComments = nestComments(fetchedComments);
@@ -95,7 +97,10 @@ const CommentSection = ({ userID, entryID, entry, firstName }) => {
 
     setLoading(true);
     try {
-      await axios.post("http://localhost:8081/comments", newCommentObj);
+      await axios.post(
+        `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/comments`,
+        newCommentObj
+      );
       setNewComment("");
       fetchComments();
       // Scroll to the newly added comment after it is added
@@ -111,14 +116,19 @@ const CommentSection = ({ userID, entryID, entry, firstName }) => {
 
     if (userID !== entry) {
       axios
-        .post(`http://localhost:8081/notifications/${entry}`, {
-          userID: entry,
-          actorID: userID,
-          entryID,
-          profile_image: user.profile_image,
-          type: "comment",
-          message: `${user.username} commented on your diary entry.`,
-        })
+        .post(
+          `${
+            import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+          }/notifications/${entry}`,
+          {
+            userID: entry,
+            actorID: userID,
+            entryID,
+            profile_image: user.profile_image,
+            type: "comment",
+            message: `${user.username} commented on your diary entry.`,
+          }
+        )
         .catch((err) => {
           console.error("Error sending comment notification:", err);
           setError("Failed to send notification.");

@@ -45,7 +45,7 @@ function FlagButton({
     const fetchFlaggingOptions = async () => {
       try {
         const response = await axios.get(
-          "http://localhost:8081/flaggingOptions"
+          `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/flaggingOptions`
         );
         setFlaggingOptions(response.data);
       } catch (error) {
@@ -95,7 +95,7 @@ function FlagButton({
 
     try {
       const response = await axios.post(
-        "http://localhost:8081/flags",
+        `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/flags`,
         reportData
       );
 
@@ -119,7 +119,10 @@ function FlagButton({
 
   const updateEngagement = async (entryID) => {
     try {
-      await axios.post("http://localhost:8081/updateEngagement", { entryID });
+      await axios.post(
+        `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/updateEngagement`,
+        { entryID }
+      );
     } catch (error) {
       console.error("Error updating engagement:", error);
     }

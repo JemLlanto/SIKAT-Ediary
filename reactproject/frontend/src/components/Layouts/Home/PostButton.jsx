@@ -177,11 +177,15 @@ function PostButton({ onEntrySaved }) {
     setServerError("");
 
     axios
-      .post("http://localhost:8081/entryadmin", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      })
+      .post(
+        `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/entryadmin`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      )
       .then((response) => {
         console.log("Post created:", response.data.message);
         setTitle("");
@@ -246,7 +250,9 @@ function PostButton({ onEntrySaved }) {
                   <img
                     src={
                       user?.profile_image
-                        ? `http://localhost:8081${user?.profile_image}`
+                        ? `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}${
+                            user?.profile_image
+                          }`
                         : userDefaultProfile
                     }
                     alt="Profile"

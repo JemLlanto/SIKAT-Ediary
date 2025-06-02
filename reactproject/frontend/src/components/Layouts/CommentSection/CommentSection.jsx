@@ -72,7 +72,9 @@ const CommentSection = ({
     setLoading(true);
     try {
       const response = await axios.get(
-        `http://localhost:8081/fetchComments/${entryID}`
+        `${
+          import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+        }/fetchComments/${entryID}`
       );
       const fetchedComments = response.data;
       const nestedComments = nestComments(fetchedComments);
@@ -125,7 +127,10 @@ const CommentSection = ({
 
     setLoading(true);
     try {
-      await axios.post("http://localhost:8081/comments", newCommentObj);
+      await axios.post(
+        `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/comments`,
+        newCommentObj
+      );
       setNewComment("");
       fetchComments();
       updateEngagement(entryID);
@@ -141,14 +146,19 @@ const CommentSection = ({
 
     if (userID !== entry) {
       axios
-        .post(`http://localhost:8081/notifications/${entry}`, {
-          userID: entry,
-          actorID: userID,
-          entryID,
-          profile_image: user.profile_image,
-          type: "comment",
-          message: `${user.firstName} ${user.lastName} commented on your diary entry.`,
-        })
+        .post(
+          `${
+            import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+          }/notifications/${entry}`,
+          {
+            userID: entry,
+            actorID: userID,
+            entryID,
+            profile_image: user.profile_image,
+            type: "comment",
+            message: `${user.firstName} ${user.lastName} commented on your diary entry.`,
+          }
+        )
         .catch((err) => {
           console.error("Error sending comment notification:", err);
           setError("Failed to send notification.");
@@ -174,11 +184,16 @@ const CommentSection = ({
 
     setLoading(true);
     try {
-      await axios.post("http://localhost:8081/comments", newReplyObj);
+      await axios.post(
+        `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/comments`,
+        newReplyObj
+      );
 
       if (repliedUserID !== userID) {
         await axios.post(
-          `http://localhost:8081/notifications/${repliedUserID}`,
+          `${
+            import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+          }/notifications/${repliedUserID}`,
           {
             userID: repliedUserID,
             actorID: userID,
@@ -215,9 +230,14 @@ const CommentSection = ({
     if (!editCommentText.trim()) return; // Ensure non-empty edit text
     setLoading(true);
     try {
-      await axios.put(`http://localhost:8081/editComment/${editComment}`, {
-        text: editCommentText,
-      });
+      await axios.put(
+        `${
+          import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+        }/editComment/${editComment}`,
+        {
+          text: editCommentText,
+        }
+      );
       setEditComment(null);
       setEditCommentText("");
       fetchComments();
@@ -236,7 +256,9 @@ const CommentSection = ({
       onConfirm: async () => {
         try {
           await axios.delete(
-            `http://localhost:8081/deleteComment/${commentID}`
+            `${
+              import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+            }/deleteComment/${commentID}`
           );
           fetchComments();
           closeConfirmModal();
@@ -294,7 +316,10 @@ const CommentSection = ({
 
   const updateEngagement = async (entryID) => {
     try {
-      await axios.post("http://localhost:8081/updateEngagement", { entryID });
+      await axios.post(
+        `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/updateEngagement`,
+        { entryID }
+      );
     } catch (error) {
       console.error("Error updating engagement:", error);
     }
@@ -352,7 +377,9 @@ const CommentSection = ({
                     <img
                       src={
                         comment.profile_image
-                          ? `http://localhost:8081${comment.profile_image}`
+                          ? `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}${
+                              comment.profile_image
+                            }`
                           : AnonymousIcon
                       }
                       alt="Profile"

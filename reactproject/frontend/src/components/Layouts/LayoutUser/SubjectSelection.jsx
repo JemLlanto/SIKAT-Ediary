@@ -12,7 +12,9 @@ const SubjectSelection = ({ onSubjectsChange }) => {
   useEffect(() => {
     const fetchFilterSubjects = async () => {
       try {
-        const response = await axios.get("http://localhost:8081/filters");
+        const response = await axios.get(
+          `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/filters`
+        );
         const subjects = response.data;
 
         const initialState = subjects.reduce((acc, subject) => {

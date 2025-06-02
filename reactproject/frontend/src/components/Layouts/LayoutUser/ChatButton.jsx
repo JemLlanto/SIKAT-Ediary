@@ -45,7 +45,9 @@ const ChatButton = () => {
 
       const fetchAdmin = async () => {
         try {
-          const response = await axios.get("http://localhost:8081/admin");
+          const response = await axios.get(
+            `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/admin`
+          );
           const data = response.data;
           setAdmin(data);
           if (!parsedUser.isAdmin) {
@@ -61,7 +63,9 @@ const ChatButton = () => {
       if (parsedUser.isAdmin) {
         const fetchAllUsers = async () => {
           try {
-            const response = await axios.get("http://localhost:8081/users");
+            const response = await axios.get(
+              `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/users`
+            );
             const data = response.data;
             setAllUsers(data);
           } catch (error) {
@@ -126,12 +130,15 @@ const ChatButton = () => {
     if (!user) return;
 
     try {
-      const response = await axios.get("http://localhost:8081/messages", {
-        params: {
-          userID: user.userID,
-          withUserID: userID,
-        },
-      });
+      const response = await axios.get(
+        `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/messages`,
+        {
+          params: {
+            userID: user.userID,
+            withUserID: userID,
+          },
+        }
+      );
       setMessages(response.data);
       setSelectedUser(userID);
     } catch (error) {
@@ -146,11 +153,14 @@ const ChatButton = () => {
     const senderUserID = user.userID;
 
     try {
-      const response = await axios.post("http://localhost:8081/message", {
-        senderID: user.userID,
-        recipientID: recipientUserID,
-        message: newMessage,
-      });
+      const response = await axios.post(
+        `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/message`,
+        {
+          senderID: user.userID,
+          recipientID: recipientUserID,
+          message: newMessage,
+        }
+      );
 
       if (response.status !== 200) {
         throw new Error("Failed to send message");
@@ -236,7 +246,9 @@ const ChatButton = () => {
               >
                 <div className="profilePicture">
                   <img
-                    src={`http://localhost:8081${admin?.profile_image}`}
+                    src={`${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}${
+                      admin?.profile_image
+                    }`}
                     alt="Profile"
                     style={{
                       width: "100%",

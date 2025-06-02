@@ -41,7 +41,7 @@ const ReportedComment = ({ reportedComments }) => {
     const fetchReportComments = async () => {
       try {
         const response = await axios.get(
-          "http://localhost:8081/reportComments"
+          `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/reportComments`
         );
         setOption(response.data);
       } catch (error) {
@@ -56,7 +56,9 @@ const ReportedComment = ({ reportedComments }) => {
     const fetchReportCommentReasons = async () => {
       try {
         const response = await axios.get(
-          "http://localhost:8081/fetchReportedCommentReasons"
+          `${
+            import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+          }/fetchReportedCommentReasons`
         );
         setCommentReportReasons(response.data);
       } catch (error) {
@@ -132,7 +134,11 @@ const ReportedComment = ({ reportedComments }) => {
       onConfirm: async () => {
         setIsLoading(true);
         try {
-          await axios.put(`http://localhost:8081/commentAddress/${commentID}`);
+          await axios.put(
+            `${
+              import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+            }/commentAddress/${commentID}`
+          );
           closeConfirmModal();
           setModal({
             show: true,

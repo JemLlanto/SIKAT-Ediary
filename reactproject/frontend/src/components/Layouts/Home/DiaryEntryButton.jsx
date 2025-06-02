@@ -171,11 +171,15 @@ function DiaryEntryButton({ onEntrySaved }) {
     setServerError("");
 
     axios
-      .post("http://localhost:8081/entry", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      })
+      .post(
+        `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/entry`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      )
       .then((response) => {
         console.log(response.data.message);
         setTitle("");
@@ -241,7 +245,9 @@ function DiaryEntryButton({ onEntrySaved }) {
                 <img
                   src={
                     user?.profile_image
-                      ? `http://localhost:8081${user?.profile_image}`
+                      ? `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}${
+                          user?.profile_image
+                        }`
                       : userDefaultProfile
                   }
                   alt="Profile"

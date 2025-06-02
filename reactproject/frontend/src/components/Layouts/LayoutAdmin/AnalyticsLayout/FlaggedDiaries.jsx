@@ -42,7 +42,9 @@ const FlaggedDiaries = ({ flags }) => {
     const fetchFlaggedReasons = async () => {
       try {
         const response = await axios.get(
-          "http://localhost:8081/fetchFlaggedDiaryReasons"
+          `${
+            import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+          }/fetchFlaggedDiaryReasons`
         );
         console.log("API Response:", response.data);
         setFlaggedDiaryReasons(response.data);
@@ -58,7 +60,7 @@ const FlaggedDiaries = ({ flags }) => {
     const fetchAlarmingWords = async () => {
       try {
         const response = await axios.get(
-          "http://localhost:8081/flaggingOptions"
+          `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/flaggingOptions`
         );
         setAlarmingWords(response.data);
       } catch (error) {
@@ -135,7 +137,11 @@ const FlaggedDiaries = ({ flags }) => {
       message: `Are you sure you want to mark this as Reviewed?`,
       onConfirm: async () => {
         axios
-          .put(`http://localhost:8081/flaggedAddress/${entryID}`)
+          .put(
+            `${
+              import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+            }/flaggedAddress/${entryID}`
+          )
           .then(() => {
             closeConfirmModal();
             setModal({

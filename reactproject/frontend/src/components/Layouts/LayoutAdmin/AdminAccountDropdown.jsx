@@ -13,7 +13,9 @@ const AdminAccountDropdown = () => {
   const fetchUserData = async (userID) => {
     try {
       const response = await fetch(
-        `http://localhost:8081/fetchUser/user/${userID}`
+        `${
+          import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+        }/fetchUser/user/${userID}`
       );
 
       if (!response.ok) {
@@ -84,7 +86,9 @@ const AdminAccountDropdown = () => {
               className=" "
               src={
                 user && user.profile_image
-                  ? `http://localhost:8081${user.profile_image}`
+                  ? `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}${
+                      user.profile_image
+                    }`
                   : DefaultProfile
               }
               alt="User Profile"

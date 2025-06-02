@@ -51,13 +51,17 @@ function OffCanvassNotification() {
 
       try {
         const response = await axios.get(
-          `http://localhost:8081/notifications/${user.userID}`
+          `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/notifications/${
+            user.userID
+          }`
         );
 
         const fetchedNotifications = response.data.map((notification) => ({
           ...notification,
           actorProfileImage: notification.actorProfileImage
-            ? `http://localhost:8081${notification.actorProfileImage}`
+            ? `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}${
+                notification.actorProfileImage
+              }`
             : DefaultProfile,
         }));
 
@@ -105,9 +109,14 @@ function OffCanvassNotification() {
       );
 
       axios
-        .post(`http://localhost:8081/notifications/mark-as-read`, {
-          userID: user.userID,
-        })
+        .post(
+          `${
+            import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+          }/notifications/mark-as-read`,
+          {
+            userID: user.userID,
+          }
+        )
         .catch((error) =>
           console.error("Error marking notifications as read:", error)
         );

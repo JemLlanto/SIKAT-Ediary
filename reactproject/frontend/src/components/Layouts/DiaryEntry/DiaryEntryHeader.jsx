@@ -43,7 +43,9 @@ const DiaryEntryHeader = ({
           >
             <div className="profilePicture">
               <img
-                src={`http://localhost:8081${entry.profile_image}`}
+                src={`${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}${
+                  entry.profile_image
+                }`}
                 alt="Profile"
                 style={{
                   width: "100%",
@@ -180,7 +182,9 @@ const DiaryEntryHeader = ({
                         diarySub={entry.subjects}
                         imageFile={
                           entry.diary_image &&
-                          `http://localhost:8081${entry.diary_image}`
+                          `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}${
+                            entry.diary_image
+                          }`
                         }
                       ></EditPostButton>
                     ) : (
@@ -194,7 +198,9 @@ const DiaryEntryHeader = ({
                         diarySub={entry.subjects}
                         imageFile={
                           entry.diary_image &&
-                          `http://localhost:8081${entry.diary_image}`
+                          `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}${
+                            entry.diary_image
+                          }`
                         }
                       />
                     )}

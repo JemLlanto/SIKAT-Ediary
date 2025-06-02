@@ -40,7 +40,9 @@ const UserChatButton = () => {
 
       const fetchAdmin = async () => {
         try {
-          const response = await axios.get("http://localhost:8081/admin");
+          const response = await axios.get(
+            `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/admin`
+          );
           const data = response.data;
           setAdmin(data);
           if (!parsedUser.isAdmin) {

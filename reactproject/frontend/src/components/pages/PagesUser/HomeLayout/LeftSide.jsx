@@ -19,7 +19,11 @@ const LeftSide = () => {
     if (userData) {
       const fetchUser = JSON.parse(userData);
 
-      fetch(`http://localhost:8081/fetchUser/user/${fetchUser.userID}`)
+      fetch(
+        `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/fetchUser/user/${
+          fetchUser.userID
+        }`
+      )
         .then((response) => {
           if (!response.ok) {
             throw new Error("User not found");

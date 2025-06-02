@@ -9,7 +9,7 @@ const AddingModeratorForm = ({ departmentID, departmentName }) => {
 
   useEffect(() => {
     axios
-      .get("http://localhost:8081/users")
+      .get(`${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/users`)
       .then((response) => setUsers(response.data))
       .catch((error) => console.error("Error fetching users:", error));
   }, []);
@@ -30,11 +30,14 @@ const AddingModeratorForm = ({ departmentID, departmentName }) => {
     }
 
     axios
-      .post("http://localhost:8081/assignModerator", {
-        userID: selectedUser.userID,
-        departmentID,
-        departmentName,
-      })
+      .post(
+        `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/assignModerator`,
+        {
+          userID: selectedUser.userID,
+          departmentID,
+          departmentName,
+        }
+      )
       .then((response) => {
         alert(response.data.message);
         setSelectedUser(null);

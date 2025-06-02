@@ -198,7 +198,9 @@ const CaseDetailDownloadButton = ({ caseDetails }) => {
               }
 
               const xPos = 15 + col * (imageWidth + marginBetweenImages);
-              const imageUrl = `http://localhost:8081${documents[i]}`;
+              const imageUrl = `${
+                import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+              }${documents[i]}`;
               const base64Image = await loadImage(imageUrl);
 
               doc.addImage(

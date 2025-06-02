@@ -41,7 +41,9 @@ const ChatButton = () => {
 
     const fetchUsers = async () => {
       try {
-        const response = await axios.get("http://localhost:8081/users");
+        const response = await axios.get(
+          `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/users`
+        );
         const updatedUsers = response.data.map((user) => ({
           ...user,
           lastMessageTime: null,
@@ -111,12 +113,15 @@ const ChatButton = () => {
 
   const fetchMessagesForSelectedUser = async (withUserID) => {
     try {
-      const response = await axios.get("http://localhost:8081/messages", {
-        params: {
-          userID: user.userID,
-          withUserID: withUserID,
-        },
-      });
+      const response = await axios.get(
+        `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/messages`,
+        {
+          params: {
+            userID: user.userID,
+            withUserID: withUserID,
+          },
+        }
+      );
 
       setMessages(response.data);
       setSelectedUser(users.find((usr) => usr.userID === withUserID));
@@ -151,11 +156,14 @@ const ChatButton = () => {
     if (newMessage.trim() === "" || !user || !selectedUser) return;
 
     try {
-      const response = await axios.post("http://localhost:8081/message", {
-        senderID: user.userID,
-        recipientID: selectedUser.userID,
-        message: newMessage,
-      });
+      const response = await axios.post(
+        `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/message`,
+        {
+          senderID: user.userID,
+          recipientID: selectedUser.userID,
+          message: newMessage,
+        }
+      );
 
       if (response.status !== 200) {
         throw new Error("Failed to send message");
@@ -296,7 +304,10 @@ const ChatButton = () => {
                             <img
                               src={
                                 userItem.profile_image
-                                  ? `http://localhost:8081${userItem.profile_image}`
+                                  ? `${
+                                      import.meta.env
+                                        .VITE_REACT_APP_BACKEND_BASEURL
+                                    }${userItem.profile_image}`
                                   : DefaultProfile
                               }
                               alt="Profile"
@@ -351,7 +362,9 @@ const ChatButton = () => {
                   >
                     <div className="profilePicture">
                       <img
-                        src={`http://localhost:8081${selectedUser.profile_image}`}
+                        src={`${
+                          import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+                        }${selectedUser.profile_image}`}
                         alt="Profile"
                         style={{
                           width: "100%",

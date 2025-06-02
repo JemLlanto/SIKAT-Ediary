@@ -7,7 +7,7 @@ const FrequentlyAskQuestion = () => {
 
   useEffect(() => {
     axios
-      .get("http://localhost:8081/faqs")
+      .get(`${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/faqs`)
       .then((response) => {
         setFaqs(response.data);
       })

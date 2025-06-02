@@ -12,7 +12,9 @@ const FilterButtonAdmin = ({ onFilterChange, userID }) => {
   useEffect(() => {
     const fetchFilters = async () => {
       try {
-        const response = await axios.get("http://localhost:8081/adminFilters");
+        const response = await axios.get(
+          `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/adminFilters`
+        );
         const filters = response.data;
 
         const initialItems = {};
@@ -24,7 +26,9 @@ const FilterButtonAdmin = ({ onFilterChange, userID }) => {
 
         if (userID) {
           const userFiltersResponse = await axios.get(
-            `http://localhost:8081/getUserFilters/${userID}`
+            `${
+              import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+            }/getUserFilters/${userID}`
           );
           const savedFilters = userFiltersResponse.data.filters;
 
@@ -89,17 +93,27 @@ const FilterButtonAdmin = ({ onFilterChange, userID }) => {
 
         if (wasSelected !== isSelected) {
           if (isSelected) {
-            await axios.post(`http://localhost:8081/saveUserFilterss`, {
-              userID,
-              filter: filter.adminFilterSubject,
-            });
-          } else {
-            await axios.delete(`http://localhost:8081/deleteUserFilters`, {
-              data: {
+            await axios.post(
+              `${
+                import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+              }/saveUserFilterss`,
+              {
                 userID,
                 filter: filter.adminFilterSubject,
-              },
-            });
+              }
+            );
+          } else {
+            await axios.delete(
+              `${
+                import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+              }/deleteUserFilters`,
+              {
+                data: {
+                  userID,
+                  filter: filter.adminFilterSubject,
+                },
+              }
+            );
           }
         }
       });

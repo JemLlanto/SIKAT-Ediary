@@ -45,7 +45,7 @@ function ReportCommentButton({
     const fetchReportComments = async () => {
       try {
         const response = await axios.get(
-          "http://localhost:8081/reportComments"
+          `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/reportComments`
         );
         setReportComments(response.data);
       } catch (err) {
@@ -78,7 +78,7 @@ function ReportCommentButton({
   const handleSubmitReport = async () => {
     try {
       const response = await axios.post(
-        "http://localhost:8081/reportuserComment",
+        `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/reportuserComment`,
         {
           commentID,
           userID,

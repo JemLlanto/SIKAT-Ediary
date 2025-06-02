@@ -19,7 +19,11 @@ const DeleteButton = ({ entryID, title }) => {
   const handleDeleteEntry = async (entryID) => {
     setDeleteModal(false);
     try {
-      await axios.delete(`http://localhost:8081/deleteEntry/${entryID}`);
+      await axios.delete(
+        `${
+          import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+        }/deleteEntry/${entryID}`
+      );
       setModal({
         show: true,
         message: "Diary entry deleted successfully.",

@@ -24,7 +24,7 @@ const ManagingModeratorButton = ({
 
   useEffect(() => {
     axios
-      .get("http://localhost:8081/users")
+      .get(`${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/users`)
       .then((response) => setUsers(response.data))
       .catch((error) => console.error("Error fetching users:", error));
   }, []);
@@ -45,11 +45,14 @@ const ManagingModeratorButton = ({
     }
 
     axios
-      .post("http://localhost:8081/assignModerator", {
-        userID: selectedUser.userID,
-        departmentID,
-        departmentName,
-      })
+      .post(
+        `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/assignModerator`,
+        {
+          userID: selectedUser.userID,
+          departmentID,
+          departmentName,
+        }
+      )
       .then((response) => {
         alert(response.data.message);
         setSelectedUser(null);
@@ -68,9 +71,12 @@ const ManagingModeratorButton = ({
     }
 
     axios
-      .post("http://localhost:8081/removeModerator", {
-        userID: mod.userID,
-      })
+      .post(
+        `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/removeModerator`,
+        {
+          userID: mod.userID,
+        }
+      )
       .then((response) => {
         alert(response.data.message);
         setSelectedUser(null);
@@ -158,7 +164,9 @@ const ManagingModeratorButton = ({
                           >
                             <div className="profilePicture">
                               <img
-                                src={`http://localhost:8081${mod.profile_image}`}
+                                src={`${
+                                  import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+                                }${mod.profile_image}`}
                                 alt="Profile"
                                 style={{
                                   width: "100%",

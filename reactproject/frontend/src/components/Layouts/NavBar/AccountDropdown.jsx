@@ -14,7 +14,9 @@ const AccountDropdown = ({ isAdmin }) => {
   const fetchUserData = async (userID) => {
     try {
       const response = await fetch(
-        `http://localhost:8081/fetchUser/user/${userID}`
+        `${
+          import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+        }/fetchUser/user/${userID}`
       );
 
       if (!response.ok) {
@@ -47,7 +49,7 @@ const AccountDropdown = ({ isAdmin }) => {
       const parsedUser = JSON.parse(userData);
 
       axios
-        .post("http://localhost:8081/logout", {
+        .post(`${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/logout`, {
           userID: parsedUser.userID,
         })
         .then((response) => {
@@ -145,7 +147,9 @@ const AccountDropdown = ({ isAdmin }) => {
               className=" "
               src={
                 user && user.profile_image
-                  ? `http://localhost:8081${user.profile_image}`
+                  ? `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}${
+                      user.profile_image
+                    }`
                   : DefaultProfile
               }
               alt="User Profile"

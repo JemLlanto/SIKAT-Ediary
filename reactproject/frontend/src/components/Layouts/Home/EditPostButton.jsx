@@ -160,11 +160,17 @@ function EditPostButton({
     setServerError("");
 
     axios
-      .put(`http://localhost:8081/editEntryAdmin/${entryID}`, formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      })
+      .put(
+        `${
+          import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+        }/editEntryAdmin/${entryID}`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      )
       .then((response) => {
         console.log("Post created:", response.data.message);
         setTitle("");
@@ -204,7 +210,9 @@ function EditPostButton({
                 <img
                   src={
                     user?.profile_image
-                      ? `http://localhost:8081${user?.profile_image}`
+                      ? `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}${
+                          user?.profile_image
+                        }`
                       : userDefaultProfile
                   }
                   alt="Profile"

@@ -16,7 +16,9 @@ const NavBar = ({ ActiveTab }) => {
   const fetchUserData = async (userID) => {
     try {
       const response = await fetch(
-        `http://localhost:8081/fetchUser/user/${userID}`
+        `${
+          import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+        }/fetchUser/user/${userID}`
       );
 
       if (!response.ok) {

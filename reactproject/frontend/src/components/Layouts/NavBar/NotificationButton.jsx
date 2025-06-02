@@ -68,13 +68,17 @@ function NotificationButton() {
 
       try {
         const response = await axios.get(
-          `http://localhost:8081/getnotifications/${user.userID}`
+          `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/getnotifications/${
+            user.userID
+          }`
         );
 
         const fetchedNotifications = response.data.map((notification) => ({
           ...notification,
           actorProfileImage: notification.actorProfileImage
-            ? `http://localhost:8081${notification.actorProfileImage}`
+            ? `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}${
+                notification.actorProfileImage
+              }`
             : DefaultProfile,
         }));
 
@@ -127,10 +131,15 @@ function NotificationButton() {
       );
 
       axios
-        .put("http://localhost:8081/notifications/mark-as-read", {
-          userID: user.userID,
-          notificationIDs: notifications.map((n) => n.notificationID),
-        })
+        .put(
+          `${
+            import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+          }/notifications/mark-as-read`,
+          {
+            userID: user.userID,
+            notificationIDs: notifications.map((n) => n.notificationID),
+          }
+        )
         .catch((error) =>
           console.error("Error marking notifications as read:", error)
         );
@@ -141,10 +150,15 @@ function NotificationButton() {
     if (!user) return;
 
     axios
-      .put("http://localhost:8081/notifications/mark-as-read", {
-        userID: user.userID,
-        notificationID,
-      })
+      .put(
+        `${
+          import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+        }/notifications/mark-as-read`,
+        {
+          userID: user.userID,
+          notificationID,
+        }
+      )
       .catch((error) =>
         console.error("Error marking notification as read:", error)
       );
@@ -167,9 +181,14 @@ function NotificationButton() {
     localStorage.setItem("notifications", JSON.stringify(updatedNotifications));
 
     try {
-      await axios.put("http://localhost:8081/notifications/mark-all-as-read", {
-        userID: user.userID,
-      });
+      await axios.put(
+        `${
+          import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+        }/notifications/mark-all-as-read`,
+        {
+          userID: user.userID,
+        }
+      );
     } catch (error) {
       console.error("Error marking all notifications as read:", error);
     }

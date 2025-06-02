@@ -101,7 +101,7 @@ const NavBar = ({ ActiveTab }) => {
               }
             }}
           >
-            <i class="bx bx-home-alt"></i>
+            <i className="bx bx-home-alt"></i>
             <p className="navToolTip">Home</p>
           </Link>
 
@@ -112,7 +112,7 @@ const NavBar = ({ ActiveTab }) => {
               }`}
               to="/Admin/Dashboard"
             >
-              <i class="bx bxs-dashboard"></i>
+              <i className="bx bxs-dashboard"></i>
               <p className="navToolTip">Dashboard</p>
             </Link>
           ) : (
@@ -125,7 +125,7 @@ const NavBar = ({ ActiveTab }) => {
             }`}
             to="/DiaryEntries"
           >
-            <i class="bx bx-note"></i>
+            <i className="bx bx-note"></i>
             <p className="navToolTip">
               {user && user.isAdmin ? "Post" : "Diary Entries"}
             </p>
@@ -151,7 +151,7 @@ const NavBar = ({ ActiveTab }) => {
               }`}
               to={`/Admin/Analytics/${RegisteredUser}`}
             >
-              <i class="bx bx-chart"></i>
+              <i className="bx bx-chart"></i>
               <p className="navToolTip">User Analytics</p>
             </Link>
           ) : (
@@ -165,7 +165,7 @@ const NavBar = ({ ActiveTab }) => {
               }`}
               to="/Admin/GenderBasedIncidents"
             >
-              <i class="bx bxs-report"></i>
+              <i className="bx bxs-report"></i>
               <p className="navToolTip">Complaints</p>
             </Link>
           ) : (
@@ -178,7 +178,7 @@ const NavBar = ({ ActiveTab }) => {
             }`}
             to={`/Settings/${user.userID}`}
           >
-            <i class="bx bx-cog"></i>
+            <i className="bx bx-cog"></i>
             <p className="navToolTip">Settings</p>
           </Link>
         </div>

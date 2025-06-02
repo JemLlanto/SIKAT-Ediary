@@ -111,7 +111,7 @@ function ReportCommentButton({
         onClick={handleShow}
       >
         <p className="m-0">Report</p>
-        <i class="bx bx-error"></i>
+        <i className="bx bx-error"></i>
       </button>
 
       <MessageModal

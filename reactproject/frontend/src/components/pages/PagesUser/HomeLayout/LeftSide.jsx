@@ -53,7 +53,9 @@ const LeftSide = () => {
   const fetchEntries = async () => {
     try {
       const response = await axios.get(
-        `http://localhost:8081/fetchUserEntry/user/${user.userID}`
+        `${
+          import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+        }/fetchUserEntry/user/${user.userID}`
       );
 
       if (response.data.entries && Array.isArray(response.data.entries)) {
@@ -104,7 +106,9 @@ const LeftSide = () => {
                 <img
                   src={
                     user && user.profile_image
-                      ? `http://localhost:8081${user.profile_image}`
+                      ? `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}${
+                          user.profile_image
+                        }`
                       : DefaultProfile
                   }
                   alt="Profile"

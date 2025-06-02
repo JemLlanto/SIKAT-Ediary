@@ -41,10 +41,14 @@ const DiaryEntry = () => {
     setIsLoading(true);
     try {
       const response = await axios.get(
-        `http://localhost:8081/fetchDiaryEntry/${entryID}`
+        `${
+          import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+        }/fetchDiaryEntry/${entryID}`
       );
       const gadifyStatusResponse = await axios.get(
-        `http://localhost:8081/gadifyStatus/${user.userID}`
+        `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/gadifyStatus/${
+          user.userID
+        }`
       );
 
       if (response.data && response.data.entry) {
@@ -67,7 +71,9 @@ const DiaryEntry = () => {
   const fetchComments = async () => {
     try {
       const response = await axios.get(
-        `http://localhost:8081/fetchComments/${entryID}`
+        `${
+          import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+        }/fetchComments/${entryID}`
       );
       setComments(response.data);
     } catch (error) {
@@ -79,7 +85,9 @@ const DiaryEntry = () => {
   const fetchFollowedUsers = async (userID) => {
     try {
       const response = await axios.get(
-        `http://localhost:8081/followedUsers/${userID}`
+        `${
+          import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+        }/followedUsers/${userID}`
       );
       setFollowedUsers(response.data.map((user) => user.userID));
     } catch (error) {
@@ -92,7 +100,9 @@ const DiaryEntry = () => {
 
     try {
       const response = await axios.post(
-        `http://localhost:8081/entry/${entryID}/gadify`,
+        `${
+          import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+        }/entry/${entryID}/gadify`,
         {
           userID: user.userID,
         }

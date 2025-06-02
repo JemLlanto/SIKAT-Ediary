@@ -30,9 +30,12 @@ function Hide({ type, entry, entryID }) {
 
   const hideEntry = async (entryID) => {
     try {
-      await axios.put("http://localhost:8081/hide", {
-        entryID,
-      });
+      await axios.put(
+        `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/hide`,
+        {
+          entryID,
+        }
+      );
       handleClose();
       setModal({
         show: true,
@@ -58,7 +61,7 @@ function Hide({ type, entry, entryID }) {
         onClick={handleShow}
         // disabled={suspended}
       >
-        <i class="bx bxs-hide"></i>
+        <i className="bx bxs-hide"></i>
         <p className="m-0">Hide</p>
       </button>
 

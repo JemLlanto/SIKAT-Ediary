@@ -7,10 +7,10 @@ const NavBarIndex = ({ onNavigate, refs }) => {
   const { Home, Events, MissionVision, About, Contacts } = refs;
   return (
     <nav
-      class="navbar navbar-expand-lg p-0 position-sticky"
+      className="navbar navbar-expand-lg p-0 position-sticky"
       style={{ top: "0" }}
     >
-      <div class="container-fluid d-flex flex-column justify-content-center flex-md-row gap-2 py-2 px-3 shadow-sm">
+      <div className="container-fluid d-flex flex-column justify-content-center flex-md-row gap-2 py-2 px-3 shadow-sm">
         <div className="w-100 row gap-2 gap-lg-0">
           <div className="col-lg-2 d-flex justify-content-between justify-content-lg-start align-items-center gap-2 px-0 px-md-2">
             <div className="  d-flex align-items-center gap-2">
@@ -40,13 +40,13 @@ const NavBarIndex = ({ onNavigate, refs }) => {
             <div className="w-100 d-flex align-items-center justify-content-between justify-content-lg-end text-light">
               <div onClick={() => onNavigate(Home)}>
                 <h3 className="m-0 d-flex align-items-center justify-content-center d-block d-md-none">
-                  <i class="bx bx-home-alt"></i>
+                  <i className="bx bx-home-alt"></i>
                 </h3>
                 <p className="navText m-0 py-2 d-none d-md-block">Home</p>
               </div>
               <div onClick={() => onNavigate(Events)}>
                 <h3 className="m-0 d-flex align-items-center justify-content-center d-block d-md-none">
-                  <i class="bx bxs-megaphone"></i>
+                  <i className="bx bxs-megaphone"></i>
                 </h3>
                 <p className="navText m-0 py-2 d-none d-md-block">
                   Events/Announcements
@@ -54,7 +54,7 @@ const NavBarIndex = ({ onNavigate, refs }) => {
               </div>
               <div onClick={() => onNavigate(MissionVision)}>
                 <h3 className="m-0 d-flex align-items-center justify-content-center d-block d-md-none">
-                  <i class="bx bx-list-check"></i>
+                  <i className="bx bx-list-check"></i>
                 </h3>
                 <p className="navText m-0 py-2 d-none d-md-block">
                   Mission/Vision
@@ -62,13 +62,13 @@ const NavBarIndex = ({ onNavigate, refs }) => {
               </div>
               <div onClick={() => onNavigate(About)}>
                 <h3 className="m-0 d-flex align-items-center justify-content-center d-block d-md-none">
-                  <i class="bx bx-info-circle"></i>
+                  <i className="bx bx-info-circle"></i>
                 </h3>
                 <p className="navText m-0 py-2 d-none d-md-block">About Us</p>
               </div>
               <div onClick={() => onNavigate(Contacts)}>
                 <h3 className="m-0 d-flex align-items-center justify-content-center d-block d-md-none">
-                  <i class="bx bx-phone-call"></i>
+                  <i className="bx bx-phone-call"></i>
                 </h3>
                 <p className="navText m-0 py-2 d-none d-md-block">Contact Us</p>
               </div>

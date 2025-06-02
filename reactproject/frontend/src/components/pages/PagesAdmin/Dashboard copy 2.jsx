@@ -228,7 +228,9 @@ const Dashboard = () => {
   const fetchEntries = async () => {
     try {
       setIsLoading(true);
-      const response = await axios.get("http://localhost:8081/analytics");
+      const response = await axios.get(
+        "${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/analytics"
+      );
       setEntries(response.data);
     } catch (error) {
       console.error("Error fetching diary entries:", error);
@@ -239,7 +241,9 @@ const Dashboard = () => {
 
   const fetchUsers = async () => {
     try {
-      const response = await axios.get("http://localhost:8081/users");
+      const response = await axios.get(
+        "${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/users"
+      );
       setUsers(response.data);
       setFilteredUsers(response.data);
     } catch (error) {
@@ -249,7 +253,9 @@ const Dashboard = () => {
 
   const fetchFlags = async () => {
     try {
-      const response = await axios.get("http://localhost:8081/flagged");
+      const response = await axios.get(
+        "${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/flagged"
+      );
       setFlags(response.data);
     } catch (error) {
       console.error("Error fetching flags:", error);
@@ -259,7 +265,7 @@ const Dashboard = () => {
   const fetchReportedComments = async () => {
     try {
       const response = await axios.get(
-        "http://localhost:8081/getReportedComments"
+        "${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/getReportedComments"
       );
       setReportedComments(response.data);
     } catch (error) {
@@ -269,7 +275,9 @@ const Dashboard = () => {
 
   const fetchGenderBasedIncidents = async () => {
     try {
-      const response = await axios.get("http://localhost:8081/reports");
+      const response = await axios.get(
+        "${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/reports"
+      );
       setGenderBasedIncidents(response.data);
     } catch (error) {
       console.error("Error fetching reported incidents:", error);
@@ -279,7 +287,7 @@ const Dashboard = () => {
   const fetchReportedUsers = async () => {
     try {
       const response = await axios.get(
-        "http://localhost:8081/getReportedUsers"
+        "${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/getReportedUsers"
       );
       setReportedUsers(response.data);
     } catch (error) {

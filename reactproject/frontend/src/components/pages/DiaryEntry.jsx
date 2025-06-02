@@ -103,10 +103,14 @@ const DiaryEntry = () => {
     setIsLoading(true);
     try {
       const response = await axios.get(
-        `http://localhost:8081/fetchDiaryEntry/${entryID}`
+        `${
+          import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+        }/fetchDiaryEntry/${entryID}`
       );
       const gadifyStatusResponse = await axios.get(
-        `http://localhost:8081/gadifyStatus/${user.userID}`
+        `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/gadifyStatus/${
+          user.userID
+        }`
       );
 
       if (response.data && response.data.entry) {
@@ -129,7 +133,9 @@ const DiaryEntry = () => {
   const fetchComments = async () => {
     try {
       const response = await axios.get(
-        `http://localhost:8081/fetchComments/${entryID}`
+        `${
+          import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+        }/fetchComments/${entryID}`
       );
       setComments(response.data);
     } catch (error) {
@@ -141,7 +147,9 @@ const DiaryEntry = () => {
   const fetchFollowedUsers = async (userID) => {
     try {
       const response = await axios.get(
-        `http://localhost:8081/followedUsers/${userID}`
+        `${
+          import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+        }/followedUsers/${userID}`
       );
       const followedUsersData = response.data.map((user) => user.userID);
       setFollowedUsers(followedUsersData);
@@ -157,9 +165,14 @@ const DiaryEntry = () => {
     if (!entry) return;
 
     axios
-      .post(`http://localhost:8081/entry/${entryID}/gadify`, {
-        userID: user.userID,
-      })
+      .post(
+        `${
+          import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+        }/entry/${entryID}/gadify`,
+        {
+          userID: user.userID,
+        }
+      )
       .then((res) => {
         const isGadified =
           res.data.message === "Gadify action recorded successfully";
@@ -179,13 +192,18 @@ const DiaryEntry = () => {
 
         if (isGadified && user.userID !== entry.userID) {
           axios
-            .post(`http://localhost:8081/notifications/${entry.userID}`, {
-              actorID: user.userID,
-              entryID: entryID,
-              profile_image: user.profile_image,
-              type: "gadify",
-              message: `${user.firstName} ${user.lastName} gadified your diary entry.`,
-            })
+            .post(
+              `${
+                import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+              }/notifications/${entry.userID}`,
+              {
+                actorID: user.userID,
+                entryID: entryID,
+                profile_image: user.profile_image,
+                type: "gadify",
+                message: `${user.firstName} ${user.lastName} gadified your diary entry.`,
+              }
+            )
             .then((res) => {
               console.log("Notification response:", res.data);
             })
@@ -237,7 +255,9 @@ const DiaryEntry = () => {
       const fetchFlaggedCount = async () => {
         try {
           const response = await axios.get(
-            `http://localhost:8081/flaggedCount/${entry.entryID}`
+            `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/flaggedCount/${
+              entry.entryID
+            }`
           );
           setFlaggedCount(response.data.flaggedCount);
         } catch (error) {
@@ -269,7 +289,9 @@ const DiaryEntry = () => {
           onConfirm: async () => {
             try {
               await axios.delete(
-                `http://localhost:8081/unfollow/${followUserId}`,
+                `${
+                  import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+                }/unfollow/${followUserId}`,
                 {
                   data: { followerId: user.userID },
                 }
@@ -300,9 +322,14 @@ const DiaryEntry = () => {
           onCancel: () => setConfirmModal({ show: false, message: "" }),
         });
       } else {
-        await axios.post(`http://localhost:8081/follow/${followUserId}`, {
-          followerId: user.userID,
-        });
+        await axios.post(
+          `${
+            import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+          }/follow/${followUserId}`,
+          {
+            followerId: user.userID,
+          }
+        );
 
         // Update followed users list after following
         setFollowedUsers((prev) => [...prev, followUserId]);
@@ -315,7 +342,9 @@ const DiaryEntry = () => {
 
         // Send follow notification to the followed user
         await axios.post(
-          `http://localhost:8081/notifications/${followUserId}`,
+          `${
+            import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+          }/notifications/${followUserId}`,
           {
             userID: followUserId,
             actorID: user.userID,
@@ -396,7 +425,9 @@ const DiaryEntry = () => {
                       >
                         <img
                           className="DiaryImage rounded"
-                          src={`http://localhost:8081${entry.diary_image}`}
+                          src={`${
+                            import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+                          }${entry.diary_image}`}
                           alt="Diary"
                           style={{
                             cursor: "pointer",
@@ -414,7 +445,9 @@ const DiaryEntry = () => {
                           <ImageModal
                             showModal={showModal}
                             handleCloseModal={handleCloseModal}
-                            diaryImage={`http://localhost:8081${entry.diary_image}`}
+                            diaryImage={`${
+                              import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+                            }${entry.diary_image}`}
                           ></ImageModal>
                         </>
                       )}
@@ -497,7 +530,9 @@ const DiaryEntry = () => {
                           <ChatButton
                             entry={entry}
                             user={user}
-                            imageFile={`http://localhost:8081${entry.profile_image}`}
+                            imageFile={`${
+                              import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+                            }${entry.profile_image}`}
                             userToChat={entry.userID}
                           ></ChatButton>
                         ) : (

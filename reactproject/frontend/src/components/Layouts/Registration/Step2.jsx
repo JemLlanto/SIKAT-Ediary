@@ -134,9 +134,9 @@ const Step2 = ({ values, handleInput }) => {
           >
             <p className="m-0">
               {passwordFeedback.length ? (
-                <i class="bx bx-check"></i>
+                <i className="bx bx-check"></i>
               ) : (
-                <i class="bx bx-x"></i>
+                <i className="bx bx-x"></i>
               )}
               At least 8 characters
             </p>
@@ -148,9 +148,9 @@ const Step2 = ({ values, handleInput }) => {
           >
             <p className="m-0">
               {passwordFeedback.uppercase ? (
-                <i class="bx bx-check"></i>
+                <i className="bx bx-check"></i>
               ) : (
-                <i class="bx bx-x"></i>
+                <i className="bx bx-x"></i>
               )}
               At least one uppercase letter
             </p>
@@ -162,9 +162,9 @@ const Step2 = ({ values, handleInput }) => {
           >
             <p className="m-0">
               {passwordFeedback.lowercase ? (
-                <i class="bx bx-check"></i>
+                <i className="bx bx-check"></i>
               ) : (
-                <i class="bx bx-x"></i>
+                <i className="bx bx-x"></i>
               )}
               At least one lowercase letter
             </p>
@@ -176,9 +176,9 @@ const Step2 = ({ values, handleInput }) => {
           >
             <p className="m-0">
               {passwordFeedback.specialchar ? (
-                <i class="bx bx-x"></i>
+                <i className="bx bx-x"></i>
               ) : (
-                <i class="bx bx-check"></i>
+                <i className="bx bx-check"></i>
               )}
               Has no special character
             </p>
@@ -190,9 +190,9 @@ const Step2 = ({ values, handleInput }) => {
           >
             <p className="m-0">
               {passwordFeedback.number ? (
-                <i class="bx bx-check"></i>
+                <i className="bx bx-check"></i>
               ) : (
-                <i class="bx bx-x"></i>
+                <i className="bx bx-x"></i>
               )}
               At least one number
             </p>

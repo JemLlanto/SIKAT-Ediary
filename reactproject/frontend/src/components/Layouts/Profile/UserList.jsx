@@ -26,7 +26,9 @@ const UserList = ({
                   <img
                     src={
                       user.profile_image
-                        ? `http://localhost:8081${user.profile_image}`
+                        ? `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}${
+                            user.profile_image
+                          }`
                         : DefaultProfile
                     }
                     alt="Profile"

@@ -35,11 +35,14 @@ function Suspend({ profileOwner }) {
 
   const handleSuspend = async () => {
     try {
-      const response = await axios.post("http://localhost:8081/suspendUser", {
-        userID: profileOwner.userID,
-        reason: selectedReason,
-        period: selectedPeriod,
-      });
+      const response = await axios.post(
+        `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/suspendUser`,
+        {
+          userID: profileOwner.userID,
+          reason: selectedReason,
+          period: selectedPeriod,
+        }
+      );
 
       handleClose();
       setModal({
@@ -61,7 +64,9 @@ function Suspend({ profileOwner }) {
   useEffect(() => {
     const fetchReasons = async () => {
       try {
-        const response = await axios.get("http://localhost:8081/reportUsers");
+        const response = await axios.get(
+          `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/reportUsers`
+        );
         setReasons(response.data);
       } catch (error) {
         console.error("Error fetching reasons:", error);

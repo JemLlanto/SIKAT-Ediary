@@ -58,7 +58,7 @@ const PasswordAndSecurity = () => {
 
     try {
       const response = await axios.post(
-        "http://localhost:8081/reset-password",
+        `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/reset-password`,
         {
           email,
           password: newPassword,

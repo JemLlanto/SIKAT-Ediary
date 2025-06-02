@@ -25,7 +25,11 @@ const DiaryEntry = () => {
     if (userData) {
       const fetchUser = JSON.parse(userData);
 
-      fetch(`http://localhost:8081/fetchUser/user/${fetchUser.userID}`)
+      fetch(
+        `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/fetchUser/user/${
+          fetchUser.userID
+        }`
+      )
         .then((response) => {
           if (!response.ok) {
             throw new Error("User not found");
@@ -56,7 +60,9 @@ const DiaryEntry = () => {
   const fetchEntry = async () => {
     try {
       const response = await axios.get(
-        `http://localhost:8081/fetchDiaryEntry/${entryID}`
+        `${
+          import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+        }/fetchDiaryEntry/${entryID}`
       );
       if (response.data.entry) {
         setEntries([response.data.entry]); // This should be an array for map to work
@@ -117,7 +123,9 @@ const DiaryEntry = () => {
                       <img
                         src={
                           entry.profile_image
-                            ? `http://localhost:8081${entry.profile_image}`
+                            ? `${
+                                import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+                              }${entry.profile_image}`
                             : DefaultProfile
                         }
                         alt="Profile"
@@ -136,7 +144,9 @@ const DiaryEntry = () => {
                   {entry.diary_image && (
                     <img
                       className="DiaryImage mt-1 rounded"
-                      src={`http://localhost:8081${entry.diary_image}`}
+                      src={`${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}${
+                        entry.diary_image
+                      }`}
                       alt="Diary"
                     />
                   )}

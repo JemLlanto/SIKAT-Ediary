@@ -34,7 +34,9 @@ const UserList = ({ users, handleFollowToggle, isFollowing }) => (
                     <img
                       src={
                         user.profile_image
-                          ? `http://localhost:8081${user.profile_image}`
+                          ? `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}${
+                              user.profile_image
+                            }`
                           : DefaultProfile
                       }
                       alt="Profile"
@@ -118,7 +120,9 @@ const RightSide = () => {
 
   const fetchUsers = async () => {
     try {
-      const response = await axios.get("http://localhost:8081/users");
+      const response = await axios.get(
+        `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/users`
+      );
       setUsers(response.data);
     } catch (error) {
       console.error("Error fetching users:", error);
@@ -128,7 +132,7 @@ const RightSide = () => {
   const fetchFollowers = async (userID) => {
     try {
       const response = await axios.get(
-        `http://localhost:8081/followers/${userID}`
+        `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/followers/${userID}`
       );
       setFollowers(response.data);
     } catch (error) {
@@ -139,7 +143,9 @@ const RightSide = () => {
   const fetchFollowedUsers = async (userID) => {
     try {
       const response = await axios.get(
-        `http://localhost:8081/followedUsers/${userID}`
+        `${
+          import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+        }/followedUsers/${userID}`
       );
       setFollowedUsers(response.data);
       localStorage.setItem("followedUsers", JSON.stringify(response.data));
@@ -150,7 +156,9 @@ const RightSide = () => {
 
   const fetchLatestAnnouncement = async () => {
     try {
-      const response = await axios.get("http://localhost:8081/announcement");
+      const response = await axios.get(
+        `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/announcement`
+      );
       setLatestAnnouncement(response.data);
     } catch (error) {
       console.error("Error fetching latest announcement:", error);
@@ -177,7 +185,9 @@ const RightSide = () => {
           message: `Are you sure you want to unfollow ${targetUsername}?`,
           onConfirm: async () => {
             await axios.delete(
-              `http://localhost:8081/unfollow/${followUserId}`,
+              `${
+                import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+              }/unfollow/${followUserId}`,
               {
                 data: { followerId: user.userID },
               }
@@ -196,7 +206,9 @@ const RightSide = () => {
         });
       } else {
         const response = await axios.post(
-          `http://localhost:8081/follow/${followUserId}`,
+          `${
+            import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+          }/follow/${followUserId}`,
           {
             followerId: user.userID,
           }
@@ -287,7 +299,9 @@ const RightSide = () => {
                 </p>
                 {latestAnnouncement.diary_image && (
                   <img
-                    src={`http://localhost:8081${latestAnnouncement.diary_image}`}
+                    src={`${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}${
+                      latestAnnouncement.diary_image
+                    }`}
                     alt="Announcement"
                     style={{ width: "100%", borderRadius: ".3rem" }}
                   />

@@ -19,7 +19,11 @@ const OtherProfileDiary = ({ userID }) => {
     if (user) {
       const fetchUser = JSON.parse(user);
 
-      fetch(`http://localhost:8081/fetchUserEntry/user/${userID}`)
+      fetch(
+        `${
+          import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+        }/fetchUserEntry/user/${userID}`
+      )
         .then((response) => {
           if (!response.ok) {
             throw new Error("No entry found");
@@ -87,7 +91,9 @@ const OtherProfileDiary = ({ userID }) => {
                     <img
                       src={
                         entry.profile_image
-                          ? `http://localhost:8081${entry.profile_image}`
+                          ? `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}${
+                              entry.profile_image
+                            }`
                           : DefaultProfile
                       }
                       alt="Profile"
@@ -107,7 +113,9 @@ const OtherProfileDiary = ({ userID }) => {
                   {entry.fileURL && (
                     <img
                       className="DiaryImage mt-1"
-                      src={`http://localhost:8081${entry.fileURL}`}
+                      src={`${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}${
+                        entry.fileURL
+                      }`}
                       alt="Diary"
                     />
                   )}

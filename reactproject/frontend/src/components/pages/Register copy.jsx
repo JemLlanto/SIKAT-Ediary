@@ -49,7 +49,7 @@ export default function Register() {
   const validateEmail = async (cvsuEmail, username) => {
     try {
       const response = await axios.post(
-        "http://localhost:8081/check-email-username",
+        "${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/check-email-username",
         {
           username,
           cvsuEmail,
@@ -85,17 +85,23 @@ export default function Register() {
       console.log("Verifying OTP for email:", values.cvsuEmail);
 
       try {
-        const response = await axios.post("http://localhost:8081/verify-otp", {
-          email: values.cvsuEmail,
-          otp: values.OTP,
-        });
+        const response = await axios.post(
+          "${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/verify-otp",
+          {
+            email: values.cvsuEmail,
+            otp: values.OTP,
+          }
+        );
 
         console.log("OTP verification response:", response.data);
 
         if (response.data.success) {
           console.log("OTP verified successfully, registering user...");
           try {
-            await axios.post("http://localhost:8081/Register", values);
+            await axios.post(
+              "${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/Register",
+              values
+            );
             alert("Email successfully verified.");
             navigate("/");
             window.location.reload();
@@ -141,9 +147,12 @@ export default function Register() {
   const sendOTP = async (email) => {
     console.log("Sending OTP to:", email);
     try {
-      const response = await axios.post("http://localhost:8081/send-otp", {
-        email,
-      });
+      const response = await axios.post(
+        "${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/send-otp",
+        {
+          email,
+        }
+      );
       console.log("OTP sent response:", response.data);
       setOtpSent(true);
     } catch (error) {
@@ -295,12 +304,12 @@ export default function Register() {
                         required
                       />
                     </div>
-                    <div class="col-md p-0">
-                      <label class="visually-hidden" for="sex">
+                    <div className="col-md p-0">
+                      <label className="visually-hidden" for="sex">
                         Sex
                       </label>
                       <select
-                        class="form-select"
+                        className="form-select"
                         id="sex"
                         className="form-select"
                         name="sex"
@@ -324,7 +333,7 @@ export default function Register() {
                         Course
                       </label>
                       <select
-                        class="form-select"
+                        className="form-select"
                         id="course"
                         name="course"
                         onChange={handleInput}
@@ -373,7 +382,7 @@ export default function Register() {
                         Year
                       </label>
                       <select
-                        class="form-select"
+                        className="form-select"
                         id="year"
                         name="year"
                         onChange={handleInput}

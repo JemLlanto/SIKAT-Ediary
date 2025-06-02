@@ -43,7 +43,12 @@ export default function UpdateUser() {
     if (Object.keys(validationErrors).length === 0) {
       const userID = JSON.parse(localStorage.getItem("user")).userID;
       axios
-        .put(`http://localhost:8081/EditProfile?userID=${userID}`, values)
+        .put(
+          `${
+            import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+          }/EditProfile?userID=${userID}`,
+          values
+        )
         .then((res) => {
           localStorage.setItem(
             "user",

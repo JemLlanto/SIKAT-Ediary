@@ -276,7 +276,7 @@ const ChatButton = () => {
                   <h5 className="m-0 mt-2">Users</h5>
                   <InputGroup className="m-0 w-50">
                     <InputGroup.Text id="basic-addon1">
-                      <i class="bx bx-search-alt-2"></i>
+                      <i className="bx bx-search-alt-2"></i>
                     </InputGroup.Text>
                     <Form.Control
                       type="text"

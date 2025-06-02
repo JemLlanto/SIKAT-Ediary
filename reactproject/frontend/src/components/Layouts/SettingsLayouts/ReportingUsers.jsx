@@ -42,7 +42,9 @@ const ReportingUsers = () => {
   useEffect(() => {
     const fetchReportUsers = async () => {
       try {
-        const response = await axios.get("http://localhost:8081/reportUsers");
+        const response = await axios.get(
+          `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/reportUsers`
+        );
         setReportUsers(response.data);
         setFilteredReportUsers(response.data);
       } catch (error) {
@@ -57,7 +59,10 @@ const ReportingUsers = () => {
     if (newReportUsers.trim()) {
       try {
         const newUser = { reason: newReportUsers, count: 0 };
-        await axios.post("http://localhost:8081/reportUsers", newUser);
+        await axios.post(
+          `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/reportUsers`,
+          newUser
+        );
         setReportUsers([...reportUsers, newUser]);
         setFilteredReportUsers([...filteredReportUsers, newUser]);
         setNewReportUsers("");
@@ -80,7 +85,9 @@ const ReportingUsers = () => {
     if (editedReportUsers.trim()) {
       try {
         await axios.put(
-          `http://localhost:8081/reportUsers/${reportingUserID}`,
+          `${
+            import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+          }/reportUsers/${reportingUserID}`,
           { reason: editedReportUsers }
         );
         const updatedUsers = reportUsers.map((user) =>
@@ -108,7 +115,9 @@ const ReportingUsers = () => {
       onConfirm: async () => {
         try {
           await axios.delete(
-            `http://localhost:8081/reportUsers/${reportingUserID}`
+            `${
+              import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+            }/reportUsers/${reportingUserID}`
           );
           const updatedUsers = reportUsers.filter(
             (user) => user.reportingUserID !== reportingUserID
@@ -168,7 +177,7 @@ const ReportingUsers = () => {
         <h4 className="border-2 m-0">Reporting Users</h4>
         <div className="informationToolTip">
           <h5 className="m-0 d-flex align-items-center justify-content-center">
-            <i class="bx bx-info-circle"></i>
+            <i className="bx bx-info-circle"></i>
           </h5>
           <p className="infToolTip rounded p-2 m-0">
             Reporting users allows individuals to notify admins about
@@ -180,7 +189,7 @@ const ReportingUsers = () => {
       {/* Search Filter */}
       <InputGroup className="my-3">
         <InputGroup.Text id="basic-addon1">
-          <i class="bx bx-search"></i>
+          <i className="bx bx-search"></i>
         </InputGroup.Text>
         <Form.Control
           type="text"

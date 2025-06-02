@@ -227,9 +227,9 @@ function EditPostButton({
             </div>
 
             <div className="w-100 row d-flex flex-column flex-md-row justify-content-center align-items-center gap-1 mx-2">
-              <div class=" col-12 input-group p-0">
+              <div className=" col-12 input-group p-0">
                 <select
-                  class="form-select"
+                  className="form-select"
                   id="visibility"
                   value={visibility}
                   onChange={handleChangeVisibility}

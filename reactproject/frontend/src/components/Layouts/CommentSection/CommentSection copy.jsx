@@ -153,7 +153,7 @@ const CommentSection = ({ userID, entryID, entry, firstName }) => {
 
     setLoading(true);
     try {
-      await axios.post("http://localhost:8081/comments", newReplyObj);
+      await axios.post(`http://localhost:8081/comments`, newReplyObj);
       setReplyTo(null);
       replyTextsRef.current[parentID] = "";
       fetchComments();

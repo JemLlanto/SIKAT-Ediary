@@ -115,9 +115,9 @@ const DiaryEntryHeader = ({
             {formatDate(entry.created_at)}{" "}
             <span>
               {entry.visibility === "public" ? (
-                <i class="bx bx-globe"></i>
+                <i className="bx bx-globe"></i>
               ) : (
-                <i class="bx bx-lock-alt"></i>
+                <i className="bx bx-lock-alt"></i>
               )}
             </span>
           </p>

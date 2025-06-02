@@ -163,15 +163,15 @@ const LeftSideAdmin = () => {
                         {entry.title}{" "}
                         <span className="">
                           {entry.visibility === "private" ? (
-                            <i class="bx bx-lock-alt"></i>
+                            <i className="bx bx-lock-alt"></i>
                           ) : (
                             <>
-                              <i class="bx bx-globe"></i>
+                              <i className="bx bx-globe"></i>
                               {entry.anonimity === "private" ? (
                                 <>
-                                  <i class="bx bxs-user position-relative">
+                                  <i className="bx bxs-user position-relative">
                                     <i
-                                      class="bx bx-question-mark position-absolute"
+                                      className="bx bx-question-mark position-absolute"
                                       style={{
                                         left: ".5rem",
                                         fontSize:

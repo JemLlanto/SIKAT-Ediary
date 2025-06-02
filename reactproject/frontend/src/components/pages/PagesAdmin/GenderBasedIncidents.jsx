@@ -74,7 +74,7 @@ export default function GenderBasedIncidents() {
 
   const fetchReports = () => {
     axios
-      .get("http://localhost:8081/reports")
+      .get(`${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/reports`)
       .then((response) => setReports(response.data))
       .catch((err) =>
         setError(err.response?.data?.error || "Failed to fetch reports")
@@ -98,7 +98,11 @@ export default function GenderBasedIncidents() {
       message: `Are you sure you want to mark this as addressed?`,
       onConfirm: async () => {
         axios
-          .put(`http://localhost:8081/reports/${reportID}`)
+          .put(
+            `${
+              import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+            }/reports/${reportID}`
+          )
           .then(() => {
             closeConfirmModal();
             setModal({

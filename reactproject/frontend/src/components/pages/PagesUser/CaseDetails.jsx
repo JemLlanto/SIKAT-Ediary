@@ -18,7 +18,9 @@ const CaseDetails = () => {
   useEffect(() => {
     // Fetch case details based on reportID
     axios
-      .get(`http://localhost:8081/reports/${reportID}`)
+      .get(
+        `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/reports/${reportID}`
+      )
       .then((response) => {
         console.log(response.data);
         setCaseDetails(response.data);
@@ -38,7 +40,11 @@ const CaseDetails = () => {
     );
     if (confirmed) {
       axios
-        .put(`http://localhost:8081/reports/${reportID}`)
+        .put(
+          `${
+            import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+          }/reports/${reportID}`
+        )
         .then(() => {
           alert("The case has been addressed!");
           fetchReports();
@@ -204,7 +210,11 @@ const CaseDetails = () => {
                       <div
                         key={index}
                         onClick={() =>
-                          handleImageClick(`http://localhost:8081${document}`)
+                          handleImageClick(
+                            `${
+                              import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+                            }${document}`
+                          )
                         }
                       >
                         <div
@@ -216,7 +226,9 @@ const CaseDetails = () => {
                           }}
                         >
                           <img
-                            src={`http://localhost:8081${document}`} // Displaying the supporting document as an image
+                            src={`${
+                              import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+                            }${document}`} // Displaying the supporting document as an image
                             alt={`Supporting Document ${index + 1}`}
                             style={{
                               width: "100%",

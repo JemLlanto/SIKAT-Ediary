@@ -58,7 +58,9 @@ const UserChatButton = () => {
       if (parsedUser.isAdmin) {
         const fetchAllUsers = async () => {
           try {
-            const response = await axios.get("http://localhost:8081/users");
+            const response = await axios.get(
+              `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/users`
+            );
             const data = response.data;
             setAllUsers(data);
           } catch (error) {
@@ -121,12 +123,15 @@ const UserChatButton = () => {
     if (!user) return;
 
     try {
-      const response = await axios.get("http://localhost:8081/messages", {
-        params: {
-          userID: user.userID,
-          withUserID: userID,
-        },
-      });
+      const response = await axios.get(
+        `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/messages`,
+        {
+          params: {
+            userID: user.userID,
+            withUserID: userID,
+          },
+        }
+      );
       setMessages(response.data);
       setSelectedUser(userID);
     } catch (error) {
@@ -140,7 +145,7 @@ const UserChatButton = () => {
     const recipientUserID = user.isAdmin ? selectedUser : admin.userID;
     const senderUserID = user.userID;
 
-    await fetch("http://localhost:8081/message", {
+    await fetch(`${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/message`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -185,7 +190,9 @@ const UserChatButton = () => {
               >
                 <div className="profilePicture">
                   <img
-                    src={`http://localhost:8081${admin?.profile_image}`}
+                    src={`${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}${
+                      admin?.profile_image
+                    }`}
                     alt="Profile"
                     style={{
                       width: "100%",

@@ -333,7 +333,7 @@ function NotificationButton() {
                   bsPrefix
                 >
                   <i
-                    class="bx bx-dots-horizontal-rounded"
+                    className="bx bx-dots-horizontal-rounded"
                     style={{ fontSize: "clamp(1.2rem, 1.3dvw, 1.5rem)" }}
                   ></i>
                 </Dropdown.Toggle>

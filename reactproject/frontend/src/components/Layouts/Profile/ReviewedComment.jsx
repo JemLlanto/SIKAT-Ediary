@@ -38,9 +38,12 @@ function ReviewedComment({
 
   const handleReviewed = async (entryID) => {
     try {
-      await axios.put("http://localhost:8081/reviewedComments", {
-        entryID,
-      });
+      await axios.put(
+        `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/reviewedComments`,
+        {
+          entryID,
+        }
+      );
       alert("reviewed");
     } catch (error) {
       console.error("Error updating reviewed:", error);
@@ -58,7 +61,7 @@ function ReviewedComment({
         onClick={handleShow}
         // disabled={suspended}
       >
-        <i class="bx bx-message-alt-check"></i>{" "}
+        <i className="bx bx-message-alt-check"></i>{" "}
         <p className="m-0">
           {userComment.isReviewed ? "Reviewed" : "Not Reviewed"}
         </p>

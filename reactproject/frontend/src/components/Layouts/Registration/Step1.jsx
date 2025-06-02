@@ -45,12 +45,12 @@ const Step1 = ({ values, handleInput, courses }) => {
               required
             />
           </div>
-          <div class="col-md-4 p-0">
-            <label class="visually-hidden" for="sex">
+          <div className="col-md-4 p-0">
+            <label className="visually-hidden" for="sex">
               Sex
             </label>
             <select
-              class="form-select"
+              className="form-select"
               id="sex"
               className="form-select"
               name="sex"
@@ -72,7 +72,7 @@ const Step1 = ({ values, handleInput, courses }) => {
               Course
             </label>
             <select
-              class="form-select"
+              className="form-select"
               id="course"
               name="course"
               onChange={handleInput}
@@ -93,7 +93,7 @@ const Step1 = ({ values, handleInput, courses }) => {
               Year
             </label>
             <select
-              class="form-select"
+              className="form-select"
               id="year"
               name="year"
               onChange={handleInput}

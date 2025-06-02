@@ -25,7 +25,9 @@ const RightSide = () => {
 
     const fetchReports = async () => {
         try {
-            const response = await axios.get("http://localhost:8081/reports");
+            const response = await axios.get(
+                `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/reports`
+            );
             setReports(response.data);
         } catch (error) {
             console.error("Error fetching users:", error);
@@ -35,7 +37,9 @@ const RightSide = () => {
     const fetchReportedUsers = async () => {
         try {
             const response = await axios.get(
-                "http://localhost:8081/getReportedUsers"
+                `${
+                    import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+                }/getReportedUsers`
             );
 
             if (response.data.length > 0) {
@@ -59,7 +63,9 @@ const RightSide = () => {
 
     const fetchFlagged = async () => {
         try {
-            const response = await axios.get("http://localhost:8081/flagged");
+            const response = await axios.get(
+                `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/flagged`
+            );
             if (response.data.length > 0) {
                 const flagCount = {};
 
@@ -105,7 +111,7 @@ const RightSide = () => {
             <div className="rounded mt-2 ">
                 <div className="py-2 d-flex justify-content-between align-items-center gap-2 border-bottom border-secondary-subtle text-secondary">
                     <div className="d-flex justify-content-start align-items-center gap-2">
-                        <i class="bx bx-user-voice bx-sm"></i>
+                        <i className="bx bx-user-voice bx-sm"></i>
                         <h5 className=" m-0">Reported User/s</h5>
                     </div>
                     <Link
@@ -143,7 +149,13 @@ const RightSide = () => {
                                                         <img
                                                             src={
                                                                 reportedUser.profile_image
-                                                                    ? `http://localhost:8081${reportedUser.profile_image}`
+                                                                    ? `${
+                                                                          import.meta
+                                                                              .env
+                                                                              .VITE_REACT_APP_BACKEND_BASEURL
+                                                                      }${
+                                                                          reportedUser.profile_image
+                                                                      }`
                                                                     : DefaultProfile
                                                             }
                                                             alt="Profile"
@@ -188,7 +200,7 @@ const RightSide = () => {
             <div className="">
                 <div className="py-2 d-flex justify-content-between align-items-center gap-2 border-bottom border-secondary-subtle text-secondary">
                     <div className="d-flex justify-content-start align-items-center gap-2">
-                        <i class="bx bx-comment-error bx-sm"></i>
+                        <i className="bx bx-comment-error bx-sm"></i>
                         <h5 className="m-0">Flagged Diaries</h5>
                     </div>
                     <Link
@@ -225,7 +237,13 @@ const RightSide = () => {
                                                         <img
                                                             src={
                                                                 flaggedUser.profile_image
-                                                                    ? `http://localhost:8081${flaggedUser.profile_image}`
+                                                                    ? `${
+                                                                          import.meta
+                                                                              .env
+                                                                              .VITE_REACT_APP_BACKEND_BASEURL
+                                                                      }${
+                                                                          flaggedUser.profile_image
+                                                                      }`
                                                                     : DefaultProfile
                                                             }
                                                             alt="Profile"

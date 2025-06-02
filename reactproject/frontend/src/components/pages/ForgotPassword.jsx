@@ -89,9 +89,12 @@ const ForgotPassword = () => {
     //   message: `Sending otp.`,
     // });
     try {
-      await axios.post("http://localhost:8081/send-otp", {
-        email: values.cvsuEmail,
-      });
+      await axios.post(
+        `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/send-otp`,
+        {
+          email: values.cvsuEmail,
+        }
+      );
       setModal({
         show: true,
         message: `OTP Sent`,
@@ -117,10 +120,13 @@ const ForgotPassword = () => {
     // });
     setLoading(true);
     try {
-      await axios.post("http://localhost:8081/verify-otp", {
-        email: values.cvsuEmail,
-        otp: values.OTP,
-      });
+      await axios.post(
+        `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/verify-otp`,
+        {
+          email: values.cvsuEmail,
+          otp: values.OTP,
+        }
+      );
       setModal({
         show: true,
         message: `OTP successfully verified.`,
@@ -149,10 +155,13 @@ const ForgotPassword = () => {
       return;
     }
     try {
-      await axios.post("http://localhost:8081/reset-password", {
-        email: values.cvsuEmail,
-        password: values.password,
-      });
+      await axios.post(
+        `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/reset-password`,
+        {
+          email: values.cvsuEmail,
+          password: values.password,
+        }
+      );
       setModal({
         show: true,
         message: `Password reset successfully. You can now log in.`,
@@ -347,9 +356,9 @@ const ForgotPassword = () => {
                   >
                     <p className="m-0">
                       {passwordFeedback.length ? (
-                        <i class="bx bx-check"></i>
+                        <i className="bx bx-check"></i>
                       ) : (
-                        <i class="bx bx-x"></i>
+                        <i className="bx bx-x"></i>
                       )}
                       At least 8 characters
                     </p>
@@ -361,9 +370,9 @@ const ForgotPassword = () => {
                   >
                     <p className="m-0">
                       {passwordFeedback.uppercase ? (
-                        <i class="bx bx-check"></i>
+                        <i className="bx bx-check"></i>
                       ) : (
-                        <i class="bx bx-x"></i>
+                        <i className="bx bx-x"></i>
                       )}
                       At least one uppercase letter
                     </p>
@@ -375,9 +384,9 @@ const ForgotPassword = () => {
                   >
                     <p className="m-0">
                       {passwordFeedback.lowercase ? (
-                        <i class="bx bx-check"></i>
+                        <i className="bx bx-check"></i>
                       ) : (
-                        <i class="bx bx-x"></i>
+                        <i className="bx bx-x"></i>
                       )}
                       At least one lowercase letter
                     </p>
@@ -389,9 +398,9 @@ const ForgotPassword = () => {
                   >
                     <p className="m-0">
                       {passwordFeedback.specialchar ? (
-                        <i class="bx bx-x"></i>
+                        <i className="bx bx-x"></i>
                       ) : (
-                        <i class="bx bx-check"></i>
+                        <i className="bx bx-check"></i>
                       )}
                       Has no special character
                     </p>
@@ -403,9 +412,9 @@ const ForgotPassword = () => {
                   >
                     <p className="m-0">
                       {passwordFeedback.number ? (
-                        <i class="bx bx-check"></i>
+                        <i className="bx bx-check"></i>
                       ) : (
-                        <i class="bx bx-x"></i>
+                        <i className="bx bx-x"></i>
                       )}
                       At least one number
                     </p>

@@ -42,7 +42,9 @@ const FilterAndSubjects = () => {
   useEffect(() => {
     const fetchFilters = async () => {
       try {
-        const response = await axios.get("http://localhost:8081/filters");
+        const response = await axios.get(
+          `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/filters`
+        );
         setFilters(response.data);
         setFilteredFilters(response.data);
       } catch (error) {
@@ -57,7 +59,10 @@ const FilterAndSubjects = () => {
     if (newFilter.trim()) {
       try {
         const newFilterObj = { subject: newFilter, count: 0 };
-        await axios.post("http://localhost:8081/filters", newFilterObj);
+        await axios.post(
+          `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/filters`,
+          newFilterObj
+        );
         setFilters([...filters, newFilterObj]);
         setFilteredFilters([...filteredFilters, newFilterObj]);
         setNewFilter("");
@@ -79,9 +84,14 @@ const FilterAndSubjects = () => {
   const handleSaveEdit = async (subjectID) => {
     if (editedFilter.trim()) {
       try {
-        await axios.put(`http://localhost:8081/filterEdit/${subjectID}`, {
-          subject: editedFilter,
-        });
+        await axios.put(
+          `${
+            import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+          }/filterEdit/${subjectID}`,
+          {
+            subject: editedFilter,
+          }
+        );
         const updatedFilters = filters.map((filter) =>
           filter.subjectID === subjectID
             ? { ...filter, subject: editedFilter }
@@ -106,7 +116,11 @@ const FilterAndSubjects = () => {
       message: `Are you sure you want to delete this subject?`,
       onConfirm: async () => {
         try {
-          await axios.delete(`http://localhost:8081/filterDelete/${subjectID}`);
+          await axios.delete(
+            `${
+              import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+            }/filterDelete/${subjectID}`
+          );
           const updatedFilters = filters.filter(
             (filter) => filter.subjectID !== subjectID
           );
@@ -184,7 +198,7 @@ const FilterAndSubjects = () => {
       <div className="my-3">
         <InputGroup className="mb-3">
           <InputGroup.Text id="basic-addon1">
-            <i class="bx bx-search"></i>
+            <i className="bx bx-search"></i>
           </InputGroup.Text>
           <Form.Control
             type="text"

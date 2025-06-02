@@ -33,7 +33,9 @@ const UserList = ({ type, users, handleFollowToggle, isFollowing }) => (
                   <img
                     src={
                       user.profile_image
-                        ? `http://localhost:8081${user.profile_image}`
+                        ? `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}${
+                            user.profile_image
+                          }`
                         : DefaultProfile
                     }
                     alt="Profile"
@@ -106,7 +108,7 @@ const Followers = () => {
   const fetchFollowers = async (userID) => {
     try {
       const response = await axios.get(
-        `http://localhost:8081/followers/${userID}`
+        `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/followers/${userID}`
       );
       setFollowers(response.data);
     } catch (error) {
@@ -117,7 +119,9 @@ const Followers = () => {
   const fetchFollowedUsers = async (userID) => {
     try {
       const response = await axios.get(
-        `http://localhost:8081/followedUsers/${userID}`
+        `${
+          import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+        }/followedUsers/${userID}`
       );
       const followedUsersData = response.data;
       setFollowedUsers(followedUsersData);
@@ -148,7 +152,9 @@ const Followers = () => {
           onConfirm: async () => {
             try {
               await axios.delete(
-                `http://localhost:8081/unfollow/${followUserId}`,
+                `${
+                  import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+                }/unfollow/${followUserId}`,
                 {
                   data: { followerId: user.userID },
                 }
@@ -180,7 +186,9 @@ const Followers = () => {
         });
       } else {
         const response = await axios.post(
-          `http://localhost:8081/follow/${followUserId}`,
+          `${
+            import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+          }/follow/${followUserId}`,
           {
             followerId: user.userID,
           }

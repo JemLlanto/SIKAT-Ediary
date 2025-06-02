@@ -47,7 +47,7 @@ const IndexImage = () => {
   const fetchImages = async () => {
     try {
       const response = await axios.get(
-        "http://localhost:8081/api/index-images"
+        `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/api/index-images`
       );
       setImages(response.data);
     } catch (error) {
@@ -86,7 +86,9 @@ const IndexImage = () => {
     try {
       if (editingImage) {
         await axios.put(
-          `http://localhost:8081/api/index-images/${editingImage.index_imagesID}`,
+          `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/api/index-images/${
+            editingImage.index_imagesID
+          }`,
           { title, description }
         );
         setModal({
@@ -94,9 +96,13 @@ const IndexImage = () => {
           message: `Index image updated successfully.`,
         });
       } else {
-        await axios.post("http://localhost:8081/api/index-images", formData, {
-          headers: { "Content-Type": "multipart/form-data" },
-        });
+        await axios.post(
+          `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/api/index-images`,
+          formData,
+          {
+            headers: { "Content-Type": "multipart/form-data" },
+          }
+        );
         setModal({
           show: true,
           message: `Index image added successfully.`,
@@ -123,7 +129,9 @@ const IndexImage = () => {
       onConfirm: async () => {
         try {
           await axios.delete(
-            `http://localhost:8081/index-images/${index_imagesID}`
+            `${
+              import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+            }/index-images/${index_imagesID}`
           );
           closeConfirmModal();
           setModal({
@@ -145,7 +153,9 @@ const IndexImage = () => {
     setTitle(image.title);
     setDescription(image.description);
     setImagePreview(
-      image.image_path ? `http://localhost:8081${image.image_path}` : null
+      image.image_path
+        ? `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}${image.image_path}`
+        : null
     );
   };
 
@@ -177,7 +187,7 @@ const IndexImage = () => {
       <div className=" position-relative border-bottom d-flex justify-content-center align-items-end pb-2 gap-1">
         <h4 className="border-2 m-0">Index Page Images</h4>
         <div className="informationToolTip">
-          <i class="bx bx-info-circle"></i>
+          <i className="bx bx-info-circle"></i>
           <p className="infToolTip rounded p-2 m-0">
             These images will appear on the website's main page.
           </p>
@@ -204,7 +214,9 @@ const IndexImage = () => {
               <img
                 src={
                   image && image.image_path
-                    ? `http://localhost:8081${image.image_path}`
+                    ? `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}${
+                        image.image_path
+                      }`
                     : sampleImage
                 }
                 alt={image.title}

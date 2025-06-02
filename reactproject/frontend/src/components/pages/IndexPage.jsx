@@ -59,7 +59,7 @@ const IndexPage = () => {
     const fetchImages = async () => {
       try {
         const response = await axios.get(
-          "http://localhost:8081/api/index-images"
+          `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/api/index-images`
         );
         setImages(response.data);
       } catch (error) {
@@ -73,7 +73,9 @@ const IndexPage = () => {
   useEffect(() => {
     const fetchAnnouncement = async () => {
       try {
-        const response = await axios.get("http://localhost:8081/announcement");
+        const response = await axios.get(
+          `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/announcement`
+        );
 
         if (response.status === 200) {
           setLatestAnnouncement(response.data);
@@ -91,7 +93,9 @@ const IndexPage = () => {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const response = await axios.get(`http://localhost:8081/users`);
+        const response = await axios.get(
+          `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/users`
+        );
         setUsers(response.data);
       } catch (error) {
         console.error("Error fetching users:", error);
@@ -103,7 +107,9 @@ const IndexPage = () => {
 
   const fetchEntries = async () => {
     try {
-      const response = await axios.get("http://localhost:8081/analytics");
+      const response = await axios.get(
+        `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/analytics`
+      );
       setEntries(response.data);
     } catch (error) {
       console.error("Error fetching diary entries:", error);
@@ -113,7 +119,7 @@ const IndexPage = () => {
   const fetchReports = async () => {
     try {
       const response = await axios.get(
-        "http://localhost:8081/getAddressReports"
+        `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/getAddressReports`
       );
       setReports(response.data);
     } catch (err) {
@@ -139,7 +145,7 @@ const IndexPage = () => {
             style={{ background: "var(--primary)" }}
           >
             <i
-              class="bx bx-chevrons-up"
+              className="bx bx-chevrons-up"
               style={{ fontSize: "clamp(2rem, 3dvw, 2.3rem)" }}
             ></i>
           </button>
@@ -179,7 +185,9 @@ const IndexPage = () => {
                   className="rounded"
                   src={
                     latestAnnouncement && latestAnnouncement.diary_image
-                      ? `http://localhost:8081${latestAnnouncement.diary_image}`
+                      ? `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}${
+                          latestAnnouncement.diary_image
+                        }`
                       : sampleImage
                   }
                   alt=""
@@ -286,7 +294,7 @@ const IndexPage = () => {
                 className="m-0 d-flex align-items-center gap-1 text-start text-light py-3 px-3 rounded"
                 style={{ backgroundColor: "var(--secondary)" }}
               >
-                <i class="bx bx-info-circle"></i>
+                <i className="bx bx-info-circle"></i>
                 About
               </h2>
               <h4

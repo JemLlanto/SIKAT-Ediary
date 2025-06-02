@@ -15,9 +15,14 @@ function Reviewed({ entry }) {
 
   const handleReviewed = async (entryID) => {
     try {
-      await axios.put(`http://localhost:8081/flaggedAddress/${entryID}`, {
-        entryID,
-      });
+      await axios.put(
+        `${
+          import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+        }/flaggedAddress/${entryID}`,
+        {
+          entryID,
+        }
+      );
 
       // Close the modal after success
       handleClose();

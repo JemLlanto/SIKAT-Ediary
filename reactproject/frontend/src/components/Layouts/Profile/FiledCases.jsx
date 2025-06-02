@@ -12,7 +12,11 @@ const FiledCases = ({ userID }) => {
   useEffect(() => {
     if (userID) {
       axios
-        .get(`http://localhost:8081/filedCases/${userID}`)
+        .get(
+          `${
+            import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+          }/filedCases/${userID}`
+        )
         .then((response) => {
           setFiledCases(response.data);
         })
@@ -39,7 +43,7 @@ const FiledCases = ({ userID }) => {
         className="w-100 btn btn-light text-start d-flex align-items-center gap-1"
         onClick={handleShow}
       >
-        <i class="bx bx-file"></i>
+        <i className="bx bx-file"></i>
         <p className="m-0">Filed Cases</p>
       </button>
       <Modal show={showModal} onHide={handleClose} centered>
@@ -53,7 +57,7 @@ const FiledCases = ({ userID }) => {
             className="overflow-y-scroll custom-scrollbar"
             style={{ height: "25rem" }}
           >
-            <table class="table">
+            <table className="table">
               <thead>
                 <tr>
                   <th className="text-center align-middle w-25" scope="col">

@@ -42,7 +42,9 @@ const AlarmingWords = () => {
   useEffect(() => {
     const fetchAlarmingWords = async () => {
       try {
-        const response = await axios.get("http://localhost:8081/alarmingWords");
+        const response = await axios.get(
+          `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/alarmingWords`
+        );
         setAlarmingWords(response.data);
         setFilteredAlarmingWords(response.data);
       } catch (error) {
@@ -57,7 +59,7 @@ const AlarmingWords = () => {
     if (newAlarmingWord.trim()) {
       try {
         const response = await axios.post(
-          "http://localhost:8081/alarmingWords",
+          `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/alarmingWords`,
           { alarmingWord: newAlarmingWord.trim() }
         );
         setAlarmingWords([...alarmingWords, response.data]);
@@ -81,9 +83,14 @@ const AlarmingWords = () => {
   const handleSaveEdit = async (wordID) => {
     if (editedAlarmingWord.trim()) {
       try {
-        await axios.put(`http://localhost:8081/alarmingWordEdit/${wordID}`, {
-          alarmingWord: editedAlarmingWord,
-        });
+        await axios.put(
+          `${
+            import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+          }/alarmingWordEdit/${wordID}`,
+          {
+            alarmingWord: editedAlarmingWord,
+          }
+        );
         const updatedWords = alarmingWords.map((word) =>
           word.wordID === wordID
             ? { ...word, alarmingWord: editedAlarmingWord }
@@ -109,7 +116,9 @@ const AlarmingWords = () => {
       onConfirm: async () => {
         try {
           await axios.delete(
-            `http://localhost:8081/alarmingWordDelete/${wordID}`
+            `${
+              import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+            }/alarmingWordDelete/${wordID}`
           );
           const updatedWords = alarmingWords.filter(
             (word) => word.wordID !== wordID

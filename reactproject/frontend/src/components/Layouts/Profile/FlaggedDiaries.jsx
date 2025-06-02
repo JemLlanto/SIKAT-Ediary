@@ -21,7 +21,7 @@ const FlaggedDiaries = ({ userID }) => {
   const fetchFlag = async () => {
     try {
       const response = await axios.get(
-        `http://localhost:8081/flagged/${userID}`
+        `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/flagged/${userID}`
       );
       setFlaggedCount(response.data.length);
     } catch (error) {
@@ -32,7 +32,9 @@ const FlaggedDiaries = ({ userID }) => {
   useEffect(() => {
     if (showModal) {
       axios
-        .get(`http://localhost:8081/flagged/${userID}`)
+        .get(
+          `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/flagged/${userID}`
+        )
         .then((response) => {
           console.log("flag", response.data);
           setFlaggedDiaries(response.data);
@@ -47,7 +49,9 @@ const FlaggedDiaries = ({ userID }) => {
   const fetchReportedComments = async () => {
     try {
       const response = await axios.get(
-        `http://localhost:8081/getReportedComments/${userID}`
+        `${
+          import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+        }/getReportedComments/${userID}`
       );
       setReportedCount(response.data.length); // Set the count based on the response
     } catch (error) {

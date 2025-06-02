@@ -43,7 +43,7 @@ const ReportingComments = () => {
     const fetchReportComments = async () => {
       try {
         const response = await axios.get(
-          "http://localhost:8081/reportComments"
+          `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/reportComments`
         );
         setReportComments(response.data);
         setFilteredComments(response.data);
@@ -58,9 +58,12 @@ const ReportingComments = () => {
     e.preventDefault();
     if (newReportComments.trim()) {
       try {
-        await axios.post("http://localhost:8081/reportComments", {
-          reason: newReportComments,
-        });
+        await axios.post(
+          `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/reportComments`,
+          {
+            reason: newReportComments,
+          }
+        );
         const newComment = { reason: newReportComments, count: 0 };
         setReportComments([...reportComments, newComment]);
         setFilteredComments([...reportComments, newComment]);
@@ -84,7 +87,9 @@ const ReportingComments = () => {
     if (editedReportComments.trim()) {
       try {
         await axios.put(
-          `http://localhost:8081/reportCommentEdit/${reportCommentID}`,
+          `${
+            import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+          }/reportCommentEdit/${reportCommentID}`,
           { reason: editedReportComments }
         );
         const updatedComments = reportComments.map((comment) =>
@@ -112,7 +117,9 @@ const ReportingComments = () => {
       onConfirm: async () => {
         try {
           await axios.delete(
-            `http://localhost:8081/reportCommentDelete/${reportCommentID}`
+            `${
+              import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+            }/reportCommentDelete/${reportCommentID}`
           );
           const updatedComments = reportComments.filter(
             (comment) => comment.reportCommentID !== reportCommentID
@@ -174,7 +181,7 @@ const ReportingComments = () => {
         <h4 className="border-2 m-0">Report Comments</h4>
         <div className="informationToolTip">
           <h5 className="m-0 d-flex align-items-center justify-content-center">
-            <i class="bx bx-info-circle"></i>
+            <i className="bx bx-info-circle"></i>
           </h5>
           <p className="infToolTip rounded p-2 m-0">
             Reporting comments allows users to alert admins about hurtful or
@@ -187,7 +194,7 @@ const ReportingComments = () => {
       <div className="my-3">
         <InputGroup className="mb-3">
           <InputGroup.Text id="basic-addon1">
-            <i class="bx bx-search"></i>
+            <i className="bx bx-search"></i>
           </InputGroup.Text>
           <Form.Control
             type="text"

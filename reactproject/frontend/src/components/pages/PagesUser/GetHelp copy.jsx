@@ -60,7 +60,7 @@ const GetHelp = () => {
 
     try {
       const response = await axios.post(
-        "http://localhost:8081/submit-report",
+        "${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/submit-report",
         data,
         { headers: { "Content-Type": "multipart/form-data" } }
       );

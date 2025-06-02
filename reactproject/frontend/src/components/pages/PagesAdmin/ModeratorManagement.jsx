@@ -43,7 +43,7 @@ const ModeratorManagement = () => {
   const [department, setDepartment] = useState([]);
   useEffect(() => {
     axios
-      .get("http://localhost:8081/fetchDepartments")
+      .get(`${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/fetchDepartments`)
       .then((response) => {
         setDepartment(response.data);
       })
@@ -55,7 +55,7 @@ const ModeratorManagement = () => {
   const [courses, setCourses] = useState([]);
   useEffect(() => {
     axios
-      .get("http://localhost:8081/getCourses")
+      .get(`${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/getCourses`)
       .then((response) => {
         setCourses(response.data);
       })
@@ -67,7 +67,11 @@ const ModeratorManagement = () => {
   const [moderators, setModerators] = useState([]);
   useEffect(() => {
     axios
-      .get("http://localhost:8081/fetchDepartmentModerators")
+      .get(
+        `${
+          import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+        }/fetchDepartmentModerators`
+      )
       .then((response) => {
         setModerators(response.data);
       })

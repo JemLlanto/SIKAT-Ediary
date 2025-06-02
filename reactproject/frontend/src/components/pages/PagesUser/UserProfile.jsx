@@ -21,7 +21,11 @@ const UserProfile = () => {
     if (userData) {
       const fetchUser = JSON.parse(userData);
 
-      fetch(`http://localhost:8081/fetchUser/user/${fetchUser.userID}`)
+      fetch(
+        `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/fetchUser/user/${
+          fetchUser.userID
+        }`
+      )
         .then((response) => {
           if (!response.ok) {
             throw new Error("User not found");
@@ -56,7 +60,10 @@ const UserProfile = () => {
     formData.append("userID", user.userID);
 
     axios
-      .post("http://localhost:8081/uploadProfile", formData)
+      .post(
+        `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/uploadProfile`,
+        formData
+      )
       .then((res) => {
         console.log("Profile uploaded successfully", res.data);
         alert("Profile uploaded successfully");
@@ -93,7 +100,9 @@ const UserProfile = () => {
               <img
                 src={
                   user && user.profile_image
-                    ? `http://localhost:8081${user.profile_image}`
+                    ? `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}${
+                        user.profile_image
+                      }`
                     : DefaultProfile
                 }
                 alt="Profile"

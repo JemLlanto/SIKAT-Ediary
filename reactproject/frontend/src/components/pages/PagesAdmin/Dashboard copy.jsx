@@ -54,7 +54,9 @@ const Dashboard = () => {
   const fetchEntries = async () => {
     try {
       setIsLoading(true);
-      const response = await axios.get("http://localhost:8081/analytics");
+      const response = await axios.get(
+        "${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/analytics"
+      );
       setEntries(response.data);
     } catch (error) {
       console.error("Error fetching diary entries:", error);
@@ -65,7 +67,9 @@ const Dashboard = () => {
 
   const fetchUsers = async () => {
     try {
-      const response = await fetch(`http://localhost:8081/users`);
+      const response = await fetch(
+        `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/users`
+      );
       if (!response.ok) {
         throw new Error("Failed to fetch users");
       }
@@ -79,7 +83,9 @@ const Dashboard = () => {
 
   const fetchFlags = async () => {
     try {
-      const response = await fetch(`http://localhost:8081/flagged`);
+      const response = await fetch(
+        `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/flagged`
+      );
       if (!response.ok) {
         throw new Error("Failed to fetch flags");
       }
@@ -92,7 +98,9 @@ const Dashboard = () => {
 
   const fetchReportedComments = async () => {
     try {
-      const response = await fetch(`http://localhost:8081/getReportedComments`);
+      const response = await fetch(
+        `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/getReportedComments`
+      );
       if (!response.ok) {
         throw new Error("Failed to fetch reported comments");
       }

@@ -15,7 +15,7 @@ function ReportUserButton({ commentID, userID, username, entryID }) {
     const fetchReportComments = async () => {
       try {
         const response = await axios.get(
-          "http://localhost:8081/reportComments"
+          `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/reportComments`
         );
         setReportComments(response.data);
       } catch (err) {
@@ -48,7 +48,7 @@ function ReportUserButton({ commentID, userID, username, entryID }) {
   const handleSubmitReport = async () => {
     try {
       const response = await axios.post(
-        "http://localhost:8081/reportuserComment",
+        `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/reportuserComment`,
         {
           commentID,
           userID,
@@ -74,7 +74,7 @@ function ReportUserButton({ commentID, userID, username, entryID }) {
         className="btn btn-light w-100 d-flex align-items-center justify-content-center gap-1"
         onClick={handleShow}
       >
-        <i class="bx bx-error"></i>
+        <i className="bx bx-error"></i>
         <p className="m-0">Report</p>
       </button>
 

@@ -25,7 +25,11 @@ const DiaryEntries = () => {
     if (userData) {
       const fetchUser = JSON.parse(userData);
 
-      fetch(`http://localhost:8081/fetchUser/user/${fetchUser.userID}`)
+      fetch(
+        `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/fetchUser/user/${
+          fetchUser.userID
+        }`
+      )
         .then((response) => {
           if (!response.ok) {
             throw new Error("User not found");
@@ -54,7 +58,9 @@ const DiaryEntries = () => {
   const fetchEntries = async () => {
     try {
       const response = await axios.get(
-        `http://localhost:8081/fetchUserEntry/user/${user.userID}`
+        `${
+          import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+        }/fetchUserEntry/user/${user.userID}`
       );
       if (response.data.entries && Array.isArray(response.data.entries)) {
         console.log(response.data);
@@ -271,15 +277,15 @@ const DiaryEntries = () => {
                     {entry.title}
                     <span className=" d-flex align-items-center">
                       {entry.visibility === "private" ? (
-                        <i class="bx bx-lock-alt"></i>
+                        <i className="bx bx-lock-alt"></i>
                       ) : (
                         <>
-                          <i class="bx bx-globe"></i>
+                          <i className="bx bx-globe"></i>
                           {entry.anonimity === "private" ? (
                             <>
-                              <i class="bx bxs-user position-relative">
+                              <i className="bx bxs-user position-relative">
                                 <i
-                                  class="bx bx-question-mark position-absolute"
+                                  className="bx bx-question-mark position-absolute"
                                   style={{
                                     left: ".5rem",
                                     fontSize: "clamp(0.6rem, 1.5dvw, 0.7rem)",

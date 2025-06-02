@@ -66,7 +66,9 @@ const Profile = () => {
       const parsedUser = JSON.parse(userData);
       try {
         const response = await fetch(
-          `http://localhost:8081/fetchUser/user/${parsedUser.userID}`
+          `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/fetchUser/user/${
+            parsedUser.userID
+          }`
         );
 
         if (!response.ok) {
@@ -90,7 +92,9 @@ const Profile = () => {
     const fetchUserData = async () => {
       try {
         const response = await fetch(
-          `http://localhost:8081/fetchUser/user/${userID}`
+          `${
+            import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+          }/fetchUser/user/${userID}`
         );
         if (!response.ok) throw new Error("User not found");
         const data = await response.json();
@@ -118,7 +122,9 @@ const Profile = () => {
   const fetchEntries = async () => {
     try {
       const response = await axios.get(
-        `http://localhost:8081/fetchUserEntry/user/${profileOwner.userID}`
+        `${
+          import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+        }/fetchUserEntry/user/${profileOwner.userID}`
       );
 
       if (response.data.entries && Array.isArray(response.data.entries)) {
@@ -161,7 +167,10 @@ const Profile = () => {
       message: `Are you sure you want to change your profile?`,
       onConfirm: async () => {
         axios
-          .post("http://localhost:8081/uploadProfile", formData)
+          .post(
+            `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/uploadProfile`,
+            formData
+          )
           .then((res) => {
             console.log("Profile uploaded successfully", res.data);
             setConfirmModal({ show: false, message: "" });
@@ -188,7 +197,9 @@ const Profile = () => {
         return;
       }
       const response = await axios.get(
-        `http://localhost:8081/followedUsers/${user.userID}`
+        `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/followedUsers/${
+          user.userID
+        }`
       );
       const followedUsersData = response.data.map((user) => user.userID);
       setFollowedUsers(followedUsersData);
@@ -201,7 +212,7 @@ const Profile = () => {
   const fetchFollowers = async (userID) => {
     try {
       const response = await axios.get(
-        `http://localhost:8081/followers/${userID}`
+        `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/followers/${userID}`
       );
       setFollowers(response.data);
     } catch (error) {
@@ -233,7 +244,9 @@ const Profile = () => {
           onConfirm: async () => {
             try {
               await axios.delete(
-                `http://localhost:8081/unfollow/${followUserId}`,
+                `${
+                  import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+                }/unfollow/${followUserId}`,
                 {
                   data: { followerId: user.userID },
                 }
@@ -265,7 +278,9 @@ const Profile = () => {
         });
       } else {
         const response = await axios.post(
-          `http://localhost:8081/follow/${followUserId}`,
+          `${
+            import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+          }/follow/${followUserId}`,
           {
             followerId: user.userID,
           }
@@ -286,7 +301,9 @@ const Profile = () => {
         });
 
         await axios.post(
-          `http://localhost:8081/notifications/${followUserId}`,
+          `${
+            import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+          }/notifications/${followUserId}`,
           {
             userID: followUserId,
             actorID: user.userID,
@@ -315,9 +332,14 @@ const Profile = () => {
     if (!entry) return;
 
     axios
-      .post(`http://localhost:8081/entry/${entryID}/gadify`, {
-        userID: user.userID,
-      })
+      .post(
+        `${
+          import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+        }/entry/${entryID}/gadify`,
+        {
+          userID: user.userID,
+        }
+      )
       .then((res) => {
         const isGadified =
           res.data.message === "Gadify action recorded successfully";
@@ -337,13 +359,18 @@ const Profile = () => {
 
         if (isGadified && user.userID !== entry.userID) {
           axios
-            .post(`http://localhost:8081/notifications/${entry.userID}`, {
-              actorID: user.userID,
-              entryID: entryID,
-              profile_image: user.profile_image,
-              type: "gadify",
-              message: `${user.firstName} ${user.lastName} gadified your diary entry.`,
-            })
+            .post(
+              `${
+                import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+              }/notifications/${entry.userID}`,
+              {
+                actorID: user.userID,
+                entryID: entryID,
+                profile_image: user.profile_image,
+                type: "gadify",
+                message: `${user.firstName} ${user.lastName} gadified your diary entry.`,
+              }
+            )
             .then((res) => {
               console.log("Notification response:", res.data);
             })
@@ -472,7 +499,9 @@ const Profile = () => {
               <img
                 src={
                   profileOwner && profileOwner.profile_image
-                    ? `http://localhost:8081${profileOwner.profile_image}`
+                    ? `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}${
+                        profileOwner.profile_image
+                      }`
                     : DefaultProfile
                 }
                 alt="Profile"
@@ -538,7 +567,7 @@ const Profile = () => {
                           `GAD-CCAT Campus Administrator`}
                         {profileOwner.isAdmin === 2 &&
                           `${profileOwner.DepartmentName} Moderator`}
-                        <i class="bx bx-check-shield text-primary"></i>
+                        <i className="bx bx-check-shield text-primary"></i>
                       </h5>
                     </>
                   )}

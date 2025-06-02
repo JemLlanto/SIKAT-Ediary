@@ -271,9 +271,9 @@ function PostButton({ onEntrySaved }) {
             </div>
 
             <div className="w-100 row d-flex flex-column flex-md-row justify-content-center align-items-center gap-1 mx-2">
-              <div class=" col-12 input-group p-0">
+              <div className=" col-12 input-group p-0">
                 <select
-                  class="form-select"
+                  className="form-select"
                   id="visibility"
                   value={visibility}
                   onChange={handleChangeVisibility}
@@ -394,7 +394,7 @@ function PostButton({ onEntrySaved }) {
                   }}
                 >
                   <h4 className="m-0 d-flex justify-content-center text-dark">
-                    <i class="bx bx-x"></i>
+                    <i className="bx bx-x"></i>
                   </h4>
                 </div>
               </div>
@@ -407,7 +407,7 @@ function PostButton({ onEntrySaved }) {
                   >
                     <p className="m-0 d-flex align-items-center gap-1 text-secondary">
                       <i
-                        class="bx bx-image-add bx-sm"
+                        className="bx bx-image-add bx-sm"
                         style={{ color: "var(--secondary)" }}
                       ></i>
                       Upload Photo

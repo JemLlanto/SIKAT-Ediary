@@ -20,8 +20,8 @@ export const SuspensionModal = ({ name, isAdmin }) => {
         <Modal.Header closeButton={isAdmin ? true : false}>
           <Modal.Title className="w-100 ">
             <h2 className="text-center m-0 d-flex align-items-center justify-content-center gap-2">
-              <i class="bx bx-error text-danger"></i>
-              Account Suspended <i class="bx bx-error text-danger"></i>
+              <i className="bx bx-error text-danger"></i>
+              Account Suspended <i className="bx bx-error text-danger"></i>
             </h2>
           </Modal.Title>
         </Modal.Header>

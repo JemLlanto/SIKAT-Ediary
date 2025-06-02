@@ -23,7 +23,9 @@ const NewUserSetUp = ({ user }) => {
   useEffect(() => {
     const fetchFilterSubjects = async () => {
       try {
-        const response = await axios.get("http://localhost:8081/filters");
+        const response = await axios.get(
+          `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/filters`
+        );
         const subjects = response.data;
 
         const initialState = subjects.reduce((acc, subject) => {
@@ -63,10 +65,13 @@ const NewUserSetUp = ({ user }) => {
 
     if (selectedFilters.length > 0) {
       try {
-        await axios.post("http://localhost:8081/saveUserFilters", {
-          userID: user.userID,
-          filters: selectedFilters,
-        });
+        await axios.post(
+          `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/saveUserFilters`,
+          {
+            userID: user.userID,
+            filters: selectedFilters,
+          }
+        );
         console.log("Filters saved successfully");
       } catch (error) {
         console.error("Error saving filters:", error);
@@ -79,9 +84,12 @@ const NewUserSetUp = ({ user }) => {
   const [step, setStep] = useState(1);
   const handleNextStep = async (userID) => {
     try {
-      await axios.put("http://localhost:8081/isNewAccount", {
-        userID,
-      });
+      await axios.put(
+        `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/isNewAccount`,
+        {
+          userID,
+        }
+      );
     } catch (error) {
       console.error("Error updating reviewed:", error);
     }

@@ -45,7 +45,9 @@ const ProfileInformation = () => {
       const fetchUserDetails = async () => {
         try {
           const response = await axios.get(
-            `http://localhost:8081/fetchUser/user/${user.userID}`
+            `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/fetchUser/user/${
+              user.userID
+            }`
           );
           const userDetails = response.data;
 
@@ -97,7 +99,12 @@ const ProfileInformation = () => {
       }
 
       axios
-        .put(`http://localhost:8081/EditProfile/${userID}`, updatedValues)
+        .put(
+          `${
+            import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+          }/EditProfile/${userID}`,
+          updatedValues
+        )
         .then((res) => {
           localStorage.setItem(
             "user",

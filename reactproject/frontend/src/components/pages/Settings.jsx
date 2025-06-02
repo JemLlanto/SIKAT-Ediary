@@ -27,7 +27,9 @@ const Settings = () => {
   const fetchUserData = async (userID) => {
     try {
       const response = await fetch(
-        `http://localhost:8081/fetchUser/user/${userID}`
+        `${
+          import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+        }/fetchUser/user/${userID}`
       );
 
       if (!response.ok) {
@@ -70,7 +72,7 @@ const Settings = () => {
                 <Nav.Item>
                   <Nav.Link className={navItemStyle} eventKey="profile">
                     <h5 className="m-0 d-flex align-items-center">
-                      <i class="bx bxs-user-detail"></i>
+                      <i className="bx bxs-user-detail"></i>
                     </h5>
                     <p className="m-0">Profile Information</p>
                   </Nav.Link>
@@ -92,7 +94,7 @@ const Settings = () => {
                     <Nav.Item>
                       <Nav.Link className={navItemStyle} eventKey="filter">
                         <h5 className="m-0 d-flex align-items-center">
-                          <i class="bx bx-filter-alt"></i>
+                          <i className="bx bx-filter-alt"></i>
                         </h5>
                         <p className="m-0">Filtering and Subjects</p>
                       </Nav.Link>
@@ -100,7 +102,7 @@ const Settings = () => {
                     <Nav.Item>
                       <Nav.Link className={navItemStyle} eventKey="flag">
                         <h5 className="m-0 d-flex align-items-center">
-                          <i class="bx bx-flag"></i>
+                          <i className="bx bx-flag"></i>
                         </h5>
                         <p className="m-0">Flagging Diaries</p>
                       </Nav.Link>
@@ -108,7 +110,7 @@ const Settings = () => {
                     <Nav.Item>
                       <Nav.Link className={navItemStyle} eventKey="repComment">
                         <h5 className="m-0 d-flex align-items-center">
-                          <i class="bx bx-comment-x"></i>
+                          <i className="bx bx-comment-x"></i>
                         </h5>
                         <p className="m-0">Reporting Comments</p>
                       </Nav.Link>
@@ -116,7 +118,7 @@ const Settings = () => {
                     <Nav.Item>
                       <Nav.Link className={navItemStyle} eventKey="repUser">
                         <h5 className="m-0 d-flex align-items-center">
-                          <i class="bx bx-user-x"></i>
+                          <i className="bx bx-user-x"></i>
                         </h5>
                         <p className="m-0">Reporting Users</p>
                       </Nav.Link>
@@ -127,7 +129,7 @@ const Settings = () => {
                         eventKey="alarmingWords"
                       >
                         <h5 className="m-0 d-flex align-items-center">
-                          <i class="bx bx-error"></i>
+                          <i className="bx bx-error"></i>
                         </h5>
                         <p className="m-0">Alarming Words</p>
                       </Nav.Link>
@@ -135,7 +137,7 @@ const Settings = () => {
                     <Nav.Item>
                       <Nav.Link className={navItemStyle} eventKey="FAQ">
                         <h5 className="m-0 d-flex align-items-center">
-                          <i class="bx bx-question-mark"></i>
+                          <i className="bx bx-question-mark"></i>
                         </h5>
                         <p className="m-0">Frequently Ask Questions(FAQ)</p>
                       </Nav.Link>
@@ -143,7 +145,7 @@ const Settings = () => {
                     <Nav.Item>
                       <Nav.Link className={navItemStyle} eventKey="IndexImage">
                         <h5 className="m-0 d-flex align-items-center">
-                          <i class="bx bx-image"></i>
+                          <i className="bx bx-image"></i>
                         </h5>
                         <p className="m-0">Index Page Images</p>
                       </Nav.Link>

@@ -44,7 +44,7 @@ const FlaggingDiaries = () => {
     const fetchOptions = async () => {
       try {
         const response = await axios.get(
-          "http://localhost:8081/flaggingOptions"
+          `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/flaggingOptions`
         );
         setFlaggingOptions(response.data);
         setFilteredOptions(response.data);
@@ -69,9 +69,12 @@ const FlaggingDiaries = () => {
     e.preventDefault();
     if (newOption.trim()) {
       try {
-        await axios.post("http://localhost:8081/flaggingOptions", {
-          option: newOption,
-        });
+        await axios.post(
+          `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/flaggingOptions`,
+          {
+            option: newOption,
+          }
+        );
         const newFlag = { reason: newOption, flagID: Date.now(), count: 0 };
         setFlaggingOptions([...flaggingOptions, newFlag]);
         setFilteredOptions([...flaggingOptions, newFlag]);
@@ -94,9 +97,14 @@ const FlaggingDiaries = () => {
   const handleSaveEdit = async (flagID) => {
     if (editedReason.trim()) {
       try {
-        await axios.put(`http://localhost:8081/flaggingEdit/${flagID}`, {
-          reason: editedReason,
-        });
+        await axios.put(
+          `${
+            import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+          }/flaggingEdit/${flagID}`,
+          {
+            reason: editedReason,
+          }
+        );
         const updatedOptions = flaggingOptions.map((option) =>
           option.flagID === flagID
             ? { ...option, reason: editedReason }
@@ -121,7 +129,11 @@ const FlaggingDiaries = () => {
       message: `Are you sure you want to delete this option?`,
       onConfirm: async () => {
         axios
-          .delete(`http://localhost:8081/flaggingDelete/${flagID}`)
+          .delete(
+            `${
+              import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+            }/flaggingDelete/${flagID}`
+          )
           .then(() => {
             const updatedOptions = flaggingOptions.filter(
               (option) => option.flagID !== flagID
@@ -180,7 +192,7 @@ const FlaggingDiaries = () => {
         <h4 className="border-2 m-0">Flagging Diaries</h4>
         <div className="informationToolTip">
           <h5 className="m-0 d-flex align-items-center justify-content-center">
-            <i class="bx bx-info-circle"></i>
+            <i className="bx bx-info-circle"></i>
           </h5>
           <p className="infToolTip rounded p-2 m-0">
             Flagging diaries enables users to report potentially alarming or
@@ -192,7 +204,7 @@ const FlaggingDiaries = () => {
       <div className="my-3">
         <InputGroup className="mb-3">
           <InputGroup.Text id="basic-addon1">
-            <i class="bx bx-search"></i>
+            <i className="bx bx-search"></i>
           </InputGroup.Text>
           <Form.Control
             type="text"

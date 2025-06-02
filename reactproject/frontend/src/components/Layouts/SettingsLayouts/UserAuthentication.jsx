@@ -58,9 +58,12 @@ const UserAuthentication = ({ cvsuEmail }) => {
   const sendOtp = async () => {
     setIsSendingOtp(true); // Set sending state to true
     try {
-      const response = await axios.post("http://localhost:8081/send-otp", {
-        email: cvsuEmail,
-      });
+      const response = await axios.post(
+        `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/send-otp`,
+        {
+          email: cvsuEmail,
+        }
+      );
 
       if (response.status === 200) {
         setModal({
@@ -91,10 +94,13 @@ const UserAuthentication = ({ cvsuEmail }) => {
   const handleVerifyOtp = async () => {
     setIsVerifying(true);
     try {
-      const response = await axios.post("http://localhost:8081/verify-otp", {
-        email,
-        otp,
-      });
+      const response = await axios.post(
+        `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/verify-otp`,
+        {
+          email,
+          otp,
+        }
+      );
 
       if (response.status === 200) {
         setTimeout(() => {

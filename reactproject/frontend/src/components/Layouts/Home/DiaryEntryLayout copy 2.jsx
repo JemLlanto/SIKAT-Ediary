@@ -365,9 +365,9 @@ const DiaryEntryLayout = ({
                 {formatDate(entry.created_at)}{" "}
                 <span>
                   {entry.anonimity === "public" ? (
-                    <i class="bx bx-globe"></i>
+                    <i className="bx bx-globe"></i>
                   ) : (
-                    <i class="bx bx-lock-alt"></i>
+                    <i className="bx bx-lock-alt"></i>
                   )}
                 </span>
               </p>
@@ -471,9 +471,9 @@ const DiaryEntryLayout = ({
                 {formatDate(entry.created_at)}{" "}
                 <span>
                   {entry.visibility === "public" ? (
-                    <i class="bx bx-globe"></i>
+                    <i className="bx bx-globe"></i>
                   ) : (
-                    <i class="bx bx-lock-alt"></i>
+                    <i className="bx bx-lock-alt"></i>
                   )}
                 </span>
               </p>
@@ -556,7 +556,7 @@ const DiaryEntryLayout = ({
             <div className="d-flex justify-content-center align-items-end pt-1 gap-1">
               <div className="informationToolTip accordion text-danger align-middle">
                 <h4 className="m-0">
-                  <i class="bx bx-error" style={{}}></i>
+                  <i className="bx bx-error" style={{}}></i>
                 </h4>
                 <p
                   className="infToolTip rounded p-2 m-0 text-center"

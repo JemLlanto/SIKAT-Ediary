@@ -22,7 +22,9 @@ const FAQ = () => {
   useEffect(() => {
     const fetchFaqs = async () => {
       try {
-        const response = await axios.get("http://localhost:8081/faqs"); // Rename filters endpoint to faqs
+        const response = await axios.get(
+          "${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/faqs"
+        ); // Rename filters endpoint to faqs
         setFaqs(response.data);
         setFilteredFaqs(response.data); // Rename setFilteredFilters to setFilteredFaqs
       } catch (error) {
@@ -43,7 +45,10 @@ const FAQ = () => {
           answer: newAnswer,
           count: 0,
         };
-        await axios.post("http://localhost:8081/faqs", newFaqObj); // Change endpoint to /faqs
+        await axios.post(
+          "${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/faqs",
+          newFaqObj
+        ); // Change endpoint to /faqs
         setFaqs([...faqs, newFaqObj]); // Rename filters to faqs
         setFilteredFaqs([...filteredFaqs, newFaqObj]); // Rename filteredFilters to filteredFaqs
         setNewQuestion("");
@@ -64,10 +69,13 @@ const FAQ = () => {
   const handleSaveEdit = async (faqID) => {
     if (editedQuestion.trim() && editedAnswer.trim()) {
       try {
-        await axios.put(`http://localhost:8081/faqEdit/${faqID}`, {
-          question: editedQuestion,
-          answer: editedAnswer,
-        });
+        await axios.put(
+          `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/faqEdit/${faqID}`,
+          {
+            question: editedQuestion,
+            answer: editedAnswer,
+          }
+        );
         const updatedFaqs = faqs.map((faq) =>
           faq.faqID === faqID
             ? { ...faq, question: editedQuestion, answer: editedAnswer }
@@ -89,7 +97,9 @@ const FAQ = () => {
     );
     if (confirmDelete) {
       try {
-        await axios.delete(`http://localhost:8081/faqDelete/${faqID}`);
+        await axios.delete(
+          `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/faqDelete/${faqID}`
+        );
         const updatedFaqs = faqs.filter((faq) => faq.faqID !== faqID);
         setFaqs(updatedFaqs);
         setFilteredFaqs(updatedFaqs);

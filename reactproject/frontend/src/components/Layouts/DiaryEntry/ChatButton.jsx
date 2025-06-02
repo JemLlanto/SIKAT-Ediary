@@ -220,7 +220,7 @@ const ChatButton = ({ user, entry, imageFile, userToChat }) => {
           }
         >
           <div className="text-secondary d-flex align-items-center justify-content-center gap-2">
-            <i class="bx bx-chat my-1"></i>
+            <i className="bx bx-chat my-1"></i>
             <p className="m-0 d-none d-xl-block">Message</p>
             {user.isAdmin === 2 && (
               <p
@@ -259,7 +259,7 @@ const ChatButton = ({ user, entry, imageFile, userToChat }) => {
                   <h5 className="m-0 mt-2">Users</h5>
                   <InputGroup className="m-0 w-50">
                     <InputGroup.Text id="basic-addon1">
-                      <i class="bx bx-search-alt-2"></i>
+                      <i className="bx bx-search-alt-2"></i>
                     </InputGroup.Text>
                     <Form.Control
                       type="text"

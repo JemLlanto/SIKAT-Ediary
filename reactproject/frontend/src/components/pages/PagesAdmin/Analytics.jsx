@@ -61,7 +61,9 @@ const Analytics = () => {
     const fetchDeptAndCourse = async () => {
       try {
         const response = await fetch(
-          `http://localhost:8081/fetchUserDept&Course/user/${user.userID}`
+          `${
+            import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+          }/fetchUserDept&Course/user/${user.userID}`
         );
         if (!response.ok) {
           throw new Error("Failed to fetch data");
@@ -90,24 +92,32 @@ const Analytics = () => {
         // Fetching users
         const usersEndpoint =
           user.isAdmin === 2 && user.departmentID
-            ? `http://localhost:8081/userAnalytics?departmentID=${user.departmentID}`
-            : "http://localhost:8081/users";
+            ? `${
+                import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+              }/userAnalytics?departmentID=${user.departmentID}`
+            : `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/users`;
         const usersResponse = await axios.get(usersEndpoint);
         setUsers(usersResponse.data);
 
         // Fetching flagged diaries
         const flagsEndpoint =
           user.isAdmin === 2
-            ? `http://localhost:8081/flaggedAnalytics?departmentID=${user.departmentID}`
-            : `http://localhost:8081/flagged`;
+            ? `${
+                import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+              }/flaggedAnalytics?departmentID=${user.departmentID}`
+            : `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/flagged`;
         const flagsResponse = await axios.get(flagsEndpoint);
         setFlags(flagsResponse.data);
 
         // Fetching reported comments
         const reportedCommentsEndpoint =
           user.isAdmin === 2
-            ? `http://localhost:8081/getReportedCommentsAnalytics?departmentID=${user.departmentID}`
-            : `http://localhost:8081/getReportedComments`;
+            ? `${
+                import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+              }/getReportedCommentsAnalytics?departmentID=${user.departmentID}`
+            : `${
+                import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+              }/getReportedComments`;
         const reportedCommentsResponse = await axios.get(
           reportedCommentsEndpoint
         );
@@ -116,8 +126,12 @@ const Analytics = () => {
         // Fetching reported users
         const reportedUsersEndpoint =
           user.isAdmin === 2
-            ? `http://localhost:8081/getReportedUsersAnalytics?departmentID=${user.departmentID}`
-            : `http://localhost:8081/getReportedUsers`;
+            ? `${
+                import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+              }/getReportedUsersAnalytics?departmentID=${user.departmentID}`
+            : `${
+                import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+              }/getReportedUsers`;
         const reportedUsersResponse = await fetch(reportedUsersEndpoint);
         const reportedUsersData = await reportedUsersResponse.json();
         setreportedUsers(reportedUsersData);
@@ -167,7 +181,7 @@ const Analytics = () => {
                     onClick={() => handleTabChange("RegisteredUser")}
                   >
                     <h5 className="m-0">
-                      <i class="bx bxs-user-detail mt-1"></i>
+                      <i className="bx bxs-user-detail mt-1"></i>
                     </h5>
                     <p className="m-0 d-none d-md-block">Registered Users</p>
                   </Nav.Link>
@@ -179,7 +193,7 @@ const Analytics = () => {
                     onClick={() => handleTabChange("FlaggedDiaries")}
                   >
                     <h5 className="m-0">
-                      <i class="bx bx-message-alt-error mt-1"></i>
+                      <i className="bx bx-message-alt-error mt-1"></i>
                     </h5>
                     <p className="m-0 d-none d-md-block">Flagged Diaries</p>
                   </Nav.Link>
@@ -191,7 +205,7 @@ const Analytics = () => {
                     onClick={() => handleTabChange("ReportedComments")}
                   >
                     <h5 className="m-0">
-                      <i class="bx bx-user-pin mt-1"></i>
+                      <i className="bx bx-user-pin mt-1"></i>
                     </h5>
                     <p className="m-0 d-none d-md-block">Reported Commments</p>
                   </Nav.Link>
@@ -203,7 +217,7 @@ const Analytics = () => {
                     onClick={() => handleTabChange("ReportedUsers")}
                   >
                     <h5 className="m-0">
-                      <i class="bx bx-user-pin mt-1"></i>
+                      <i className="bx bx-user-pin mt-1"></i>
                     </h5>
                     <p className="m-0 d-none d-md-block">Reported Users</p>
                   </Nav.Link>

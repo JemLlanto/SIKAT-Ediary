@@ -93,7 +93,7 @@ const ActivityLogs = ({ userID }) => {
         className="w-100 btn btn-light text-start d-flex align-items-center gap-1"
         onClick={handleShow}
       >
-        <i class="bx bx-history"></i>
+        <i className="bx bx-history"></i>
         <p className="m-0">Activity log </p>
       </button>
       <Modal show={showModal} onHide={handleClose} centered>

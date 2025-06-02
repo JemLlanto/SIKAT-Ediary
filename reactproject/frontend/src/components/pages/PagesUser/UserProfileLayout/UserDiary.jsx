@@ -19,7 +19,11 @@ const UserDiary = ({ userID }) => {
     if (user) {
       const fetchUser = JSON.parse(user);
 
-      fetch(`http://localhost:8081/fetchUserEntry/user/${fetchUser.userID}`)
+      fetch(
+        `${
+          import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+        }/fetchUserEntry/user/${fetchUser.userID}`
+      )
         .then((response) => {
           if (!response.ok) {
             throw new Error("No entry found");
@@ -47,9 +51,14 @@ const UserDiary = ({ userID }) => {
     if (!entry) return;
 
     axios
-      .post(`http://localhost:8081/entry/${entryID}/gadify`, {
-        userID: user.userID,
-      })
+      .post(
+        `${
+          import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+        }/entry/${entryID}/gadify`,
+        {
+          userID: user.userID,
+        }
+      )
       .then((res) => {
         const isGadified =
           res.data.message === "Gadify action recorded successfully";
@@ -70,12 +79,17 @@ const UserDiary = ({ userID }) => {
         // Only send notification if gadified (count is incremented) and user is not the owner
         if (isGadified && user.userID !== entry.userID) {
           axios
-            .post(`http://localhost:8081/notifications/${entry.userID}`, {
-              actorID: user.userID,
-              entryID: entryID,
-              type: "gadify",
-              message: `${user.username} gadified your diary entry.`,
-            })
+            .post(
+              `${
+                import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+              }/notifications/${entry.userID}`,
+              {
+                actorID: user.userID,
+                entryID: entryID,
+                type: "gadify",
+                message: `${user.username} gadified your diary entry.`,
+              }
+            )
             .then((res) => {
               console.log("Notification response:", res.data);
             })
@@ -140,7 +154,9 @@ const UserDiary = ({ userID }) => {
                     <img
                       src={
                         entry.profile_image
-                          ? `http://localhost:8081${entry.profile_image}`
+                          ? `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}${
+                              entry.profile_image
+                            }`
                           : DefaultProfile
                       }
                       alt="Profile"
@@ -160,7 +176,9 @@ const UserDiary = ({ userID }) => {
                   {entry.fileURL && (
                     <img
                       className="DiaryImage mt-1"
-                      src={`http://localhost:8081${entry.fileURL}`}
+                      src={`${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}${
+                        entry.fileURL
+                      }`}
                       alt="Diary"
                     />
                   )}

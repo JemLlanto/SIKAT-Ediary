@@ -14,7 +14,9 @@ const ReportedComments = ({ userID }) => {
   const fetchReportedComments = async () => {
     try {
       const response = await axios.get(
-        `http://localhost:8081/getReportedComments/${userID}`
+        `${
+          import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+        }/getReportedComments/${userID}`
       );
       setReportedCount(response.data.length); // Set the count based on the response
     } catch (error) {
@@ -29,7 +31,11 @@ const ReportedComments = ({ userID }) => {
   useEffect(() => {
     if (showModal) {
       axios
-        .get(`http://localhost:8081/getReportedComments/${userID}`)
+        .get(
+          `${
+            import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+          }/getReportedComments/${userID}`
+        )
         .then((response) => {
           console.log("reported comments", response.data);
           setReportedComments(response.data);
@@ -48,7 +54,7 @@ const ReportedComments = ({ userID }) => {
         onClick={handleShow}
         style={{ height: "100%" }}
       >
-        <i class="bx bx-message-error d-sm-none"></i>
+        <i className="bx bx-message-error d-sm-none"></i>
         <h5 className="m-0 d-none d-sm-block">
           Reported Comments: {reportedCount}
         </h5>

@@ -13,7 +13,11 @@ const RecentJournalEntries = ({ isAdmin, userID, ownProfile }) => {
   useEffect(() => {
     // Axios request
     axios
-      .get(`http://localhost:8081/fetchUserEntry/user/${userID}`)
+      .get(
+        `${
+          import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+        }/fetchUserEntry/user/${userID}`
+      )
       .then((response) => {
         setEntries(response.data.entries);
         setLoading(false);
@@ -44,7 +48,7 @@ const RecentJournalEntries = ({ isAdmin, userID, ownProfile }) => {
           <Accordion.Item eventKey="diaryEntries">
             <Accordion.Header>
               <div className="d-flex align-items-center gap-1">
-                <i class="bx bx-edit"></i>
+                <i className="bx bx-edit"></i>
                 <h5 className="m-0">Diary entries</h5>
               </div>
             </Accordion.Header>
@@ -93,15 +97,15 @@ const RecentJournalEntries = ({ isAdmin, userID, ownProfile }) => {
                                       {entry.title}{" "}
                                       <span>
                                         {entry.visibility === "private" ? (
-                                          <i class="bx bx-lock-alt"></i>
+                                          <i className="bx bx-lock-alt"></i>
                                         ) : (
-                                          <i class="bx bx-globe"></i>
+                                          <i className="bx bx-globe"></i>
                                         )}
                                         {entry.anonimity === "private" ? (
                                           <>
-                                            <i class="bx bxs-user position-relative">
+                                            <i className="bx bxs-user position-relative">
                                               <i
-                                                class="bx bx-question-mark position-absolute"
+                                                className="bx bx-question-mark position-absolute"
                                                 style={{
                                                   left: ".5rem",
                                                   fontSize:
@@ -184,15 +188,15 @@ const RecentJournalEntries = ({ isAdmin, userID, ownProfile }) => {
                               {entry.title}{" "}
                               <span>
                                 {entry.visibility === "private" ? (
-                                  <i class="bx bx-lock-alt"></i>
+                                  <i className="bx bx-lock-alt"></i>
                                 ) : (
                                   <>
-                                    <i class="bx bx-globe"></i>
+                                    <i className="bx bx-globe"></i>
                                     {entry.anonimity === "private" ? (
                                       <>
-                                        <i class="bx bxs-user position-relative">
+                                        <i className="bx bxs-user position-relative">
                                           <i
-                                            class="bx bx-question-mark position-absolute"
+                                            className="bx bx-question-mark position-absolute"
                                             style={{
                                               left: ".5rem",
                                               fontSize:
@@ -210,7 +214,7 @@ const RecentJournalEntries = ({ isAdmin, userID, ownProfile }) => {
                         <div className="d-flex justify-content-center align-items-end pt-1 gap-1">
                           <div className="informationToolTip accordion text-danger align-middle">
                             <h4 className="m-0">
-                              <i class="bx bx-question-mark"></i>
+                              <i className="bx bx-question-mark"></i>
                             </h4>
                             <p
                               className="infToolTip rounded p-2 m-0 text-center"

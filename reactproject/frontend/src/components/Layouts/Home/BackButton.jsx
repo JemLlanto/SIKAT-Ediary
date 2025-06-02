@@ -16,7 +16,7 @@ const BackButton = () => {
       }}
       onClick={() => navigate(-1)}
     >
-      <i class="bx bx-arrow-back"></i>
+      <i className="bx bx-arrow-back"></i>
     </Link>
   );
 };

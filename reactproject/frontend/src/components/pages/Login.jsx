@@ -37,7 +37,7 @@ export default function Login() {
       setLoading(true);
       setServerError("");
       axios
-        .post("http://localhost:8081/Login", values)
+        .post(`${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/Login`, values)
         .then((res) => {
           localStorage.setItem("user", JSON.stringify(res.data));
           if (res.data.isAdmin) {
@@ -111,7 +111,7 @@ export default function Login() {
           <div className="input-group mb-2">
             <span className="input-group-text p-1 px-2">
               <i
-                class="bx bxs-user-circle bx-sm my-1"
+                className="bx bxs-user-circle bx-sm my-1"
                 style={{ color: "var(--primary_hover)" }}
               ></i>
             </span>
@@ -133,7 +133,7 @@ export default function Login() {
           <div className="input-group position-relative">
             <span className="input-group-text p-1 px-2">
               <i
-                class="bx bxs-lock bx-sm my-1"
+                className="bx bxs-lock bx-sm my-1"
                 style={{ color: "var(--primary_hover)" }}
               ></i>
             </span>

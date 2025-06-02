@@ -542,7 +542,7 @@ const CommentSection = ({
                     fontSize: "clamp(1.2rem, 5dvw, 2rem)",
                   }}
                 >
-                  <i class="bx bx-x"></i>
+                  <i className="bx bx-x"></i>
                 </button>
                 <button
                   onClick={() =>
@@ -694,7 +694,7 @@ const CommentSection = ({
                     fontSize: "clamp(1.2rem, 5dvw, 2rem)",
                   }}
                 >
-                  <i class="bx bx-x"></i>
+                  <i className="bx bx-x"></i>
                 </button>
               ) : (
                 ""

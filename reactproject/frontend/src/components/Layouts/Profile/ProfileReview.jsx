@@ -19,7 +19,7 @@ function Reviewed({ profileOwner }) {
   //   const fetchReview = async () => {
   //     try {
   //       const response = await axios.get(
-  //         `http://localhost:8081/getReportedUser/${userID}`
+  //         `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/getReportedUser/${userID}`
   //       );
   //       setReviews(response.data);
   //       setShow(false);
@@ -45,7 +45,11 @@ function Reviewed({ profileOwner }) {
 
   const handleReviewed = async (userID) => {
     try {
-      await axios.put(`http://localhost:8081/reviewedProfile/${userID}`);
+      await axios.put(
+        `${
+          import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+        }/reviewedProfile/${userID}`
+      );
       handleClose();
       setModal({
         show: true,

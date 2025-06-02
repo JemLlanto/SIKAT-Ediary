@@ -41,7 +41,9 @@ const Center = () => {
   const fetchFollowedUsers = async (userID) => {
     try {
       const response = await axios.get(
-        `http://localhost:8081/followedUsers/${userID}`
+        `${
+          import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+        }/followedUsers/${userID}`
       );
       const followedUsersData = response.data.map((user) => user.userID);
       setFollowedUsers(followedUsersData);
@@ -55,14 +57,19 @@ const Center = () => {
       console.log("Fetching entries for user:", userID);
       console.log("Applied filters:", filters);
 
-      const response = await axios.get("http://localhost:8081/entries", {
-        params: { userID: userID, filters: filters }, // Now passing an array of filter strings
-      });
+      const response = await axios.get(
+        "${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/entries",
+        {
+          params: { userID: userID, filters: filters }, // Now passing an array of filter strings
+        }
+      );
 
       console.log("Entries response:", response.data);
 
       const gadifyStatusResponse = await axios.get(
-        `http://localhost:8081/gadifyStatus/${userID}`
+        `${
+          import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+        }/gadifyStatus/${userID}`
       );
 
       console.log("Gadify status response:", gadifyStatusResponse.data);
@@ -109,9 +116,14 @@ const Center = () => {
     if (!entry) return;
 
     axios
-      .post(`http://localhost:8081/entry/${entryID}/gadify`, {
-        userID: user.userID,
-      })
+      .post(
+        `${
+          import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+        }/entry/${entryID}/gadify`,
+        {
+          userID: user.userID,
+        }
+      )
       .then((res) => {
         setEntries((prevEntries) =>
           prevEntries.map((entry) =>
@@ -131,12 +143,17 @@ const Center = () => {
         if (user.userID !== entry.userID) {
           // Only notify if the user is not the owner
           axios
-            .post(`http://localhost:8081/notifications/${entry.userID}`, {
-              actorID: user.userID,
-              entryID: entryID,
-              type: "gadify",
-              message: `${user.username} gadified your diary entry.`,
-            })
+            .post(
+              `${
+                import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+              }/notifications/${entry.userID}`,
+              {
+                actorID: user.userID,
+                entryID: entryID,
+                type: "gadify",
+                message: `${user.username} gadified your diary entry.`,
+              }
+            )
             .then((res) => {
               console.log("Notification response:", res.data);
             })
@@ -163,23 +180,35 @@ const Center = () => {
 
     try {
       if (isFollowing) {
-        await axios.delete(`http://localhost:8081/unfollow/${followUserId}`, {
-          data: { followerId: user.userID },
-        });
+        await axios.delete(
+          `${
+            import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+          }/unfollow/${followUserId}`,
+          {
+            data: { followerId: user.userID },
+          }
+        );
 
         setFollowedUsers((prev) => prev.filter((id) => id !== followUserId));
         alert(`You have unfollowed user ${followUserId}`);
       } else {
-        await axios.post(`http://localhost:8081/follow/${followUserId}`, {
-          followerId: user.userID,
-        });
+        await axios.post(
+          `${
+            import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+          }/follow/${followUserId}`,
+          {
+            followerId: user.userID,
+          }
+        );
 
         setFollowedUsers((prev) => [...prev, followUserId]);
         alert(`You are now following user ${followUserId}`);
 
         // Send follow notification
         await axios.post(
-          `http://localhost:8081/notifications/${followUserId}`,
+          `${
+            import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+          }/notifications/${followUserId}`,
           {
             userID: followUserId, // Notify the user who was followed
             actorID: user.userID, // The user who performed the follow action
@@ -277,7 +306,9 @@ const Center = () => {
                     <img
                       src={
                         entry.profile_image
-                          ? `http://localhost:8081${entry.profile_image}`
+                          ? `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}${
+                              entry.profile_image
+                            }`
                           : userDefaultProfile
                       }
                       alt="Profile"
@@ -319,7 +350,9 @@ const Center = () => {
               {entry.diary_image && (
                 <img
                   className="DiaryImage mt-1 rounded"
-                  src={`http://localhost:8081${entry.diary_image}`}
+                  src={`${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}${
+                    entry.diary_image
+                  }`}
                   alt="Diary"
                 />
               )}

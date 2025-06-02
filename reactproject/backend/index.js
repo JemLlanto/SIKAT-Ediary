@@ -4,7 +4,6 @@ const bcrypt = require("bcryptjs");
 const multer = require("multer");
 const path = require("path");
 const bodyParser = require("body-parser");
-const mysql = require("mysql2");
 const fs = require("fs");
 const app = express();
 const Pusher = require("pusher");
@@ -12,6 +11,7 @@ const { profile } = require("console");
 const nodemailer = require("nodemailer");
 const crypto = require("crypto");
 require("dotenv").config();
+const db = require("./database"); // Adjust the path to your database module
 
 const allowedOrigins = [
   "http://localhost:5173",
@@ -33,34 +33,12 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use("/uploads", express.static("uploads"));
 
-const db = mysql.createConnection({
-  host: process.env.DB_HOST,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME,
-});
-
-// const db = mysql.createConnection({
-//   host: "sql12.freesqldatabase.com",
-//   user: "sql12762009",
-//   password: "c9LRMHS1aZ",
-//   database: "sql12762009",
-// });
-
 const pusher = new Pusher({
   appId: "1875705",
   key: "4810211a14a19b86f640",
   secret: "e3bd24cb43cd9520c5ca",
   cluster: "ap1",
   useTLS: true,
-});
-
-db.connect((err) => {
-  if (err) {
-    console.error("Database connection failed: " + err.stack);
-    return;
-  }
-  console.log("Connected to database.");
 });
 
 const uploadsDir = path.join(__dirname, "uploads");
@@ -363,9 +341,11 @@ app.post("/verify-otp", (req, res) => {
     if (String(otp) === String(storedOtp)) {
       return res.json({ success: true });
     } else {
+      console.log("OTP mismatch for email:", email);
       return res.status(400).json({ error: "Invalid OTP" });
     }
   } else {
+    console.log("No OTP found for email:", email);
     return res.status(400).json({ error: "No OTP found for this email" });
   }
 });

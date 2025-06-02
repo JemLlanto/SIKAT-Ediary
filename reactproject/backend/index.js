@@ -11,23 +11,32 @@ const Pusher = require("pusher");
 const { profile } = require("console");
 const nodemailer = require("nodemailer");
 const crypto = require("crypto");
+require("dotenv").config();
 
 const allowedOrigins = [
   "https://sikat-react-js-backend.vercel.app", // Original domain
   "https://sikat-react-js-iota.vercel.app", // New domain you're requesting from
+  process.env.VITE_REACT_APP_FRONTEND_BASEURL,
 ];
 
 app.use(express.json());
-app.use(cors({ origin: "*" }));
+// Apply CORS middleware for Express routes
+app.use(
+  cors({
+    origin: allowedOrigins,
+    credentials: true,
+    allowedHeaders: ["authorization", "Content-Type"],
+  })
+);
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use("/uploads", express.static("uploads"));
 
 const db = mysql.createConnection({
-  host: "localhost",
-  user: "root",
-  password: "",
-  database: "sikat-ediary",
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME,
 });
 
 // const db = mysql.createConnection({

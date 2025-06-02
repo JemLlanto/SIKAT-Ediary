@@ -1,0 +1,296 @@
+import { useState, useEffect } from "react";
+import Offcanvas from "react-bootstrap/Offcanvas";
+import { Link } from "react-router-dom";
+import axios from "axios";
+import Pusher from "pusher-js";
+import DefaultProfile from "../../../../src/assets/userDefaultProfile.png";
+import Toast from "react-bootstrap/Toast";
+
+function NotificationButton() {
+  const [show, setShow] = useState(false);
+  const [notifications, setNotifications] = useState([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [user, setUser] = useState(null);
+  const [newNotif, setNewNotif] = useState(false);
+
+  const closeToast = () => setNewNotif(false);
+  const handleClose = () => setShow(false);
+  const handleShow = () => {
+    setShow(true);
+    setNewNotif(false);
+  };
+
+  // Automatically close the toast after 10 seconds
+  useEffect(() => {
+    if (newNotif) {
+      const timer = setTimeout(() => {
+        closeToast();
+      }, 10000); // 10 seconds
+
+      return () => clearTimeout(timer); // Cleanup
+    }
+  }, [newNotif]);
+
+  useEffect(() => {
+    const userData = localStorage.getItem("user");
+    if (userData) {
+      const parsedUser = JSON.parse(userData);
+      setUser(parsedUser);
+
+      const pusher = new Pusher("4810211a14a19b86f640", {
+        cluster: "ap1",
+      });
+
+      const channel = pusher.subscribe(`notifications-${parsedUser.userID}`);
+
+      channel.bind("new-notification", (data) => {
+        console.log("New notification received:", data);
+        setNotifications((prevNotifications) => {
+          const updatedNotifications = [...prevNotifications, data];
+          localStorage.setItem(
+            "notifications",
+            JSON.stringify(updatedNotifications)
+          );
+          setUnreadCount((prevCount) => prevCount + 1);
+          setNewNotif(true);
+          return updatedNotifications;
+        });
+      });
+
+      return () => {
+        pusher.unsubscribe(`notifications-${parsedUser.userID}`);
+      };
+    }
+  }, []);
+
+  useEffect(() => {
+    const fetchNotifications = async () => {
+      if (!user) return;
+
+      try {
+        const response = await axios.get(
+          `http://localhost:8081/getnotifications/${user.userID}`
+        );
+
+        const fetchedNotifications = response.data.map((notification) => ({
+          ...notification,
+          actorProfileImage: notification.actorProfileImage
+            ? `http://localhost:8081${notification.actorProfileImage}`
+            : DefaultProfile,
+        }));
+
+        setNotifications(fetchedNotifications);
+
+        const unread = fetchedNotifications.filter(
+          (notification) => !notification.read
+        ).length;
+        setUnreadCount(unread);
+
+        localStorage.setItem(
+          "notifications",
+          JSON.stringify(fetchedNotifications)
+        );
+      } catch (error) {
+        console.error("Error fetching notifications:", error);
+      }
+    };
+
+    if (show) {
+      fetchNotifications();
+    }
+  }, [show, user]);
+
+  useEffect(() => {
+    const storedNotifications = localStorage.getItem("notifications");
+    if (storedNotifications) {
+      const parsedNotifications = JSON.parse(storedNotifications);
+      setNotifications(parsedNotifications);
+
+      const unread = parsedNotifications.filter(
+        (notification) => !notification.read
+      ).length;
+      setUnreadCount(unread);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (show && notifications.length > 0) {
+      const updatedNotifications = notifications.map((notification) => ({
+        ...notification,
+        read: true,
+      }));
+      setNotifications(updatedNotifications);
+      setUnreadCount(0);
+
+      localStorage.setItem(
+        "notifications",
+        JSON.stringify(updatedNotifications)
+      );
+
+      axios
+        .put("http://localhost:8081/notifications/mark-as-read", {
+          userID: user.userID,
+          notificationIDs: notifications.map((n) => n.notificationID),
+        })
+        .catch((error) =>
+          console.error("Error marking notifications as read:", error)
+        );
+    }
+  }, [show]);
+
+  const markAsReadAndNavigate = (notificationID) => {
+    if (!user) return;
+
+    axios
+      .put("http://localhost:8081/notifications/mark-as-read", {
+        userID: user.userID,
+        notificationID,
+      })
+      .catch((error) =>
+        console.error("Error marking notification as read:", error)
+      );
+
+    if (notificationID) {
+    }
+  };
+
+  const [isHovered, setIsHovered] = useState(false);
+  const handleMouseEnter = () => setIsHovered(true);
+  const handleMouseLeave = () => setIsHovered(false);
+
+  const formatDate = (dateString) => {
+    const entryDate = new Date(dateString);
+    const now = new Date();
+    const timeDiff = now - entryDate;
+
+    if (timeDiff < 24 * 60 * 60 * 1000) {
+      return entryDate.toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+    } else {
+      return entryDate.toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+    }
+  };
+
+  return (
+    <>
+      <div
+        className="position-absolute"
+        style={{ right: "1rem", bottom: "-6.5rem" }}
+      >
+        {newNotif ? (
+          <Toast show={newNotif} onClose={closeToast}>
+            <Toast.Header>
+              <h5>New Notification</h5>
+            </Toast.Header>
+            <Toast.Body>UserName Gadified you Diary Entry</Toast.Body>
+          </Toast>
+        ) : (
+          ""
+        )}
+      </div>
+      <button
+        className="logo overflow-visible position-relative d-flex align-items-center justify-content-center"
+        onClick={handleShow}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+      >
+        <i
+          className={isHovered ? "bx bxs-bell-ring bx-sm" : "bx bxs-bell bx-sm"}
+        ></i>
+
+        {unreadCount > 0 && (
+          <div
+            className="position-absolute p-0 d-flex align-items-center justify-content-center"
+            style={{
+              backgroundColor: "red",
+              top: "0",
+              left: "clamp(-7px, 2.5dvw, -10px)",
+              height: "clamp(.95rem, 2.5dvw, 1.2rem)",
+              width: "clamp(.95rem, 2.5dvw, 1.2rem)",
+              borderRadius: "50%",
+              color: "#ffff",
+              border: "2px solid var(--primary)",
+            }}
+          >
+            <h6
+              className="m-0 p-0 fw-lighter d-none d-lg-block"
+              style={{ fontSize: "clamp(.5rem, 1.5dvw, .8rem)" }}
+            >
+              {unreadCount}
+            </h6>
+          </div>
+        )}
+      </button>
+
+      <Offcanvas show={show} onHide={handleClose} placement="end">
+        <Offcanvas.Header closeButton>
+          <Offcanvas.Title>Notifications</Offcanvas.Title>
+        </Offcanvas.Header>
+        <Offcanvas.Body>
+          {notifications.length === 0 ? (
+            <p>No notifications available.</p>
+          ) : (
+            notifications.map((notification) => (
+              <Link
+                key={notification.timestamp}
+                className="text-decoration-none text-dark"
+                to={
+                  notification.type === "follow"
+                    ? `/profile/${notification.actorID}`
+                    : `/DiaryEntry/${notification.entryID || ""}`
+                }
+                onClick={() =>
+                  markAsReadAndNavigate(notification.notificationID)
+                }
+              >
+                <div
+                  className="row grayHover d-flex align-items-center gap-2 p-2 rounded my-1"
+                  style={{
+                    backgroundColor: notification.read ? "white" : "",
+                  }}
+                >
+                  <div className="col-1 p-0">
+                    <div className="profilePicture">
+                      <img
+                        src={
+                          notification.actorProfileImage
+                            ? notification.actorProfileImage
+                            : DefaultProfile
+                        }
+                        alt="Profile"
+                        style={{
+                          width: "100%",
+                          height: "100%",
+                          objectFit: "cover",
+                        }}
+                      />
+                    </div>
+                  </div>
+                  <p className="col m-0 ms-3">
+                    {notification.actorUsername} {notification.message}
+                    <span
+                      className="text-secondary"
+                      style={{ fontSize: "13px" }}
+                    >
+                      {" "}
+                      {formatDate(notification.timestamp)}
+                    </span>
+                  </p>
+                </div>
+              </Link>
+            ))
+          )}
+        </Offcanvas.Body>
+      </Offcanvas>
+    </>
+  );
+}
+
+export default NotificationButton;

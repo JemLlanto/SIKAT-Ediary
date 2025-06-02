@@ -1,6 +1,6 @@
 export default function RegisterValidation(values) {
   let errors = {};
-  const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const emailPattern = /^[^\s@]+@cvsu\.edu\.ph$/;
   const passwordPattern = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])[a-zA-Z\d]{8,}$/;
 
   if (!values.firstName) {
@@ -14,12 +14,23 @@ export default function RegisterValidation(values) {
   if (!values.cvsuEmail) {
     errors.cvsuEmail = "Email is required";
   } else if (!emailPattern.test(values.cvsuEmail)) {
-    errors.cvsuEmail = "Email format is invalid";
+    errors.cvsuEmail = "Email must be in the format of example@cvsu.edu.ph";
   }
 
-  if (!values.username) {
-    errors.username = "Username is required";
+  if (!values.studentNumber) {
+    errors.studentNumber = "Student number is required.";
   }
+
+  if (values.studentNumber) {
+    const studentNumber = values.studentNumber.trim();
+    if (studentNumber.length !== 9) {
+      errors.studentNumber = "Student number must be exactly 9 digits";
+    }
+  }
+
+  // if (!values.username) {
+  //   errors.username = "Username is required";
+  // }
 
   if (!values.password) {
     errors.password = "Password is required";

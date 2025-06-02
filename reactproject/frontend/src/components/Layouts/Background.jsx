@@ -1,7 +1,7 @@
 import "./style.css";
 
-const background = () => {
-  return <div className="background"></div>;
+const background = ({ children }) => {
+  return <div className="background">{children}</div>;
 };
 
 export default background;

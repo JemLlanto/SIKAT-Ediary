@@ -24,9 +24,13 @@ body {
 }
 #root {
   padding: 0;
+  height: 100vh;
 }
+/* .app {
+  height: 100vh;
+} */
 /* 
-
+.
 a {
   font-weight: 500;
   color: #646cff;

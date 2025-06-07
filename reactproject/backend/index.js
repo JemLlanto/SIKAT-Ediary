@@ -13,10 +13,11 @@ const crypto = require("crypto");
 require("dotenv").config();
 const db = require("./database"); // Adjust the path to your database module
 
+// ROUTES
+const authRoutes = require("./routes/auth");
+
 const allowedOrigins = [
   "http://localhost:5173",
-  "https://sikat-react-js-backend.vercel.app", // Original domain
-  "https://sikat-react-js-iota.vercel.app", // New domain you're requesting from
   process.env.VITE_REACT_APP_FRONTEND_BASEURL,
 ];
 
@@ -31,6 +32,9 @@ app.use(
 );
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+
+app.use("/auth", authRoutes);
+
 app.use("/uploads", express.static("uploads"));
 
 const pusher = new Pusher({
@@ -211,6 +215,51 @@ const transporter = nodemailer.createTransport({
     user: "sikatediary@gmail.com",
     pass: "cgggyvzfnwgedpfj",
   },
+});
+
+const verifyUser = (req, res, next) => {
+  const authHeader = req.headers.authorization || req.headers["authorization"];
+  // // console.log("Request Headers:", req.headers);
+  // // console.log("Auth header:", authHeader);
+  // // console.log("All headers:", req.headers);
+  // // console.log("Authorization header:", req.headers.authorization);
+  const token = authHeader && authHeader.split(" ")[1];
+
+  if (!token) {
+    // console.log("No token found");
+    return res.status(401).json({ Error: "Not authenticated." });
+  }
+
+  jwt.verify(token, process.env.JWT_SECRET_KEY, (err, decoded) => {
+    if (err) {
+      // console.log("Token verification failed:", err.message); // 👈 Debug log
+      return res.status(403).json({ Error: "Invalid Token" });
+    }
+
+    req.userID = decoded.userID;
+    next();
+  });
+};
+
+app.get("/", verifyUser, (req, res) => {
+  const userID = req.userID;
+
+  if (!userID) return res.json({ Error: "Missing userID" });
+
+  const query = `  
+  SELECT 
+    *
+  FROM user_table
+  WHERE userID = ?`;
+  db.query(query, [userID], (err, data) => {
+    if (err) return res.json({ Error: "Error fetching user data." });
+    if (data.length > 0) {
+      return res.json({ Status: "Success", data: data[0] });
+    } else {
+      return res.json({ Error: "User not found" });
+    }
+  });
+  // return res.json({ Status: "Success", userID: req.userID });
 });
 
 app.post("/send-otp", async (req, res) => {
@@ -597,74 +646,6 @@ app.get("/verify-email/:token", (req, res) => {
       }
 
       res.status(200).json({ message: "Email verified successfully" });
-    });
-  });
-});
-
-app.post("/Login", (req, res) => {
-  const { cvsuEmail, password } = req.body;
-
-  if (!cvsuEmail || !password) {
-    return res.status(400).json({ error: "Email and password are required" });
-  }
-
-  const sql = `
-    SELECT user_table.*, user_profiles.profile_image
-    FROM user_table
-    JOIN user_profiles ON user_table.userID = user_profiles.userID
-    WHERE user_table.cvsuEmail = ?
-  `;
-
-  db.query(sql, [cvsuEmail], (err, data) => {
-    if (err) {
-      console.error("Error retrieving data: ", err);
-      return res.status(500).json({ error: "Error retrieving data" });
-    }
-
-    if (data.length === 0) {
-      return res.status(401).json({ error: "Invalid email or password" });
-    }
-
-    const user = data[0];
-
-    const currentDate = new Date();
-    if (user.suspendUntil && new Date(user.suspendUntil) > currentDate) {
-      return res.status(403).json({
-        error: "Account is suspended.",
-        suspendReason: user.suspendReason,
-        suspendUntil: user.suspendUntil,
-      });
-    }
-
-    const isPasswordValid = bcrypt.compareSync(password, user.password);
-    if (!isPasswordValid) {
-      return res.status(401).json({ error: "Invalid email or password" });
-    }
-
-    if (user.isSuspended === 1) {
-      return res
-        .status(403)
-        .json({ error: "Account is suspended. Please try again later." });
-    }
-
-    const updateStatusSql =
-      "UPDATE user_table SET isActive = ? WHERE userID = ?";
-    db.query(updateStatusSql, [true, user.userID], (err, result) => {
-      if (err) {
-        console.error("Error updating user status: ", err);
-        return res.status(500).json({ error: "Failed to update user status" });
-      }
-
-      return res.json({
-        userID: user.userID,
-        cvsuEmail: user.cvsuEmail,
-        username: user.username,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        isAdmin: user.isAdmin,
-        departmentID: user.departmentID,
-        profile_image: user.profile_image,
-      });
     });
   });
 });

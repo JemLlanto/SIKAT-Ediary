@@ -2,6 +2,7 @@ import React from "react";
 import { Bar } from "react-chartjs-2";
 
 const UserDiaryEntryReports = ({
+  loading,
   graphData,
   filteredEntries,
   filteredUsers,
@@ -54,7 +55,15 @@ const UserDiaryEntryReports = ({
               className="d-flex align-items-center justify-content-center gap-2"
               style={{ height: "5rem" }}
             >
-              <h2 className="m-0">{filteredEntries.length}</h2>
+              <h2 className="m-0">
+                {loading ? (
+                  <>
+                    <p>Loading new diaries</p>
+                  </>
+                ) : (
+                  <>{filteredEntries.length}</>
+                )}
+              </h2>
             </div>
           </div>
           <div
@@ -78,14 +87,30 @@ const UserDiaryEntryReports = ({
               className="d-flex align-items-center justify-content-center gap-2"
               style={{ height: "5rem" }}
             >
-              <h2 className="m-0">{filteredUsers.length}</h2>
+              <h2 className="m-0">
+                {loading ? (
+                  <>
+                    <p>Loading new users</p>
+                  </>
+                ) : (
+                  <> {filteredUsers.length}</>
+                )}
+              </h2>
             </div>
           </div>
         </div>
       </div>
       <div className="col-md-9">
         <div className="">
-          <Bar data={graphData} options={graphOptions} height={300} />
+          {loading ? (
+            <>
+              <p>Loading Data</p>
+            </>
+          ) : (
+            <>
+              <Bar data={graphData} options={graphOptions} height={300} />
+            </>
+          )}
         </div>
       </div>
     </div>

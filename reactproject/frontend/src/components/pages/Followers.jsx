@@ -2,9 +2,8 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import Tab from "react-bootstrap/Tab";
 import Tabs from "react-bootstrap/Tabs";
-import MainLayout from "../Layouts/MainLayout";
 import DefaultProfile from "../../assets/userDefaultProfile.png";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useOutletContext } from "react-router-dom";
 import MessageModal from "../Layouts/DiaryEntry/messageModal";
 import MessageAlert from "../Layouts/DiaryEntry/messageAlert";
 
@@ -68,7 +67,7 @@ const UserList = ({ type, users, handleFollowToggle, isFollowing }) => (
 );
 
 const Followers = () => {
-  const [user, setUser] = useState(null);
+  const { user } = useOutletContext();
   const [followers, setFollowers] = useState([]);
   const [followedUsers, setFollowedUsers] = useState([]);
   const navigate = useNavigate();
@@ -95,15 +94,13 @@ const Followers = () => {
 
   useEffect(() => {
     const userData = localStorage.getItem("user");
+
     if (userData) {
-      const parsedUser = JSON.parse(userData);
-      setUser(parsedUser);
-      fetchFollowers(parsedUser.userID);
-      fetchFollowedUsers(parsedUser.userID);
+      // setIsLoading(false);
     } else {
       navigate("/");
     }
-  }, [navigate]);
+  }, [user]);
 
   const fetchFollowers = async (userID) => {
     try {
@@ -214,7 +211,7 @@ const Followers = () => {
   if (!user) return null;
 
   return (
-    <MainLayout ActiveTab="Followers">
+    <>
       <MessageAlert
         showModal={modal}
         closeModal={closeModal}
@@ -230,42 +227,46 @@ const Followers = () => {
         needConfirm={1}
       ></MessageModal>
 
-      <div
-        className="container mt-5 mt-lg-4 rounded p-3 shadow-sm"
-        style={{
-          width: "clamp(19rem, 65dvw, 40rem)",
-          height: "clamp(30rem, 65dvw, 39rem)",
-          backgroundColor: "#ffff",
-        }}
-      >
-        <Tabs
-          defaultActiveKey="Followers"
-          id="uncontrolled-tab-example"
-          className="mb-3"
+      <div className="pt-4 pt-lg-0">
+        <div
+          className="container rounded p-3 shadow-sm mt-4 mt-lg-0"
+          style={{
+            width: "clamp(19rem, 65dvw, 40rem)",
+            height: "clamp(30rem, 65dvw, 39rem)",
+            backgroundColor: "#ffff",
+          }}
         >
-          <Tab eventKey="Followers" title="Followers">
-            <div>
-              <UserList
-                type={"Followers"}
-                users={followers}
-                handleFollowToggle={handleFollowToggle}
-                isFollowing={(id) => followedUsers.some((f) => f.userID === id)}
-              />
-            </div>
-          </Tab>
-          <Tab eventKey="Following" title="Following">
-            <div>
-              <UserList
-                type={"Following"}
-                users={followedUsers}
-                handleFollowToggle={handleFollowToggle}
-                isFollowing={() => true}
-              />
-            </div>
-          </Tab>
-        </Tabs>
+          <Tabs
+            defaultActiveKey="Followers"
+            id="uncontrolled-tab-example"
+            className="mb-3"
+          >
+            <Tab eventKey="Followers" title="Followers">
+              <div>
+                <UserList
+                  type={"Followers"}
+                  users={followers}
+                  handleFollowToggle={handleFollowToggle}
+                  isFollowing={(id) =>
+                    followedUsers.some((f) => f.userID === id)
+                  }
+                />
+              </div>
+            </Tab>
+            <Tab eventKey="Following" title="Following">
+              <div>
+                <UserList
+                  type={"Following"}
+                  users={followedUsers}
+                  handleFollowToggle={handleFollowToggle}
+                  isFollowing={() => true}
+                />
+              </div>
+            </Tab>
+          </Tabs>
+        </div>
       </div>
-    </MainLayout>
+    </>
   );
 };
 

@@ -37,7 +37,10 @@ export default function Login() {
       setLoading(true);
       setServerError("");
       axios
-        .post(`${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/Login`, values)
+        .post(
+          `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/auth/Login`,
+          values
+        )
         .then((res) => {
           localStorage.setItem("user", JSON.stringify(res.data));
           if (res.data.isAdmin) {

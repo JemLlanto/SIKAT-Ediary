@@ -4,8 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { LeftSideLoader } from "../../loaders/LeftSideLoader";
 import axios from "axios";
 
-const LeftSideAdmin = () => {
-  const [user, setUser] = useState(null);
+const LeftSideAdmin = ({ user }) => {
   const [entries, setEntries] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -14,12 +13,11 @@ const LeftSideAdmin = () => {
   useEffect(() => {
     const userData = localStorage.getItem("user");
     if (userData) {
-      const parsedUser = JSON.parse(userData);
-      fetchUserData(parsedUser.userID);
+      setIsLoading(false);
     } else {
       navigate("/");
     }
-  }, [navigate]);
+  }, [user]);
 
   useEffect(() => {
     if (user && !isLoading) {
@@ -90,7 +88,7 @@ const LeftSideAdmin = () => {
   if (!user) return <p className="text-danger">Error fetching user data.</p>;
 
   return (
-    <div className="p-2">
+    <div className="">
       <Link
         className="text-decoration-none text-dark"
         to={`/Profile/${user.userID}`}

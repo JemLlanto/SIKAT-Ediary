@@ -54,6 +54,7 @@ const Dashboard = () => {
   const [weeklyReportedUsers, setWeeklyReportedUsers] = useState({});
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
+  const [loading, setLoading] = useState(true);
 
   const usersPerPage = 4;
 
@@ -90,13 +91,25 @@ const Dashboard = () => {
   }, [navigate]);
 
   useEffect(() => {
-    fetchEntries();
-    fetchUsers();
-    fetchFlags();
-    fetchReportedComments();
-    fetchGenderBasedIncidents();
-    fetchReportedUsers();
-  }, []);
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+
+        await fetchEntries();
+        await fetchUsers();
+        await fetchFlags();
+        await fetchReportedComments();
+        await fetchGenderBasedIncidents();
+        await fetchReportedUsers();
+      } catch (err) {
+        console.error("Error fetching data...", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [user]);
 
   useEffect(() => {
     applyTimeFilter();
@@ -329,7 +342,7 @@ const Dashboard = () => {
   };
 
   return (
-    <MainLayout ActiveTab="Dashboard">
+    <div className="pt-4 pt-lg-0">
       <MessageModal
         showModal={modal}
         closeModal={closeModal}
@@ -400,11 +413,13 @@ const Dashboard = () => {
             </div>
 
             <UserDiaryEntryReports
+              loading={loading}
               graphData={graphData}
               filteredEntries={filteredEntries}
               filteredUsers={filteredUsers}
             />
             <Reports
+              loading={loading}
               filteredGenderBasedIncidents={filteredGenderBasedIncidents}
               filteredFlags={filteredFlags}
               filteredReportedComments={filteredReportedComments}
@@ -413,7 +428,7 @@ const Dashboard = () => {
           </div>
         </div>
       </div>
-    </MainLayout>
+    </div>
   );
 };
 

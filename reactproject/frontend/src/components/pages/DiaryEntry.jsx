@@ -374,7 +374,7 @@ const DiaryEntry = () => {
   };
 
   return (
-    <MainLayout>
+    <div className="pt-4 pt-lg-0">
       <MessageAlert
         showModal={modal}
         closeModal={closeModal}
@@ -390,7 +390,7 @@ const DiaryEntry = () => {
         needConfirm={1}
       ></MessageModal>
       <div
-        className="d-flex align-items-center justify-content-center pb-3"
+        className="d-flex align-items-center justify-content-center pb-3 "
         style={{ minHeight: "70vh" }}
       >
         <BackButton></BackButton>
@@ -403,7 +403,7 @@ const DiaryEntry = () => {
             const ownDiary = currentUser?.userID === entry.userID;
             return (
               <div
-                className="d-flex justify-content-center align-items-center mt-3 bg-light rounded shadow-sm p-3"
+                className="d-flex justify-content-center align-items-center mt-3 mt-lg-0 bg-light rounded shadow-sm p-3"
                 style={{ width: "clamp(30rem, 90vw, auto)" }}
               >
                 <div
@@ -566,7 +566,7 @@ const DiaryEntry = () => {
           })
         )}
       </div>
-    </MainLayout>
+    </div>
   );
 };
 

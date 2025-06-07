@@ -1,25 +1,13 @@
 import { useState, useEffect, useContext } from "react";
-import { useNavigate } from "react-router-dom";
-
-// import LeftSide from "../../pages/PagesUser/HomeLayout/LeftSide";
-// import Center from "../../pages/PagesUser/HomeLayout/Center";
+import { useNavigate, useOutletContext } from "react-router-dom";
 import RightSide from "../../pages/PagesUser/HomeLayout/RightSide";
-
-// import AdminLeftSide from "../../pages/PagesAdmin/HomeLayout/LeftSide";
-// import AdminCenter from "../../pages/PagesAdmin/HomeLayout/Center";
 import AdminRightSide from "../../pages/PagesAdmin/HomeLayout/RightSide";
-
-import MainLayout from "../MainLayout";
-// import ChatButton from "../LayoutUser/ChatButton";
-// import AdminChatButton from "../LayoutAdmin/ChatButton";
 import CenterLayout from "./CenterLayout";
 import LeftSideLayout from "./LeftSideLayout";
-
 import { InactivityContext } from "../../../components/InactivityContext";
-import axios from "axios";
 
 export default function HomeMainLayout({}) {
-  const [user, setUser] = useState(null);
+  const { user } = useOutletContext();
   const [loading, setloading] = useState(true);
   const [showModal, setShowModal] = useState(false); // Modal state for inactivity alert
   const navigate = useNavigate();
@@ -29,12 +17,11 @@ export default function HomeMainLayout({}) {
   useEffect(() => {
     const userData = localStorage.getItem("user");
     if (userData) {
-      setUser(JSON.parse(userData));
+      setloading(false);
     } else {
       navigate("/");
     }
-    setloading(false);
-  }, [navigate]);
+  }, [user]);
 
   useEffect(() => {
     if (isInactive) {
@@ -60,12 +47,12 @@ export default function HomeMainLayout({}) {
     );
   }
   return (
-    <MainLayout ActiveTab="Home">
+    <>
       <div className="overflow-x-hidden">
-        <div className="row mt-3 px-3">
+        <div className="row">
           {/* Left Side Component */}
           <div
-            className="position-fixed col-md d-none d-lg-block"
+            className="position-fixed col-md d-none d-lg-block ps-2 ps-md-4"
             style={{
               top: "5.5rem",
               height: "calc(100dvh - 5.5rem)",
@@ -73,18 +60,18 @@ export default function HomeMainLayout({}) {
               width: "25%",
             }}
           >
-            <LeftSideLayout />
+            <LeftSideLayout user={user} />
           </div>
 
           {/* Center Layout */}
           <div
-            className="col-lg-6 mx-auto p-0 px-lg-2 mt-2 mt-lg-0"
+            className="col-lg-6 mx-auto"
             style={{ marginLeft: "20%", marginRight: "20%" }}
           >
             <div className="row">
               <div className="col-4 d-block d-none d-md-block d-lg-none">
                 <div
-                  className="position-fixed ps-1 ms-3"
+                  className="position-fixed ps-1 ms-3 mt-2 mt-lg-0"
                   style={{
                     top: "7.8rem",
                     height: "calc(100dvh - 5.5rem)",
@@ -92,18 +79,18 @@ export default function HomeMainLayout({}) {
                     width: "33%",
                   }}
                 >
-                  <LeftSideLayout />
+                  <LeftSideLayout user={user} />
                 </div>
               </div>
-              <div className="col mx-0 mx-md-4">
-                <CenterLayout />
+              <div className="col">
+                <CenterLayout user={user} />
               </div>
             </div>
           </div>
 
           {/* Right Side Component */}
           <div
-            className="position-fixed col-md d-none d-lg-block"
+            className="position-fixed col-md d-none d-lg-block  pe-2 pe-md-4"
             style={{
               top: "5.5rem",
               height: "calc(100dvh - 5.5rem)",
@@ -148,6 +135,6 @@ export default function HomeMainLayout({}) {
           </div>
         </div>
       )}
-    </MainLayout>
+    </>
   );
 }

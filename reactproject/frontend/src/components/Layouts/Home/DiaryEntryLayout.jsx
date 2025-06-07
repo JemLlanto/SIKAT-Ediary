@@ -26,9 +26,8 @@ const DiaryEntryLayout = ({
   formatDate,
   suspended,
 }) => {
-  const { userID } = useParams();
   const [entries, setEntries] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [comments, setComments] = useState([]); // New state for comments
   const [flaggedCount, setFlaggedCount] = useState(null);
@@ -116,6 +115,8 @@ const DiaryEntryLayout = ({
 
   const fetchEntries = async (userID, filters) => {
     try {
+      console.log("Fetching single entry...");
+      // setLoading(true);
       const response = await axios.get(
         `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/entries`,
         {
@@ -140,7 +141,8 @@ const DiaryEntryLayout = ({
     } catch (error) {
       console.error("Error fetching diary entries:", error);
     } finally {
-      setLoading(false);
+      console.log("Entry fetched");
+      // setLoading(false);
     }
   };
 
@@ -307,7 +309,7 @@ const DiaryEntryLayout = ({
     );
   }
 
-  const ownDiary = currentUser?.userID === entry.userID;
+  const ownDiary = currentUser?.userID === entry?.userID;
 
   return (
     <div
@@ -389,7 +391,7 @@ const DiaryEntryLayout = ({
         <div className="col p-0">
           <CommentSection
             commentCount={commentCount}
-            userID={currentUser.userID}
+            userID={currentUser?.userID}
             entryID={entry.entryID}
             entry={entry.userID}
             firstName={entry.firstName}

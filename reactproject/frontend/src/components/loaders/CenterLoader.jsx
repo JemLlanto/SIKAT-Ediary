@@ -5,7 +5,7 @@ import Spinner from "react-bootstrap/Spinner";
 
 const CenterLoader = () => {
   return (
-    <div className="p-2">
+    <div className="mt-5 mt-lg-0 ms-0 ms-md-3 ms-lg-0 pb-2">
       <div
         className="rounded shadow-sm p-3 mt-1"
         style={{ backgroundColor: "white" }}

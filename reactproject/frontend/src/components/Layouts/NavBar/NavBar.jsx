@@ -6,39 +6,13 @@ import { Link, useNavigate } from "react-router-dom";
 import NotificationButton from "./NotificationButton";
 import AccountDropdown from "./AccountDropdown";
 
-const NavBar = ({ ActiveTab }) => {
-  const [user, setUser] = useState(null);
-  // const [isLoading, setIsLoading] = useState(true);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+const NavBar = ({ ActiveTab, user, loading }) => {
   const navigate = useNavigate();
-
-  const fetchUserData = async (userID) => {
-    try {
-      const response = await fetch(
-        `${
-          import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
-        }/fetchUser/user/${userID}`
-      );
-
-      if (!response.ok) {
-        throw new Error("User not found");
-      }
-
-      const data = await response.json();
-      setUser(data);
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   useEffect(() => {
     const userData = localStorage.getItem("user");
     if (userData) {
       const parsedUser = JSON.parse(userData);
-      fetchUserData(parsedUser.userID);
     } else {
       navigate("/");
     }
@@ -59,8 +33,6 @@ const NavBar = ({ ActiveTab }) => {
   }
 
   if (!user) return null;
-
-  const RegisteredUser = "RegisteredUser";
 
   return (
     <nav
@@ -89,7 +61,7 @@ const NavBar = ({ ActiveTab }) => {
         <div className="w-100 d-flex justify-content-center text-light gap-1 pt-2 pt-md-0 ">
           <Link
             className={`navIcons text-light ${
-              ActiveTab === "Home" ? "active" : ""
+              window.location.pathname === "/Home" ? "active" : ""
             }`}
             to={user && user.isAdmin ? "/Admin/Home" : "/Home"}
             onClick={(e) => {
@@ -108,20 +80,18 @@ const NavBar = ({ ActiveTab }) => {
           {user.isAdmin == 1 ? (
             <Link
               className={`navIcons text-light ${
-                ActiveTab === "Dashboard" ? "active" : ""
+                window.location.pathname === "/Admin/Dashboard" ? "active" : ""
               }`}
               to="/Admin/Dashboard"
             >
               <i className="bx bxs-dashboard"></i>
               <p className="navToolTip">Dashboard</p>
             </Link>
-          ) : (
-            ""
-          )}
+          ) : null}
 
           <Link
             className={`navIcons text-light ${
-              ActiveTab === "Entries" ? "active" : ""
+              window.location.pathname === "/DiaryEntries" ? "active" : ""
             }`}
             to="/DiaryEntries"
           >
@@ -130,12 +100,10 @@ const NavBar = ({ ActiveTab }) => {
               {user && user.isAdmin ? "Post" : "Diary Entries"}
             </p>
           </Link>
-          {user && user.isAdmin ? (
-            ""
-          ) : (
+          {user && user.isAdmin ? null : (
             <Link
               className={`navIcons text-light ${
-                ActiveTab === "Followers" ? "active" : ""
+                window.location.pathname === "/Followers" ? "active" : ""
               }`}
               to="/Followers"
             >
@@ -147,21 +115,29 @@ const NavBar = ({ ActiveTab }) => {
           {user && user.isAdmin ? (
             <Link
               className={`navIcons text-light ${
-                ActiveTab === "Analytics" ? "active" : ""
+                window.location.pathname ===
+                  "/Admin/Analytics/RegisteredUser" ||
+                window.location.pathname ===
+                  "/Admin/Analytics/FlaggedDiaries" ||
+                window.location.pathname ===
+                  "/Admin/Analytics/ReportedComments" ||
+                window.location.pathname === "/Admin/Analytics/ReportedUsers"
+                  ? "active"
+                  : ""
               }`}
-              to={`/Admin/Analytics/${RegisteredUser}`}
+              to={`/Admin/Analytics/RegisteredUser`}
             >
               <i className="bx bx-chart"></i>
               <p className="navToolTip">User Analytics</p>
             </Link>
-          ) : (
-            ""
-          )}
+          ) : null}
 
           {user && user.isAdmin == 1 ? (
             <Link
               className={`navIcons text-light ${
-                ActiveTab === "Complaints" ? "active" : ""
+                window.location.pathname === "/Admin/GenderBasedIncidents"
+                  ? "active"
+                  : ""
               }`}
               to="/Admin/GenderBasedIncidents"
             >
@@ -174,7 +150,9 @@ const NavBar = ({ ActiveTab }) => {
 
           <Link
             className={`navIcons text-light ${
-              ActiveTab === "Settings" ? "active" : ""
+              window.location.pathname === `/Settings/${user.userID}`
+                ? "active"
+                : ""
             }`}
             to={`/Settings/${user.userID}`}
           >
@@ -187,7 +165,7 @@ const NavBar = ({ ActiveTab }) => {
             <NotificationButton userID={user.userID} />
           </div>
           <div>
-            <AccountDropdown userID={user.userID} isAdmin={user.isAdmin} />
+            <AccountDropdown user={user} />
           </div>
         </div>
       </div>

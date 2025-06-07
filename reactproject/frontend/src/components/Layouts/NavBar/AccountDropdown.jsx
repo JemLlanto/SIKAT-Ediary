@@ -5,42 +5,19 @@ import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 
-const AccountDropdown = ({ isAdmin }) => {
-  const [user, setUser] = useState(null);
+const AccountDropdown = ({ user }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
 
-  const fetchUserData = async (userID) => {
-    try {
-      const response = await fetch(
-        `${
-          import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
-        }/fetchUser/user/${userID}`
-      );
-
-      if (!response.ok) {
-        throw new Error("User not found");
-      }
-
-      const data = await response.json();
-      setUser(data);
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
     const userData = localStorage.getItem("user");
     if (userData) {
-      const parsedUser = JSON.parse(userData);
-      fetchUserData(parsedUser.userID);
+      setLoading(false);
     } else {
       navigate("/");
     }
-  }, [navigate]);
+  }, [user]);
 
   const handleLogout = () => {
     const userData = localStorage.getItem("user");
@@ -174,7 +151,7 @@ const AccountDropdown = ({ isAdmin }) => {
           </Dropdown.Item>
         )}
 
-        {isAdmin === 1 ? (
+        {user.isAdmin === 1 ? (
           <Dropdown.Item className="dropdownItem w-100 btn text-end p-0">
             <Link
               className="text-decoration-none text-dark"

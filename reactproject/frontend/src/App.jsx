@@ -15,7 +15,7 @@ import Settings from "./components/pages/Settings";
 import Followers from "./components/pages/Followers";
 import UserCaseDetails from "./components/pages/PagesUser/CaseDetails";
 import Suspended from "./components/pages/PagesUser/Suspended";
-import 'boxicons/css/boxicons.min.css';
+import "boxicons/css/boxicons.min.css";
 import LoginRegister from "./components/pages/LoginRegister";
 
 // ADMIN
@@ -31,6 +31,7 @@ import Dashboard from "./components/pages/PagesAdmin/Dashboard";
 import "bootstrap/dist/css/bootstrap.min.css";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { InactivityProvider } from "./components/InactivityContext";
+import MainLayoutContext from "./components/MainLayoutContext";
 
 function App() {
   return (
@@ -63,43 +64,48 @@ function App() {
                 </ProtectedRoute>
               }
             />
-            {/* USER ROUTES */}
-            <Route path="/Home" element={<Home />} />
-            {/* <Route path="/Profile/:userID" element={<UserProfile />} /> */}
-            <Route path="/Profile/:userID" element={<Profile />} />
-            <Route path="/DiaryEntries/" element={<DiaryEntries />} />
-            <Route path="/DiaryEntry/:entryID" element={<DiaryEntry />} />
-            <Route path="/GetHelp/:userID" element={<GetHelp />} />
-            <Route path="/Settings/:userID" element={<Settings />} />
-            <Route path="/Followers" element={<Followers />} />
-            <Route
-              path="/CaseDetails/:reportID"
-              element={<UserCaseDetails />}
-            />
+            <Route element={<MainLayoutContext />}>
+              {/* USER ROUTES */}
+              <Route path="/Home" element={<Home />} />
+              {/* <Route path="/Profile/:userID" element={<UserProfile />} /> */}
+              <Route path="/Profile/:userID" element={<Profile />} />
+              <Route path="/DiaryEntries/" element={<DiaryEntries />} />
+              <Route path="/DiaryEntry/:entryID" element={<DiaryEntry />} />
+              <Route path="/GetHelp/:userID" element={<GetHelp />} />
+              <Route path="/Settings/:userID" element={<Settings />} />
+              <Route path="/Followers" element={<Followers />} />
+              <Route
+                path="/CaseDetails/:reportID"
+                element={<UserCaseDetails />}
+              />
 
-            <Route path="/suspended" element={<Suspended />} />
+              <Route path="/suspended" element={<Suspended />} />
 
-            {/* ADMIN ROUTES */}
-            <Route path="/Admin/Home" element={<AdminHome />} />
-            <Route
-              path="/Admin/GenderBasedIncidents"
-              element={<GenderBasedIncidents />}
-            />
-            <Route path="/Admin/Dashboard" element={<Dashboard />} />
-            <Route
-              path="/Admin/Manage-Moderators"
-              element={<ModeratorManagement />}
-            />
-            <Route path="/Admin/Analytics/:activeTab" element={<Analytics />} />
-            <Route
-              path="/Admin/CaseDetails/:reportID"
-              element={<CaseDetails />}
-            />
-            {/* <Route path="/Admin/Profile/:userID" element={<AdminProfile />} /> */}
-            <Route
-              path="/Admin/DiaryEntry/:entryID"
-              element={<AdminDiaryEntry />}
-            />
+              {/* ADMIN ROUTES */}
+              <Route path="/Admin/Home" element={<AdminHome />} />
+              <Route
+                path="/Admin/GenderBasedIncidents"
+                element={<GenderBasedIncidents />}
+              />
+              <Route path="/Admin/Dashboard" element={<Dashboard />} />
+              <Route
+                path="/Admin/Manage-Moderators"
+                element={<ModeratorManagement />}
+              />
+              <Route
+                path="/Admin/Analytics/:activeTab"
+                element={<Analytics />}
+              />
+              <Route
+                path="/Admin/CaseDetails/:reportID"
+                element={<CaseDetails />}
+              />
+              {/* <Route path="/Admin/Profile/:userID" element={<AdminProfile />} /> */}
+              <Route
+                path="/Admin/DiaryEntry/:entryID"
+                element={<AdminDiaryEntry />}
+              />
+            </Route>
           </Routes>
         </BrowserRouter>
       </InactivityProvider>

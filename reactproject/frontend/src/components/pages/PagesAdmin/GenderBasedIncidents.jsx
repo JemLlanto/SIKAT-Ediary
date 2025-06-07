@@ -151,7 +151,7 @@ export default function GenderBasedIncidents() {
   };
 
   return (
-    <MainLayout ActiveTab="Complaints">
+    <div div className="pt-4 pt-lg-0">
       <MessageAlert
         showModal={modal}
         closeModal={closeModal}
@@ -167,7 +167,7 @@ export default function GenderBasedIncidents() {
         needConfirm={1}
       ></MessageModal>
 
-      <div className="mt-0 mt-lg-2 pt-2 px-2">
+      <div className="mt-0 px-2">
         <div
           className="container rounded"
           style={{ backgroundColor: "var(--primary)" }}
@@ -263,6 +263,6 @@ export default function GenderBasedIncidents() {
           error={error}
         />
       </div>
-    </MainLayout>
+    </div>
   );
 }

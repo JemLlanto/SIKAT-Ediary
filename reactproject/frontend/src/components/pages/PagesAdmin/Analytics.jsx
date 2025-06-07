@@ -5,7 +5,6 @@ import Col from "react-bootstrap/Col";
 import Nav from "react-bootstrap/Nav";
 import Row from "react-bootstrap/Row";
 import Tab from "react-bootstrap/Tab";
-import MainLayout from "../../Layouts/MainLayout";
 import RegisteredUsers from "../../Layouts/LayoutAdmin/AnalyticsLayout/RegisteredUser";
 import FlaggedDiaries from "../../Layouts/LayoutAdmin/AnalyticsLayout/FlaggedDiaries";
 import ReportedComment from "../../Layouts/LayoutAdmin/AnalyticsLayout/ReportedComment";
@@ -146,14 +145,14 @@ const Analytics = () => {
   }, [user]);
 
   return (
-    <MainLayout ActiveTab="Analytics">
+    <div className="pt-4 pt-lg-0">
       <MessageModal
         showModal={modal}
         closeModal={closeModal}
         title={"Notice"}
         message={modal.message}
       ></MessageModal>
-      <div className="mt-0 mt-lg-2 pt-2 px-2">
+      <div className="mt-0  px-2">
         <div
           className="container rounded shadow"
           style={{ backgroundColor: "var(--primary)" }}
@@ -243,7 +242,7 @@ const Analytics = () => {
           </Tab.Container>
         </div>
       </div>
-    </MainLayout>
+    </div>
   );
 };
 

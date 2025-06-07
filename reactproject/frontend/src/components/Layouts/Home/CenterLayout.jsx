@@ -14,34 +14,15 @@ import MessageAlert from "../DiaryEntry/messageAlert";
 import NewUserSetUp from "../../pages/PagesUser/NewUserSetUp";
 import FilterButtonAdmin from "./FilterButtonAdmin";
 
-// const getData = async (url, params = {}) => {
-//   try {
-//     const response = await axios.get(url, { params });
-//     return response.data;
-//   } catch (error) {
-//     throw new Error(error.response ? error.response.data : error.message);
-//   }
-// };
-
-// const postData = async (url, data) => {
-//   try {
-//     const response = await axios.post(url, data);
-//     return response.data;
-//   } catch (error) {
-//     throw new Error(error.response ? error.response.data : error.message);
-//   }
-// };
-
-const CenterLayout = () => {
+const CenterLayout = ({ user }) => {
   const [entries, setEntries] = useState([]);
-  const [user, setUser] = useState(null);
   const [followedUsers, setFollowedUsers] = useState([]);
-  const [activeButtons, setActiveButtons] = useState({});
   const [expandButtons, setExpandButtons] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [filters, setFilters] = useState({});
   const [error, setError] = useState(null);
   const navigate = useNavigate();
+  const [doneFetched, setDoneFetched] = useState(false);
 
   const [modal, setModal] = useState({ show: false, message: "" });
   const [confirmModal, setConfirmModal] = useState({
@@ -63,39 +44,17 @@ const CenterLayout = () => {
     });
   };
 
-  const fetchUserData = async (userID) => {
-    try {
-      const response = await fetch(
-        `${
-          import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
-        }/fetchUser/user/${userID}`
-      );
-
-      if (!response.ok) {
-        throw new Error("User not found");
-      }
-
-      const data = await response.json();
-      setUser(data);
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   useEffect(() => {
     const userData = localStorage.getItem("user");
     if (userData) {
-      const parsedUser = JSON.parse(userData);
-      fetchUserData(parsedUser.userID);
+      setIsLoading(false);
     } else {
       navigate("/");
     }
-  }, [navigate]);
+  }, [user]);
 
   useEffect(() => {
-    if (user) {
+    if (user && !doneFetched) {
       fetchFollowedUsers(user.userID);
       fetchEntries(user.userID, filters);
     }
@@ -119,7 +78,8 @@ const CenterLayout = () => {
     try {
       // console.log("Fetching entries for user:", userID);
       // console.log("Applied filters:", filters);
-
+      setIsLoading(true);
+      console.log("Fetching entries...");
       const response = await axios.get(
         `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/entries`,
         {
@@ -148,6 +108,8 @@ const CenterLayout = () => {
     } catch (error) {
       console.error("There was an error fetching the diary entries!", error);
     } finally {
+      setDoneFetched(true);
+      console.log("Entries Fetched...");
       setIsLoading(false);
     }
   };
@@ -385,7 +347,7 @@ const CenterLayout = () => {
 
   return (
     <div
-      className="p-2 px-0 mx-sm-5 mx-md-0 overflow-hidden"
+      className="overflow-hidden mt-5 mt-lg-0 ms-0 ms-md-3 ms-lg-0 pb-2"
       style={{ minHeight: "50rem" }}
     >
       <MessageAlert

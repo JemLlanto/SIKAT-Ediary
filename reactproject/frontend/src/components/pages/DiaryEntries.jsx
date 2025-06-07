@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from "react";
 import MainLayout from "../Layouts/MainLayout";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useOutletContext } from "react-router-dom";
 import axios from "axios";
 import Spinner from "react-bootstrap/Spinner";
 import LeftSideLayout from "../Layouts/Home/LeftSideLayout";
 import { Modal } from "react-bootstrap";
+import { set } from "lodash";
 
 const DiaryEntries = () => {
-  const [user, setUser] = useState(null);
+  const { user } = useOutletContext();
   const [entries, setEntries] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -15,39 +16,15 @@ const DiaryEntries = () => {
   const ActiveTab = "Entries";
   const [entryModal, setEntryModal] = useState(false);
 
-  const showEntryModal = () => {
-    setEntryModal(true);
-  };
-
   useEffect(() => {
     const userData = localStorage.getItem("user");
 
     if (userData) {
-      const fetchUser = JSON.parse(userData);
-
-      fetch(
-        `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/fetchUser/user/${
-          fetchUser.userID
-        }`
-      )
-        .then((response) => {
-          if (!response.ok) {
-            throw new Error("User not found");
-          }
-          return response.json();
-        })
-        .then((data) => {
-          setUser(data);
-          setIsLoading(false);
-        })
-        .catch((err) => {
-          setError(err.message);
-          setIsLoading(false);
-        });
+      setIsLoading(false);
     } else {
       navigate("/");
     }
-  }, [navigate]);
+  }, [user]);
 
   useEffect(() => {
     if (user) {
@@ -160,16 +137,16 @@ const DiaryEntries = () => {
   if (!user) return null;
 
   return (
-    <MainLayout ActiveTab={ActiveTab}>
-      <div className="row mt-0 mt-lg-2 pt-2 px-2">
+    <>
+      <div className="row pt-4 pt-lg-0">
         <div
           className="col-lg-3 d-none d-lg-block"
           style={{ position: "sticky", top: "75px", height: "100%" }}
         >
-          <LeftSideLayout></LeftSideLayout>
+          <LeftSideLayout user={user}></LeftSideLayout>
         </div>
         <div className="col-lg">
-          <div className="container-fluid container-md mb-2 mt-4 mt-lg-2 px-0">
+          <div className="container-fluid container-md mb-2 mt-4 mt-lg-0 px-0">
             <div className="dateContainer shadow d-flex justify-content-center flex-wrap gap-1">
               <div className="ps-1">
                 <h4 className="m-0 text-light fw-bolder">
@@ -304,7 +281,7 @@ const DiaryEntries = () => {
           ))}
         </Modal.Body>
       </Modal>
-    </MainLayout>
+    </>
   );
 };
 

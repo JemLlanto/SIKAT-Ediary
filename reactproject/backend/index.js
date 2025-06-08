@@ -1412,9 +1412,10 @@ app.get("/entries", (req, res) => {
 
   if (Array.isArray(filters) && filters.length > 0) {
     const filterConditions = [];
-
+    console.log("\n");
     filters.forEach((filter) => {
       const lowerFilter = filter.toLowerCase(); // Convert once for consistency
+      console.log("Processing filter:", lowerFilter); // Log the filter being processed
 
       if (lowerFilter === "flagged diaries") {
         // All lowercase
@@ -1423,8 +1424,16 @@ app.get("/entries", (req, res) => {
         // All lowercase
         filterConditions.push(`diary_entries.containsAlarmingWords = 1`);
       } else if (lowerFilter !== "general") {
-        filterConditions.push(`LOWER(diary_entries.subjects) LIKE ?`);
+        filterConditions.push(`
+          (
+            LOWER(diary_entries.subjects) LIKE ?
+            OR LOWER(diary_entries.subjects) LIKE ?
+            OR diary_entries.subjects IS NULL
+            OR TRIM(diary_entries.subjects) = ''
+          )
+        `);
         queryParams.push(`%${lowerFilter}%`);
+        queryParams.push("%general%");
       }
     });
 
@@ -1432,7 +1441,8 @@ app.get("/entries", (req, res) => {
       query += ` AND (${filterConditions.join(" OR ")})`;
     }
 
-    console.log("Filter conditions:", filterConditions); // This should now log correctly
+    // console.log("Filter conditions:", filterConditions);
+    // This should now log correctly
   }
 
   query += ` 
@@ -4363,7 +4373,7 @@ app.delete("/deleteUserFilters", (req, res) => {
         res.status(500).json({ error: "Failed to delete " });
       } else {
         if (result.affectedRows > 0) {
-          res.json({ message: " deleted successfully" });
+          res.status(200).json({ message: " deleted successfully" });
         } else {
           res.status(404).json({ error: "filter not found" });
         }

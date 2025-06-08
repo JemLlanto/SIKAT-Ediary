@@ -47,7 +47,7 @@ const CenterLayout = ({ user }) => {
   useEffect(() => {
     const userData = localStorage.getItem("user");
     if (userData) {
-      setIsLoading(false);
+      // setIsLoading(false);
     } else {
       navigate("/");
     }
@@ -56,7 +56,7 @@ const CenterLayout = ({ user }) => {
   useEffect(() => {
     if (user && !doneFetched) {
       fetchFollowedUsers(user.userID);
-      fetchEntries(user.userID, filters);
+      // fetchEntries(user.userID, filters);
     }
   }, [user, filters]);
 
@@ -79,7 +79,7 @@ const CenterLayout = ({ user }) => {
       // console.log("Fetching entries for user:", userID);
       // console.log("Applied filters:", filters);
       setIsLoading(true);
-      console.log("Fetching entries...");
+      console.log("Fetching entries with filters:", filters);
       const response = await axios.get(
         `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/entries`,
         {
@@ -103,7 +103,10 @@ const CenterLayout = ({ user }) => {
         );
         return { ...entry, isGadified };
       });
-
+      console.log(
+        "Entry subjects: ",
+        updatedEntries.map((e) => e.subjects)
+      );
       setEntries(updatedEntries);
     } catch (error) {
       console.error("There was an error fetching the diary entries!", error);
@@ -339,10 +342,6 @@ const CenterLayout = ({ user }) => {
     setVisibleEntries((prev) => prev + 10); // Load 10 more entries
   };
 
-  if (isLoading) {
-    return <CenterLoader></CenterLoader>;
-  }
-
   if (!user) return null;
 
   return (
@@ -543,6 +542,7 @@ const CenterLayout = ({ user }) => {
         <>
           <div className="d-flex justify-content-end">
             <FilterButtonAdmin
+              fetchEntries={fetchEntries}
               onFilterChange={handleFilterChange}
               userID={user.userID}
             />
@@ -551,54 +551,66 @@ const CenterLayout = ({ user }) => {
       ) : (
         <div className="d-flex justify-content-end">
           <FilterButton
+            fetchEntries={fetchEntries}
             onFilterChange={handleFilterChange}
             userID={user.userID}
           />
         </div>
       )}
-      {/* FOR POSTED DIARIES */}
-      {entries.length === 0 ? (
-        <p>No entries available.</p>
-      ) : (
-        entries
-          .filter((entry) => {
-            const now = new Date();
-            const scheduledDate = new Date(entry.scheduledDate);
-            const dateToBePosted = new Date();
-            return scheduledDate < dateToBePosted;
-          })
-          .slice(0, visibleEntries)
-          .map((entry) => (
-            <DiaryEntryLayout
-              // key={entry.entryID}
-              entry={entry}
-              user={user}
-              followedUsers={followedUsers}
-              suspended={entry.isSuspended}
-              handleFollowToggle={handleFollowToggle}
-              handleClick={handleClick}
-              expandButtons={expandButtons}
-              formatDate={formatDate}
-            />
-          ))
-      )}
-      {visibleEntries < entries.length ? (
-        <button className="w-100 btn btn-secondary" onClick={loadMoreEntries}>
-          Load More
-        </button>
+      {isLoading ? (
+        <>
+          <CenterLoader></CenterLoader>
+        </>
       ) : (
         <>
-          <button
-            className="w-100 btn btn-secondary"
-            onClick={() => {
-              window.scrollTo({ top: 0, behavior: "smooth" }); // Scroll to top
-              setTimeout(() => {
-                window.location.reload(); // Refresh page
-              }, 500); // Wait for smooth scroll before refreshing
-            }}
-          >
-            Your reached the end, see new entries.
-          </button>
+          {/* FOR POSTED DIARIES */}
+          {entries.length === 0 ? (
+            <p>No entries available.</p>
+          ) : (
+            entries
+              .filter((entry) => {
+                const now = new Date();
+                const scheduledDate = new Date(entry.scheduledDate);
+                const dateToBePosted = new Date();
+                return scheduledDate < dateToBePosted;
+              })
+              .slice(0, visibleEntries)
+              .map((entry) => (
+                <DiaryEntryLayout
+                  // key={entry.entryID}
+                  entry={entry}
+                  user={user}
+                  followedUsers={followedUsers}
+                  suspended={entry.isSuspended}
+                  handleFollowToggle={handleFollowToggle}
+                  handleClick={handleClick}
+                  expandButtons={expandButtons}
+                  formatDate={formatDate}
+                />
+              ))
+          )}
+          {visibleEntries < entries.length ? (
+            <button
+              className="w-100 btn btn-secondary"
+              onClick={loadMoreEntries}
+            >
+              Load More
+            </button>
+          ) : (
+            <>
+              <button
+                className="w-100 btn btn-secondary"
+                onClick={() => {
+                  window.scrollTo({ top: 0, behavior: "smooth" }); // Scroll to top
+                  setTimeout(() => {
+                    window.location.reload(); // Refresh page
+                  }, 500); // Wait for smooth scroll before refreshing
+                }}
+              >
+                Your reached the end, see new entries.
+              </button>
+            </>
+          )}
         </>
       )}
     </div>

@@ -3,14 +3,22 @@ import { ToggleButton } from "react-bootstrap";
 import { useState, useEffect } from "react";
 import axios from "axios";
 
-const FilterButton = ({ onFilterChange, userID, initialFilters }) => {
+const FilterButton = ({
+  fetchEntries,
+  onFilterChange,
+  userID,
+  initialFilters,
+}) => {
   const [selectedItems, setSelectedItems] = useState({});
   const [filterOptions, setFilterOptions] = useState([]);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [alreadyFetched, setAlreadyFetched] = useState(false);
 
   useEffect(() => {
     const fetchFilters = async () => {
       try {
+        setIsLoading(true);
         const response = await axios.get(
           `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/filters`
         );
@@ -23,31 +31,38 @@ const FilterButton = ({ onFilterChange, userID, initialFilters }) => {
 
         setFilterOptions(filters);
 
-        if (userID) {
+        if (userID && !alreadyFetched) {
           const userFiltersResponse = await axios.get(
             `${
               import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
             }/getUserFilters/${userID}`
           );
-          const savedFilters = userFiltersResponse.data.filters;
+          if (userFiltersResponse.status === 200) {
+            const savedFilters = userFiltersResponse.data.filters;
 
-          const updatedItems = { ...initialItems };
-          savedFilters.forEach((filter) => {
-            if (updatedItems.hasOwnProperty(filter)) {
-              updatedItems[filter] = true;
-            }
-          });
-
-          setSelectedItems(updatedItems);
-          onFilterChange(savedFilters);
+            const updatedItems = { ...initialItems };
+            savedFilters.forEach((filter) => {
+              if (updatedItems.hasOwnProperty(filter)) {
+                updatedItems[filter] = true;
+              }
+            });
+            console.log("User filters fetched:", savedFilters);
+            setSelectedItems(updatedItems);
+            onFilterChange(savedFilters);
+            setAlreadyFetched(true);
+            console.log("Fetching entries based on saved filters.");
+            fetchEntries(userID, savedFilters);
+          }
         }
       } catch (err) {
         console.error("Error fetching filters:", err);
+      } finally {
+        setIsLoading(false);
       }
     };
 
     fetchFilters();
-  }, [userID]);
+  }, [userID, alreadyFetched]);
 
   const handleToggleChange = async (subject) => {
     const updatedItems = { ...selectedItems };
@@ -83,7 +98,11 @@ const FilterButton = ({ onFilterChange, userID, initialFilters }) => {
         selectedSubjectsText.push(filter.subject);
       }
     });
-
+    console.log(
+      "Fetching entries based on updated filters: ",
+      selectedSubjectsText
+    );
+    fetchEntries(userID, selectedSubjectsText);
     onFilterChange(selectedSubjectsText); // Make sure this gets called with the correct array
 
     // Update filters in the backend
@@ -94,7 +113,7 @@ const FilterButton = ({ onFilterChange, userID, initialFilters }) => {
 
         if (wasSelected !== isSelected) {
           if (isSelected) {
-            await axios.post(
+            const res = await axios.post(
               `${
                 import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
               }/saveUserFilterss`,
@@ -103,8 +122,11 @@ const FilterButton = ({ onFilterChange, userID, initialFilters }) => {
                 filter: filter.subject,
               }
             );
+            if (res.status === 200) {
+              console.log(`Filter ${filter.subject} saved for user ${userID}`);
+            }
           } else {
-            await axios.delete(
+            const res = await axios.delete(
               `${
                 import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
               }/deleteUserFilters`,
@@ -115,6 +137,11 @@ const FilterButton = ({ onFilterChange, userID, initialFilters }) => {
                 },
               }
             );
+            if (res.status === 200) {
+              console.log(
+                `Filter ${filter.subject} deleted for user ${userID}`
+              );
+            }
           }
         }
       });
@@ -147,35 +174,55 @@ const FilterButton = ({ onFilterChange, userID, initialFilters }) => {
         style={{ zIndex: "1000", width: "clamp(13rem, 15dvw, 15rem)" }}
       >
         <div className="fiterToggle d-flex flex-column gap-1">
-          {/* Place General filter at the top */}
-          <ToggleButton
-            key="General"
-            id="toggle-General"
-            type="checkbox"
-            checked={selectedItems["General"] || false}
-            value="General"
-            onChange={() => handleToggleChange("General")}
-            className="w-100 text-start"
-          >
-            <p className="m-0">Select All</p>
-          </ToggleButton>
-
-          {/* Other filters */}
-          {filterOptions
-            .filter((filter) => filter.subject !== "General")
-            .map((filter) => (
+          {isLoading ? (
+            <>
+              {" "}
               <ToggleButton
-                key={filter.subject}
-                id={`toggle-${filter.subject}`}
+                key="General"
+                id="toggle-General"
                 type="checkbox"
-                checked={selectedItems[filter.subject] || false}
-                value={filter.subject}
-                onChange={() => handleToggleChange(filter.subject)}
+                checked
+                value="General"
+                // onChange={() => handleToggleChange("General")}
+                className="w-100 text-start"
+                disabled
+              >
+                <p className="m-0">Loading...</p>
+              </ToggleButton>
+            </>
+          ) : (
+            <>
+              {/* Place General filter at the top */}
+              <ToggleButton
+                key="General"
+                id="toggle-General"
+                type="checkbox"
+                checked={selectedItems["General"] || false}
+                value="General"
+                onChange={() => handleToggleChange("General")}
                 className="w-100 text-start"
               >
-                <p className="m-0">{filter.subject}</p>
+                <p className="m-0">Select All</p>
               </ToggleButton>
-            ))}
+
+              {/* Other filters */}
+              {filterOptions
+                .filter((filter) => filter.subject !== "General")
+                .map((filter) => (
+                  <ToggleButton
+                    key={filter.subject}
+                    id={`toggle-${filter.subject}`}
+                    type="checkbox"
+                    checked={selectedItems[filter.subject] || false}
+                    value={filter.subject}
+                    onChange={() => handleToggleChange(filter.subject)}
+                    className="w-100 text-start"
+                  >
+                    <p className="m-0">{filter.subject}</p>
+                  </ToggleButton>
+                ))}
+            </>
+          )}
         </div>
         {/* <button
           className="w-100 orangeButton py-1 mt-2"

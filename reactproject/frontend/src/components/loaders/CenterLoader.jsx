@@ -7,18 +7,6 @@ const CenterLoader = () => {
   return (
     <div className="mt-5 mt-lg-0 ms-0 ms-md-3 ms-lg-0 pb-2">
       <div
-        className="rounded shadow-sm p-3 mt-1"
-        style={{ backgroundColor: "white" }}
-      >
-        <button className="primaryButton w-100 d-flex justify-content-center align-items-center py-2">
-          <Spinner animation="border" size="sm" />
-          <p className="m-0">Loading...</p>
-        </button>
-      </div>
-      <div className="d-flex justify-content-end">
-        <FilterButton />
-      </div>
-      <div
         className="position-relative rounded shadow-sm p-3 mb-2"
         style={{ backgroundColor: "white" }}
       >

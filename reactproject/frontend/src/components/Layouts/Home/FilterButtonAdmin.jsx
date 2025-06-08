@@ -3,11 +3,13 @@ import { ToggleButton } from "react-bootstrap";
 import { useState, useEffect } from "react";
 import axios from "axios";
 
-const FilterButtonAdmin = ({ onFilterChange, userID }) => {
+const FilterButtonAdmin = ({ fetchEntries, onFilterChange, userID }) => {
   const [selectedItems, setSelectedItems] = useState({});
   const [filterOptions, setFilterOptions] = useState([]);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [alreadyFetched, setAlreadyFetched] = useState(false);
 
   useEffect(() => {
     const fetchFilters = async () => {
@@ -24,7 +26,7 @@ const FilterButtonAdmin = ({ onFilterChange, userID }) => {
 
         setFilterOptions(filters);
 
-        if (userID) {
+        if (userID && !alreadyFetched) {
           const userFiltersResponse = await axios.get(
             `${
               import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
@@ -41,6 +43,9 @@ const FilterButtonAdmin = ({ onFilterChange, userID }) => {
 
           setSelectedItems(updatedItems);
           onFilterChange(savedFilters);
+          console.log("Fetching entries based on saved filters.");
+          fetchEntries(userID, savedFilters);
+          setAlreadyFetched(true);
         }
       } catch (err) {
         console.error("Error fetching filters:", err);
@@ -83,6 +88,8 @@ const FilterButtonAdmin = ({ onFilterChange, userID }) => {
       }
     });
 
+    console.log("Fetching entries based on updated filters.");
+    fetchEntries(userID, selectedadminFilterSubjectsText);
     onFilterChange(selectedadminFilterSubjectsText);
 
     // Update filters in the backend

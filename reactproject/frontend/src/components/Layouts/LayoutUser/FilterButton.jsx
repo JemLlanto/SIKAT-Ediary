@@ -56,47 +56,14 @@ const FilterButton = ({ onFilterChange }) => {
 
   return (
     <Dropdown>
-      <Dropdown.Toggle className="border-0" variant="" id="dropdown-basic">
+      <Dropdown.Toggle
+        className="border-0"
+        variant=""
+        id="dropdown-basic"
+        disabled
+      >
         Filter
       </Dropdown.Toggle>
-
-      <Dropdown.Menu className="px-2">
-        <Form.Check
-          type="checkbox"
-          id="all"
-          label="All"
-          name="all"
-          checked={selectedItems.all}
-          onChange={handleCheckboxChange}
-        />
-        <Form.Check
-          type="checkbox"
-          id="sexualHarassment"
-          label="Sexual Harassment"
-          name="sexualHarassment"
-          checked={selectedItems.sexualHarassment}
-          onChange={handleCheckboxChange}
-        />
-        <Form.Check
-          type="checkbox"
-          id="domesticAbuse"
-          label="Domestic Abuse"
-          name="domesticAbuse"
-          checked={selectedItems.domesticAbuse}
-          onChange={handleCheckboxChange}
-        />
-        <Form.Check
-          type="checkbox"
-          id="genderRelated"
-          label="Gender Related"
-          name="genderRelated"
-          checked={selectedItems.genderRelated}
-          onChange={handleCheckboxChange}
-        />
-        <button className="orangeButton w-100" onClick={applyFilters}>
-          Save Filter
-        </button>
-      </Dropdown.Menu>
     </Dropdown>
   );
 };

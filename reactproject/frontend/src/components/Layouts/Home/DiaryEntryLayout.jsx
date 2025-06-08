@@ -118,7 +118,9 @@ const DiaryEntryLayout = ({
       console.log("Fetching single entry...");
       // setLoading(true);
       const response = await axios.get(
-        `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/entries`,
+        `${
+          import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+        }/entries/fetchEntries`,
         {
           params: { userID, filters },
         }

@@ -1,5 +1,47 @@
 const db = require("../database");
-const pusher = require("../pusher");
+const Pusher = require("pusher");
+const multer = require("multer");
+const path = require("path");
+const fs = require("fs");
+
+const pusher = new Pusher({
+  appId: "1875705",
+  key: "4810211a14a19b86f640",
+  secret: "e3bd24cb43cd9520c5ca",
+  cluster: "ap1",
+  useTLS: true,
+});
+
+// FOR UPLOADING IMAGES
+const diaryImageStorageAdmin = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, diaryImagesDirAdmin);
+  },
+  filename: (req, file, cb) => {
+    cb(null, Date.now() + path.extname(file.originalname));
+  },
+});
+
+const uploadDiaryImageAdmin = multer({
+  storage: diaryImageStorageAdmin,
+  limits: { fileSize: 5 * 1024 * 1024 },
+  fileFilter: (req, file, cb) => {
+    const allowedTypes = ["image/jpeg", "image/png", "image/gif"];
+    if (!allowedTypes.includes(file.mimetype)) {
+      const error = new Error("INVALID_FILE_TYPE");
+      error.code = "INVALID_FILE_TYPE";
+      return cb(error);
+    }
+    cb(null, true);
+  },
+});
+
+//user diary_images upload
+const diaryImagesDirUser = path.join(__dirname, "uploads", "user_diary_images");
+
+if (!fs.existsSync(diaryImagesDirUser)) {
+  fs.mkdirSync(diaryImagesDirUser, { recursive: true });
+}
 
 const fetchingEntries = (req, res) => {
   const userID = req.query.userID;
@@ -190,4 +232,79 @@ const fetchingEntries = (req, res) => {
   });
 };
 
-module.exports = { loginUser };
+const uploadImageForAdminEntry = (req, res, next) => {
+  uploadDiaryImageAdmin.single("file")(req, res, function (err) {
+    if (err) {
+      if (err.code === "LIMIT_FILE_SIZE") {
+        return res
+          .status(400)
+          .send({ message: "File size is too large. Maximum 5MB allowed." });
+      }
+      if (err.code === "INVALID_FILE_TYPE") {
+        return res
+          .status(400)
+          .send({ message: "Only image files are allowed." });
+      }
+      return res.status(500).send({ message: "File upload error." });
+    }
+    next();
+  });
+};
+
+const insertAdminPost = (req, res) => {
+  const {
+    isAnnouncement,
+    title,
+    description,
+    userID,
+    anonimity = "public",
+    scheduledDate,
+  } = req.body;
+  const file = req.file;
+
+  // Validate required fields
+  if (!title || !description || !userID) {
+    return res
+      .status(400)
+      .send({ message: "Title, description, and userID are required." });
+  }
+
+  let diary_image = "";
+  if (file) {
+    diary_image = `/uploads/admin_diary_images/${file.filename}`;
+  }
+
+  const isScheduled = scheduledDate ? 1 : 0;
+
+  const query = `
+      INSERT INTO diary_entries (isAnnouncement, title, description, userID, diary_image, anonimity, scheduledDate, isScheduled)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    `;
+  const values = [
+    isAnnouncement,
+    title,
+    description,
+    userID,
+    diary_image,
+    anonimity,
+    scheduledDate,
+    isScheduled,
+  ];
+
+  db.query(query, values, (err, result) => {
+    if (err) {
+      console.error("Error inserting diary entry:", err);
+      return res
+        .status(500)
+        .send({ message: "Failed to save diary entry. Please try again." });
+    }
+
+    res.status(200).send({
+      message: isScheduled
+        ? "Entry scheduled successfully!"
+        : "Entry published successfully!",
+    });
+  });
+};
+
+module.exports = { fetchingEntries, uploadImageForAdminEntry, insertAdminPost };

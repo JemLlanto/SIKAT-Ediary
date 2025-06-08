@@ -1,9 +1,13 @@
 const express = require("express");
 const router = express.Router();
-const { loginUser } = require("../controllers/authController");
+const {
+  fetchingEntries,
+  uploadImageForAdminEntry,
+  insertAdminPost,
+} = require("../controllers/entriesController");
 
-router.post("/Login", loginUser);
+router.get("/fetchEntries", fetchingEntries);
 
-app.get("/entries", (req, res) => {});
+router.post("/insertAdminEntry", uploadImageForAdminEntry, insertAdminPost);
 
 module.exports = router;

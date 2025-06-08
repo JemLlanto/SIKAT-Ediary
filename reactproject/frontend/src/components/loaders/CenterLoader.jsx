@@ -1,18 +1,14 @@
 import DefaultProfile from "../../assets/userDefaultProfile.png";
-import FilterButton from "../Layouts/LayoutUser/FilterButton";
 import HomeDiaryDropdown from "../Layouts/LayoutUser/HomeDiaryDropdown";
-import Spinner from "react-bootstrap/Spinner";
 
 const CenterLoader = () => {
   return (
-    <div className="mt-5 mt-lg-0 ms-0 ms-md-3 ms-lg-0 pb-2">
+    <div className=" ms-0 ms-md-3 ms-lg-0 pb-2">
       <div
         className="position-relative rounded shadow-sm p-3 mb-2"
         style={{ backgroundColor: "white" }}
       >
-        <div className="position-absolute" style={{ right: "20px" }}>
-          <HomeDiaryDropdown></HomeDiaryDropdown>
-        </div>
+        <div className="position-absolute" style={{ right: "20px" }}></div>
         <div className="d-flex align-items-center border-bottom pb-2 gap-2">
           <div className="profilePicture" style={{ backgroundColor: "#ffff" }}>
             <img
@@ -97,9 +93,9 @@ const CenterLoader = () => {
           ></p>
         </div>
 
-        <div className="row pt-2">
-          <div className="col">
-            <button className="InteractButton">
+        <div className="row px-3 pt-2 gap-2">
+          <div className="col px-0">
+            <button className="border rounded bg-white w-100 py-1 px-3">
               <p
                 className="m-0 my-2"
                 style={{
@@ -111,8 +107,8 @@ const CenterLoader = () => {
               ></p>
             </button>
           </div>
-          <div className="col">
-            <button className="InteractButton">
+          <div className="col px-0">
+            <button className="border rounded bg-white w-100 py-1 px-3">
               <p
                 className="m-0 my-2"
                 style={{
@@ -124,8 +120,8 @@ const CenterLoader = () => {
               ></p>
             </button>
           </div>
-          <div className="col">
-            <button className="InteractButton">
+          <div className="col px-0">
+            <button className="border rounded bg-white w-100 py-1 px-3">
               <p
                 className="m-0 my-2"
                 style={{
@@ -143,9 +139,7 @@ const CenterLoader = () => {
         className="position-relative rounded shadow-sm p-3 mb-2"
         style={{ backgroundColor: "white" }}
       >
-        <div className="position-absolute" style={{ right: "20px" }}>
-          <HomeDiaryDropdown></HomeDiaryDropdown>
-        </div>
+        <div className="position-absolute" style={{ right: "20px" }}></div>
         <div className="d-flex align-items-center border-bottom pb-2 gap-2">
           <div className="profilePicture" style={{ backgroundColor: "#ffff" }}>
             <img
@@ -220,9 +214,9 @@ const CenterLoader = () => {
           </div>
         </div>
 
-        <div className="row pt-2">
-          <div className="col">
-            <button className="InteractButton">
+        <div className="row px-3 pt-2 gap-2">
+          <div className="col px-0">
+            <button className="border rounded bg-white w-100 py-1 px-3">
               <p
                 className="m-0 my-2"
                 style={{
@@ -234,8 +228,8 @@ const CenterLoader = () => {
               ></p>
             </button>
           </div>
-          <div className="col">
-            <button className="InteractButton">
+          <div className="col px-0">
+            <button className="border rounded bg-white w-100 py-1 px-3">
               <p
                 className="m-0 my-2"
                 style={{
@@ -247,8 +241,8 @@ const CenterLoader = () => {
               ></p>
             </button>
           </div>
-          <div className="col">
-            <button className="InteractButton">
+          <div className="col px-0">
+            <button className="border rounded bg-white w-100 py-1 px-3">
               <p
                 className="m-0 my-2"
                 style={{
@@ -266,9 +260,7 @@ const CenterLoader = () => {
         className="position-relative rounded shadow-sm p-3 mb-2"
         style={{ backgroundColor: "white" }}
       >
-        <div className="position-absolute" style={{ right: "20px" }}>
-          <HomeDiaryDropdown></HomeDiaryDropdown>
-        </div>
+        <div className="position-absolute" style={{ right: "20px" }}></div>
         <div className="d-flex align-items-center border-bottom pb-2 gap-2">
           <div className="profilePicture" style={{ backgroundColor: "#ffff" }}>
             <img
@@ -361,9 +353,9 @@ const CenterLoader = () => {
           </div>
         </div>
 
-        <div className="row pt-2">
-          <div className="col">
-            <button className="InteractButton">
+        <div className="row px-3 pt-2 gap-2">
+          <div className="col px-0">
+            <button className="border rounded bg-white w-100 py-1 px-3">
               <p
                 className="m-0 my-2"
                 style={{
@@ -375,8 +367,8 @@ const CenterLoader = () => {
               ></p>
             </button>
           </div>
-          <div className="col">
-            <button className="InteractButton">
+          <div className="col px-0">
+            <button className="border rounded bg-white w-100 py-1 px-3">
               <p
                 className="m-0 my-2"
                 style={{
@@ -388,8 +380,8 @@ const CenterLoader = () => {
               ></p>
             </button>
           </div>
-          <div className="col">
-            <button className="InteractButton">
+          <div className="col px-0">
+            <button className="border rounded bg-white w-100 py-1 px-3">
               <p
                 className="m-0 my-2"
                 style={{

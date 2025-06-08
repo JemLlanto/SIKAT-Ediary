@@ -178,7 +178,9 @@ function PostButton({ onEntrySaved }) {
 
     axios
       .post(
-        `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/entryadmin`,
+        `${
+          import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+        }/entries/insertAdminEntry`,
         formData,
         {
           headers: {

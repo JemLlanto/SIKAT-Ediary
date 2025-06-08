@@ -121,7 +121,9 @@ const DiaryEntryLayout = ({
   const fetchEntries = async (userID, filters) => {
     try {
       const response = await axios.get(
-        `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/entries`,
+        `${
+          import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+        }/entries/fetchEntries`,
         {
           params: { userID, filters },
         }

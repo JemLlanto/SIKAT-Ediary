@@ -61,7 +61,10 @@ const NavBar = ({ ActiveTab, user, loading }) => {
         <div className="w-100 d-flex justify-content-center text-light gap-1 pt-2 pt-md-0 ">
           <Link
             className={`navIcons text-light ${
-              window.location.pathname === "/Home" ? "active" : ""
+              window.location.pathname === "/Home" ||
+              window.location.pathname === "/Admin/Home"
+                ? "active"
+                : ""
             }`}
             to={user && user.isAdmin ? "/Admin/Home" : "/Home"}
             onClick={(e) => {

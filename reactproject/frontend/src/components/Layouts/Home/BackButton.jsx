@@ -13,6 +13,7 @@ const BackButton = () => {
         fontSize: "clamp(1.1rem, 5dvw, 1.5rem)",
         top: "5rem",
         left: "1rem",
+        zIndex: "10000",
       }}
       onClick={() => navigate(-1)}
     >

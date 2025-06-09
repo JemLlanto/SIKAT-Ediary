@@ -1,7 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import AnonymousIcon from "../../../assets/anonymous.png";
-import MainLayout from "../../Layouts/MainLayout";
 import CommentDropdown from "../../Layouts/CommentSection/CommentDropdown";
 import DiaryEntryLayout from "../../Layouts/Home/DiaryEntryLayout";
 import axios from "axios";
@@ -87,7 +86,7 @@ const DiaryEntry = () => {
       const response = await axios.get(
         `${
           import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
-        }/followedUsers/${userID}`
+        }/follow/fetchFollowedUsers/${userID}`
       );
       setFollowedUsers(response.data.map((user) => user.userID));
     } catch (error) {
@@ -166,7 +165,7 @@ const DiaryEntry = () => {
   };
 
   return (
-    <MainLayout>
+    <>
       <div
         className="d-flex align-items-center justify-content-center pb-3"
         style={{ minHeight: "70vh" }}
@@ -196,7 +195,7 @@ const DiaryEntry = () => {
           ))
         )}
       </div>
-    </MainLayout>
+    </>
   );
 };
 

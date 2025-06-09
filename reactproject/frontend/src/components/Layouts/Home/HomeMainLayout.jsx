@@ -25,7 +25,7 @@ export default function HomeMainLayout({}) {
 
   useEffect(() => {
     if (isInactive) {
-      setShowModal(true); // Show modal when inactivity detected
+      handleReload();
     }
   }, [isInactive]);
 
@@ -98,43 +98,14 @@ export default function HomeMainLayout({}) {
               width: "25%",
             }}
           >
-            {user?.isAdmin ? <AdminRightSide /> : <RightSide />}
+            {user?.isAdmin ? (
+              <AdminRightSide user={user} />
+            ) : (
+              <RightSide user={user} />
+            )}
           </div>
         </div>
       </div>
-
-      {/* Modal for inactivity alert */}
-      {showModal && (
-        <div
-          className="modal show d-block"
-          tabIndex="-1"
-          style={{
-            display: "block",
-            backgroundColor: "rgba(0, 0, 0, 0.5)",
-            zIndex: 1050,
-          }}
-        >
-          <div className="modal-dialog">
-            <div className="modal-content">
-              <div className="modal-header">
-                <h5 className="modal-title">Inactivity Alert</h5>
-              </div>
-              <div className="modal-body">
-                <p>You have been inactive. The page will be reloaded.</p>
-              </div>
-              <div className="modal-footer">
-                <button
-                  type="button"
-                  className="w-100 primaryButton"
-                  onClick={handleReload}
-                >
-                  Reload Page
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </>
   );
 }

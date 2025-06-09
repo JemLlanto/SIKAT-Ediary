@@ -13,45 +13,24 @@ const LeftSideAdmin = ({ user }) => {
   useEffect(() => {
     const userData = localStorage.getItem("user");
     if (userData) {
-      setIsLoading(false);
+      // setIsLoading(false);
     } else {
       navigate("/");
     }
   }, [user]);
 
   useEffect(() => {
-    if (user && !isLoading) {
+    if (user) {
       fetchEntries();
     }
   }, [user, isLoading]);
-
-  const fetchUserData = async (userID) => {
-    try {
-      const response = await axios.get(
-        `${
-          import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
-        }/fetchUser/user/${userID}`
-      );
-
-      if (response.status !== 200) {
-        throw new Error("User not found");
-      }
-
-      const data = response.data;
-      setUser(data);
-      setIsLoading(false);
-    } catch (err) {
-      setError(err.message);
-      setIsLoading(false);
-    }
-  };
 
   const fetchEntries = async () => {
     try {
       const response = await axios.get(
         `${
           import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
-        }/fetchUserEntry/user/${user.userID}`
+        }/entries/fetchLeftSideEntry/${user.userID}`
       );
       setEntries(response.data.entries || []);
     } catch (err) {

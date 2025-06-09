@@ -4,7 +4,6 @@ import FloatingLabel from "react-bootstrap/FloatingLabel";
 import Form from "react-bootstrap/Form";
 import SubjectSelection from "../../Layouts/LayoutUser/SubjectSelection";
 import axios from "axios";
-import MainLayout from "../../Layouts/MainLayout";
 
 import { Link, useNavigate, useParams } from "react-router-dom";
 import MessageAlert from "../../Layouts/DiaryEntry/messageAlert";
@@ -26,6 +25,7 @@ const GetHelp = () => {
     selectedSubjects: "",
     supportingDocuments: [null, null, null, null, null],
   });
+  const [isLoading, setIsLoading] = useState(false);
 
   const [modal, setModal] = useState({ show: false, message: "" });
   const [confirmModal, setConfirmModal] = useState({
@@ -83,9 +83,19 @@ const GetHelp = () => {
     }
   };
 
-  const handleRemoveImage = (index) => {
-    const updatedDocuments = [...formData.supportingDocuments];
-    updatedDocuments[index] = null;
+  const handleRemoveImage = (indexToRemove) => {
+    // Filter out the item to remove and keep the rest
+    const filteredDocs = formData.supportingDocuments.filter(
+      (doc, i) => i !== indexToRemove && doc !== null
+    );
+    // Fill the remaining slots with nulls to maintain length 5
+    const updatedDocuments = [
+      ...filteredDocs,
+      ...Array(5 - filteredDocs.length).fill(null),
+    ];
+    console.log("Before:", formData.supportingDocuments);
+    console.log("After:", updatedDocuments);
+
     setFormData({ ...formData, supportingDocuments: updatedDocuments });
   };
 
@@ -119,31 +129,36 @@ const GetHelp = () => {
     }
 
     try {
+      setIsLoading(true);
       const response = await axios.post(
         `${
           import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
-        }/submit-report/${userID}`,
+        }/incidents/submit-report/${userID}`,
         data,
         { headers: { "Content-Type": "multipart/form-data" } }
       );
-      setModal({
-        show: true,
-        message: `Case filed successfully.`,
-      });
-      setTimeout(() => {
-        navigate("/Home");
-      }, 2000);
+      if (response.status === 200) {
+        setModal({
+          show: true,
+          message: `Case filed successfully.`,
+        });
+        setTimeout(() => {
+          navigate("/Home");
+        }, 2000);
+      }
     } catch (error) {
       console.error("Error submitting report:", error);
       setModal({
         show: true,
         message: `Error submitting report. Invalid file type.`,
       });
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
-    <MainLayout>
+    <>
       <BackButton />
       {/* <PreLoader /> */}
 
@@ -154,7 +169,7 @@ const GetHelp = () => {
         message={modal.message}
       ></MessageAlert>
 
-      <div className="d-flex justify-content-center py-3 mt-3 mt-md-1">
+      <div className="d-flex justify-content-center mb-3 pt-5 py-lg-0 mt-5 mt-md-0">
         <div
           className="container-fluid container-md rounded shadow p-3"
           style={{
@@ -172,14 +187,15 @@ const GetHelp = () => {
             style={{ minHeight: "20rem" }}
           >
             <h5 className="mt-2">Report Details</h5>
-            <div className="input-group mb-1">
+            <div className="input-group mb-2">
               <input
                 type="text"
                 className="form-control"
-                placeholder="Victim's Name(Optional)"
+                placeholder="Victim's Name(or alias)"
                 name="victimName"
                 value={formData.victimName}
                 onChange={handleChange}
+                required
               />
             </div>
             <div className="row">
@@ -222,7 +238,7 @@ const GetHelp = () => {
               )}
             </h5>
             <div className="row">
-              <div className="col-md input-group mb-1 ">
+              <div className="col-md input-group mb-2 ">
                 <input
                   type="text"
                   className="form-control"
@@ -232,7 +248,7 @@ const GetHelp = () => {
                   onChange={handleChange}
                 />
               </div>
-              <div className="col-lg-2 ps-lg-1 mb-1">
+              <div className="col-lg-2 ps-lg-1 mb-2">
                 <SubjectSelection onSubjectsChange={handleSubjectsChange} />
               </div>
             </div>
@@ -243,6 +259,7 @@ const GetHelp = () => {
               style={{ zIndex: "0" }}
             >
               <Form.Control
+                className="mb-2"
                 placeholder="Description of the Incident"
                 as="textarea"
                 style={{ height: "100px" }}
@@ -254,7 +271,7 @@ const GetHelp = () => {
             </FloatingLabel>
 
             <div className="row">
-              <div className="col-sm-12 col-md input-group mb-1 d-flex flex-column">
+              <div className="col-sm-12 col-md input-group mb-2 d-flex flex-column">
                 <label htmlFor="location" className="form-label m-0">
                   Location of Incident
                 </label>
@@ -270,7 +287,7 @@ const GetHelp = () => {
                 />
               </div>
 
-              <div className="col-sm-12 col-md input-group mb-1 d-flex flex-column">
+              <div className="col-sm-12 col-md input-group mb-2 d-flex flex-column">
                 <label htmlFor="date" className="form-label m-0">
                   Date of Incident
                 </label>
@@ -373,14 +390,20 @@ const GetHelp = () => {
             </div>
 
             <div className="d-flex justify-content-end mt-2">
-              <button className="primaryButton w-100 py-2" type="submit">
-                Submit
+              <button
+                className="primaryButton w-100 py-2"
+                type="submit"
+                disabled={isLoading}
+              >
+                <p className="m-0">
+                  {isLoading ? <>Submiting</> : <>Submit</>}
+                </p>
               </button>
             </div>
           </form>
         </div>
       </div>
-    </MainLayout>
+    </>
   );
 };
 

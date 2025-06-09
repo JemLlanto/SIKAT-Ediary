@@ -221,7 +221,7 @@ const ChatButton = ({ user, entry, imageFile, userToChat }) => {
         >
           <div className="text-secondary d-flex align-items-center justify-content-center gap-2">
             <i className="bx bx-chat my-1"></i>
-            <p className="m-0 d-none d-xl-block">Message</p>
+            <p className="m-0 d-none d-md-block">Message</p>
             {user.isAdmin === 2 && (
               <p
                 className="infToolTip rounded p-2 m-0 mt-1"

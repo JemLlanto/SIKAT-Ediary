@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { Modal } from "react-bootstrap";
 import { Link, useParams } from "react-router-dom";
 import axios from "axios";
-import MainLayout from "../../Layouts/MainLayout";
 import BackButton from "../../Layouts/Home/BackButton";
 import { jsPDF } from "jspdf";
 import CaseDetailDownloadButton from "../../Layouts/DownloadButton/CaseDetailDownloadButton";
@@ -67,11 +66,11 @@ const CaseDetails = () => {
 
   if (loading) {
     return (
-      <MainLayout ActiveTab="Complaints">
+      <>
         <div className="d-flex justify-content-center py-3">
           <p>Loading case details...</p>
         </div>
-      </MainLayout>
+      </>
     );
   }
 
@@ -82,16 +81,16 @@ const CaseDetails = () => {
 
   if (error) {
     return (
-      <MainLayout ActiveTab="Complaints">
+      <>
         <div className="d-flex justify-content-center py-3">
           <p className="text-danger">{error}</p>
         </div>
-      </MainLayout>
+      </>
     );
   }
 
   return (
-    <MainLayout ActiveTab="Complaints">
+    <>
       <div className="d-flex justify-content-center py-3 mt-3">
         <div
           className="rounded shadow p-3"
@@ -266,7 +265,7 @@ const CaseDetails = () => {
           </Modal.Body>
         </Modal>
       </div>
-    </MainLayout>
+    </>
   );
 };
 

@@ -24,9 +24,9 @@ const OthersProfileDropdown = ({ user, profileOwner }) => {
       </Dropdown.Toggle>
 
       <Dropdown.Menu style={{ zIndex: "1" }}>
-        {user.isAdmin ? (
+        {user?.isAdmin ? (
           ""
-        ) : user.isAdmin ? (
+        ) : user?.isAdmin ? (
           <></>
         ) : (
           <Dropdown.Item href="" className="p-0 px-2 btn btn-light">
@@ -38,7 +38,7 @@ const OthersProfileDropdown = ({ user, profileOwner }) => {
         )}
 
         {/* {isAdmin ? "im admin" : "Im not an Admin"} */}
-        {user.isAdmin ? (
+        {user?.isAdmin ? (
           <Dropdown.Item className="btn btn-light p-0 px-2">
             {/* <button className="w-100 btn btn-light text-start">Suspend</button> */}
             <Suspend profileOwner={profileOwner}></Suspend>

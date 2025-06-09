@@ -1,8 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import anonymous from "../../assets/anonymous.png";
-import MainLayout from "../Layouts/MainLayout";
-import Dropdown from "react-bootstrap/Dropdown";
+
 // import Modal from "react-bootstrap/Modal";
 // import CloseButton from "react-bootstrap/CloseButton";
 // import CommentDropdown from "../Layouts/CommentSection/CommentDropdown";
@@ -149,7 +147,7 @@ const DiaryEntry = () => {
       const response = await axios.get(
         `${
           import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
-        }/followedUsers/${userID}`
+        }/follow/fetchFollowedUsers/${userID}`
       );
       const followedUsersData = response.data.map((user) => user.userID);
       setFollowedUsers(followedUsersData);

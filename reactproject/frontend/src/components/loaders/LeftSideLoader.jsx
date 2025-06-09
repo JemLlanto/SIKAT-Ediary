@@ -5,39 +5,32 @@ import Spinner from "react-bootstrap/Spinner";
 export const LeftSideLoader = () => {
   const loadingEntry = Array(8).fill(null); // Creates an array of 5 null values
   return (
-    <div className="p-2">
-      <div className="mainProfilePicture d-flex align-items-center flex-column rounded gap-2 shadow py-3">
-        <div>
-          <div className="d-flex justify-content-center align-items-center">
-            <div
+    <div className="">
+      <Link className="text-decoration-none text-dark">
+        <div className="mainProfilePicture d-flex align-items-center flex-column rounded gap-2 shadow py-4">
+          <div
+            className="d-flex justify-content-center align-items-center"
+            style={{
+              backgroundColor: "#ffff",
+              width: "clamp(7rem, 10vw, 15rem)",
+              height: "clamp(7rem, 10vw, 15rem)",
+              borderRadius: "50%",
+              overflow: "hidden",
+            }}
+          >
+            <img
+              src={DefaultProfile}
+              alt="Profile"
               style={{
-                backgroundColor: "#ffff",
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-                width: "21vh",
-                height: "21vh",
-                borderRadius: "50%",
-                overflow: "hidden",
+                width: "100%",
+                height: "100%",
+                objectFit: "cover",
               }}
-            >
-              <img
-                src={DefaultProfile}
-                alt="Profile"
-                style={{
-                  width: "100%",
-                  height: "100%",
-                  objectFit: "cover",
-                }}
-              />
-            </div>
+            />
           </div>
+          <h5 className="m-0 mt-1 text-light">Loading</h5>
         </div>
-        <p className="m-0 mt-1 text-light fs-5">
-          <Spinner animation="grow" size="sm" />
-          Loading
-        </p>
-      </div>
+      </Link>
 
       <div className=" mt-3">
         <div className="d-flex justify-content-between border-bottom">
@@ -65,13 +58,13 @@ export const LeftSideLoader = () => {
           </div>
         </div>
         <div
-          className="mt-2 ps-3 custom-scrollbar"
+          className="mt-2 custom-scrollbar"
           style={{ height: "45vh", overflowY: "hidden" }}
         >
           {loadingEntry.map((_, index) => (
             <div
               key={index}
-              className="d-flex align-items-start flex-column rounded ps-2 mt-3"
+              className="d-flex align-items-start flex-column rounded mt-1"
             >
               <h6
                 style={{

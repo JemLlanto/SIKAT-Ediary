@@ -6,62 +6,89 @@ import DefaultProfile from "../../assets/userDefaultProfile.png";
 import { Link, useNavigate, useOutletContext } from "react-router-dom";
 import MessageModal from "../Layouts/DiaryEntry/messageModal";
 import MessageAlert from "../Layouts/DiaryEntry/messageAlert";
+import { Spinner } from "react-bootstrap";
 
-const UserList = ({ type, users, handleFollowToggle, isFollowing }) => (
+const UserList = ({
+  isLoading,
+  type,
+  users,
+  handleFollowToggle,
+  isFollowing,
+}) => (
   <div
     className="custom-scrollbar mt-2 pe-1"
     style={{ height: "70vh", overflowY: "scroll" }}
   >
-    {users.length === 0 ? (
-      <div
-        className="d-flex justify-content-center align-items-center"
-        style={{ height: "100%" }}
-      >
-        <p className="m-0 text-secondary">No {type}</p>
-      </div>
-    ) : (
-      users.map((user) => (
-        <div key={user.userID} className="pb-2 pe-2 mb-2">
-          <div className="position-relative d-flex align-items-center justify-content-between gap-2">
-            <Link
-              to={`/Profile/${user.userID}`}
-              className="linkText rounded d-flex justify-content-between w-100 p-2"
-            >
-              <div className="d-flex align-items-center">
-                <div className="profilePicture">
-                  <img
-                    src={
-                      user.profile_image
-                        ? `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}${
-                            user.profile_image
-                          }`
-                        : DefaultProfile
-                    }
-                    alt="Profile"
-                    style={{
-                      width: "100%",
-                      height: "100%",
-                      objectFit: "cover",
-                    }}
-                  />
-                </div>
-                <p className="m-0 ms-2">
-                  {user.firstName} {user.lastName}
-                </p>
-              </div>
-            </Link>
-            <button
-              className="primaryButton position-absolute"
-              onClick={() => handleFollowToggle(user.userID, user.firstName)}
-              style={{ right: "0" }}
-            >
-              <p className="m-0">
-                {isFollowing(user.userID) ? "Unfollow" : "Follow"}
-              </p>
-            </button>
-          </div>
+    {isLoading ? (
+      <>
+        <div
+          className="d-flex flex-column justify-content-center align-items-center"
+          style={{ height: "80%" }}
+        >
+          <Spinner variant="secondary" animation="border" size="sm" />
+          <p className="m-0 text-secondary">Loading {type}</p>
         </div>
-      ))
+      </>
+    ) : (
+      <>
+        {users.length === 0 ? (
+          <div
+            className="d-flex justify-content-center align-items-center"
+            style={{ height: "80%" }}
+          >
+            <p className="m-0 text-secondary">No {type}</p>
+          </div>
+        ) : (
+          users.map((user) => (
+            <div key={user.userID} className="pb-2 mb-2">
+              <div className="position-relative d-flex align-items-center justify-content-between gap-2">
+                <div className="linkText rounded d-flex justify-content-between w-100 p-0">
+                  <div className="w-100 d-flex align-items-center justify-content-between">
+                    <Link
+                      to={`/Profile/${user.userID}`}
+                      className="d-flex align-items-center gap-2 text-decoration-none text-dark"
+                    >
+                      <div className="profilePicture">
+                        <img
+                          src={
+                            user.profile_image
+                              ? `${
+                                  import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+                                }${user.profile_image}`
+                              : DefaultProfile
+                          }
+                          alt="Profile"
+                          style={{
+                            width: "100%",
+                            height: "100%",
+                            objectFit: "cover",
+                          }}
+                        />
+                      </div>
+                      <p className="m-0 text-start w-75">
+                        {user.firstName} {user.lastName}
+                      </p>
+                    </Link>
+
+                    <button
+                      className="primaryButton"
+                      onClick={(e) => {
+                        e.stopPropagation(),
+                          handleFollowToggle(user.userID, user.firstName);
+                      }}
+                      style={{ right: "0" }}
+                    >
+                      <p className="m-0">
+                        {isFollowing(user.userID) ? "Unfollow" : "Follow"}
+                      </p>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))
+        )}
+      </>
     )}
   </div>
 );
@@ -70,6 +97,7 @@ const Followers = () => {
   const { user } = useOutletContext();
   const [followers, setFollowers] = useState([]);
   const [followedUsers, setFollowedUsers] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
 
   const [modal, setModal] = useState({ show: false, message: "" });
@@ -102,29 +130,54 @@ const Followers = () => {
     }
   }, [user]);
 
+  useEffect(() => {
+    if (!user) return;
+    fetchFollowers(user?.userID);
+    fetchFollowedUsers(user?.userID);
+  }, [user]);
+
   const fetchFollowers = async (userID) => {
     try {
+      setIsLoading(true);
       const response = await axios.get(
-        `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/followers/${userID}`
+        `${
+          import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+        }/follow/fetchFollowers/${userID}`
       );
       setFollowers(response.data);
+      console.log("Fetched followers: ", response.data);
     } catch (error) {
       console.error("Error fetching followers:", error);
+    } finally {
+      // setIsLoading(false);
     }
   };
 
   const fetchFollowedUsers = async (userID) => {
     try {
+      setIsLoading(true);
       const response = await axios.get(
         `${
           import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
-        }/followedUsers/${userID}`
+        }/follow/fetchFollowedUsers/${userID}`
       );
-      const followedUsersData = response.data;
-      setFollowedUsers(followedUsersData);
-      localStorage.setItem("followedUsers", JSON.stringify(followedUsersData));
+      if (response.status === 200) {
+        if (response.data.length === 0) {
+          console.log("No followed users found.");
+        } else {
+          const followedUsersData = response.data;
+          setFollowedUsers(followedUsersData);
+          console.log("Fetched followed users: ", response.data);
+          localStorage.setItem(
+            "followedUsers",
+            JSON.stringify(followedUsersData)
+          );
+        }
+      }
     } catch (error) {
       console.error("Error fetching followed users:", error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -244,6 +297,7 @@ const Followers = () => {
             <Tab eventKey="Followers" title="Followers">
               <div>
                 <UserList
+                  isLoading={isLoading}
                   type={"Followers"}
                   users={followers}
                   handleFollowToggle={handleFollowToggle}
@@ -256,6 +310,7 @@ const Followers = () => {
             <Tab eventKey="Following" title="Following">
               <div>
                 <UserList
+                  isLoading={isLoading}
                   type={"Following"}
                   users={followedUsers}
                   handleFollowToggle={handleFollowToggle}

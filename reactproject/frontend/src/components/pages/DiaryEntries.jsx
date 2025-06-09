@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import MainLayout from "../Layouts/MainLayout";
 import { Link, useNavigate, useOutletContext } from "react-router-dom";
 import axios from "axios";
 import Spinner from "react-bootstrap/Spinner";
@@ -20,7 +19,7 @@ const DiaryEntries = () => {
     const userData = localStorage.getItem("user");
 
     if (userData) {
-      setIsLoading(false);
+      // setIsLoading(false);
     } else {
       navigate("/");
     }
@@ -37,7 +36,7 @@ const DiaryEntries = () => {
       const response = await axios.get(
         `${
           import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
-        }/fetchUserEntry/user/${user.userID}`
+        }/entries/fetchLeftSideEntry/${user.userID}`
       );
       if (response.data.entries && Array.isArray(response.data.entries)) {
         console.log(response.data);
@@ -126,10 +125,6 @@ const DiaryEntries = () => {
     });
   };
 
-  if (isLoading) {
-    return <Spinner animation="border" role="status" />;
-  }
-
   if (error) {
     return <p>Error: {error}</p>;
   }
@@ -197,28 +192,38 @@ const DiaryEntries = () => {
                         <div className="d-flex align-items-center gap-1">
                           <p className="m-0 text-start text-secondary">{day}</p>
                         </div>
-                        {entriesForDay.length > 0 ? (
+                        {isLoading ? (
                           <>
-                            <button
-                              className="primaryButton p-0 px-2 px-sm-4 py-2"
-                              onClick={() => handleDayClick(day)}
-                            >
-                              <h6 className="m-0 my-1 mx-2 mx-md-3">
-                                {entriesForDay.length}{" "}
-                                {user.isAdmin
-                                  ? entriesForDay.length > 1
-                                    ? "Posts"
-                                    : "Post"
-                                  : entriesForDay.length > 1
-                                  ? "Entries"
-                                  : "Entry"}
-                              </h6>
-                            </button>
+                            <p className="m-0 mt-2 mt-md-0 text-secondary fw-normal">
+                              <Spinner animation="border" size="sm" />
+                            </p>
                           </>
                         ) : (
-                          <p className="m-0 mt-2 mt-md-0 text-secondary fw-normal">
-                            {user.isAdmin ? "No Post" : "No Entry"}
-                          </p>
+                          <>
+                            {entriesForDay.length > 0 ? (
+                              <>
+                                <button
+                                  className="primaryButton p-0 px-2 px-sm-4 py-2"
+                                  onClick={() => handleDayClick(day)}
+                                >
+                                  <h6 className="m-0 my-1 mx-2 mx-md-3">
+                                    {entriesForDay.length}{" "}
+                                    {user.isAdmin
+                                      ? entriesForDay.length > 1
+                                        ? "Posts"
+                                        : "Post"
+                                      : entriesForDay.length > 1
+                                      ? "Entries"
+                                      : "Entry"}
+                                  </h6>
+                                </button>
+                              </>
+                            ) : (
+                              <p className="m-0 mt-2 mt-md-0 text-secondary fw-normal">
+                                {user.isAdmin ? "No Post" : "No Entry"}
+                              </p>
+                            )}
+                          </>
                         )}
                       </div>
                     </div>

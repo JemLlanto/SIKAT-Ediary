@@ -2,7 +2,6 @@ import Col from "react-bootstrap/Col";
 import Nav from "react-bootstrap/Nav";
 import Row from "react-bootstrap/Row";
 import Tab from "react-bootstrap/Tab";
-import MainLayout from "../Layouts/MainLayout";
 import ProfileInformation from "../Layouts/SettingsLayouts/ProfileInformation";
 import PasswordAndSecurity from "../Layouts/SettingsLayouts/PasswordAndSecurity";
 import UserAuthentication from "../Layouts/SettingsLayouts/UserAuthentication";

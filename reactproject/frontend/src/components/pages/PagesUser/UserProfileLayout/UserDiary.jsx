@@ -22,7 +22,7 @@ const UserDiary = ({ userID }) => {
       fetch(
         `${
           import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
-        }/fetchUserEntry/user/${fetchUser.userID}`
+        }/entries/fetchLeftSideEntry/${fetchUser.userID}`
       )
         .then((response) => {
           if (!response.ok) {

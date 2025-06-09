@@ -22,7 +22,7 @@ const OtherProfileDiary = ({ userID }) => {
       fetch(
         `${
           import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
-        }/fetchUserEntry/user/${userID}`
+        }/entries/fetchLeftSideEntry/${userID}`
       )
         .then((response) => {
           if (!response.ok) {

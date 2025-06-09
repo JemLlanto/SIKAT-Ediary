@@ -1,9 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import Pagination from "react-bootstrap/Pagination";
-import MainLayout from "../../Layouts/MainLayout";
+
 import axios from "axios";
-import { Bar, Doughnut } from "react-chartjs-2";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -14,7 +12,6 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
-import { filter } from "lodash";
 import MessageModal from "../../Layouts/DiaryEntry/messageModal";
 import Reports from "../../Layouts/LayoutAdmin/Dashboard/Reports";
 import UserDiaryEntryReports from "../../Layouts/LayoutAdmin/Dashboard/UserDiaryEntryReports";

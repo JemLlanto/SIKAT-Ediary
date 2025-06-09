@@ -11,17 +11,17 @@ import FrequentlyAskQuestion from "./FrequentlyAskQuestion";
 import axios from "axios";
 import { Dropdown } from "react-bootstrap";
 
-const ChatButton = () => {
+const ChatButton = ({ user }) => {
   const [show, setShow] = useState(false);
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState("");
-  const [user, setUser] = useState(null);
   const [selectedUser, setSelectedUser] = useState(null);
   const [allUsers, setAllUsers] = useState([]);
   const [admin, setAdmin] = useState(null);
   const pusherRef = useRef(null);
   const messagesEndRef = useRef(null);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [isLoadingMess, setIsLoadingMess] = useState(false);
 
   const handleClose = () => {
     setShow(false);
@@ -40,9 +40,6 @@ const ChatButton = () => {
   useEffect(() => {
     const userData = localStorage.getItem("user");
     if (userData) {
-      const parsedUser = JSON.parse(userData);
-      setUser(parsedUser);
-
       const fetchAdmin = async () => {
         try {
           const response = await axios.get(
@@ -50,30 +47,13 @@ const ChatButton = () => {
           );
           const data = response.data;
           setAdmin(data);
-          if (!parsedUser.isAdmin) {
-            await fetchMessages(data.userID);
-          }
+          await fetchMessages(data.userID);
         } catch (error) {
           console.error("Error fetching admin data:", error);
         }
       };
 
       fetchAdmin();
-
-      if (parsedUser.isAdmin) {
-        const fetchAllUsers = async () => {
-          try {
-            const response = await axios.get(
-              `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/users`
-            );
-            const data = response.data;
-            setAllUsers(data);
-          } catch (error) {
-            console.error("Error fetching all users:", error);
-          }
-        };
-        fetchAllUsers();
-      }
     } else {
       window.location.href = "/";
     }
@@ -130,6 +110,7 @@ const ChatButton = () => {
     if (!user) return;
 
     try {
+      setIsLoadingMess(true);
       const response = await axios.get(
         `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/messages`,
         {
@@ -143,6 +124,8 @@ const ChatButton = () => {
       setSelectedUser(userID);
     } catch (error) {
       console.error("Error fetching messages:", error);
+    } finally {
+      setIsLoadingMess(false);
     }
   };
 
@@ -324,43 +307,68 @@ const ChatButton = () => {
                   <FrequentlyAskQuestion></FrequentlyAskQuestion>
                 </div>
 
-                {messages.map((msg, index) => (
+                {isLoadingMess ? (
                   <>
-                    {msg.created_at ? (
-                      <div
-                        key={index}
-                        className={`w-100 p-0 d-flex justify-content-${
-                          msg.senderID === user?.userID ? "end" : "start"
+                    <div
+                      className={`w-100 p-0 d-flex justify-content-center
                         }`}
+                    >
+                      <div
+                        className="rounded p-2 mt-1 text-secondary"
+                        style={{
+                          maxWidth: "80%",
+                          width: "fit-content",
+                          wordWrap: "break-word",
+                          whiteSpace: "pre-wrap",
+                        }}
                       >
-                        <div
-                          className="rounded p-2 mt-1 text-light"
-                          style={{
-                            backgroundColor:
-                              msg.senderID === user?.userID
-                                ? "var(--secondary)"
-                                : "var(--primary)",
-                            maxWidth: "80%",
-                            width: "fit-content",
-                            wordWrap: "break-word",
-                            whiteSpace: "pre-wrap",
-                          }}
-                        >
-                          <p className="m-0">{msg.message}</p>
-                          <p className="m-0 text-end">
-                            <span
+                        <p className="m-0">Loading messages.</p>
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    {messages.map((msg, index) => (
+                      <>
+                        {msg.created_at ? (
+                          <div
+                            key={index}
+                            className={`w-100 p-0 d-flex justify-content-${
+                              msg.senderID === user?.userID ? "end" : "start"
+                            }`}
+                          >
+                            <div
+                              className="rounded p-2 mt-1 text-light"
                               style={{
-                                fontSize: "clamp(0.5rem, 1.5dvw, 0.6rem)",
+                                backgroundColor:
+                                  msg.senderID === user?.userID
+                                    ? "var(--secondary)"
+                                    : "var(--primary)",
+                                maxWidth: "80%",
+                                width: "fit-content",
+                                wordWrap: "break-word",
+                                whiteSpace: "pre-wrap",
                               }}
                             >
-                              {msg.created_at ? formatDate(msg.created_at) : ""}
-                            </span>
-                          </p>
-                        </div>
-                      </div>
-                    ) : null}
+                              <p className="m-0">{msg.message}</p>
+                              <p className="m-0 text-end">
+                                <span
+                                  style={{
+                                    fontSize: "clamp(0.5rem, 1.5dvw, 0.6rem)",
+                                  }}
+                                >
+                                  {msg.created_at
+                                    ? formatDate(msg.created_at)
+                                    : ""}
+                                </span>
+                              </p>
+                            </div>
+                          </div>
+                        ) : null}
+                      </>
+                    ))}
                   </>
-                ))}
+                )}
                 <div ref={messagesEndRef} />
               </div>
 

@@ -15,6 +15,8 @@ const db = require("./database"); // Adjust the path to your database module
 // ROUTES
 const authRoutes = require("./routes/auth");
 const entryRoutes = require("./routes/entries");
+const followRoutes = require("./routes/follow");
+const incidentRoutes = require("./routes/incidents");
 
 const allowedOrigins = [
   "http://localhost:5173",
@@ -35,6 +37,8 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use("/auth", authRoutes);
 app.use("/entries", entryRoutes);
+app.use("/follow", followRoutes);
+app.use("/incidents", incidentRoutes);
 
 app.use("/uploads", express.static("uploads"));
 
@@ -160,43 +164,6 @@ const uploadProfilePicture = multer({
   limits: { fileSize: 5 * 1024 * 1024 },
   fileFilter: (req, file, cb) => {
     const allowedTypes = ["image/jpeg", "image/png", "image/gif"];
-    if (!allowedTypes.includes(file.mimetype)) {
-      const error = new Error("INVALID_FILE_TYPE");
-      error.code = "INVALID_FILE_TYPE";
-      return cb(error);
-    }
-    cb(null, true);
-  },
-});
-
-//gender based incidents upload
-const genderBasedIncidentsDir = path.join(
-  __dirname,
-  "uploads",
-  "gender_based_incidents"
-);
-
-if (!fs.existsSync(genderBasedIncidentsDir)) {
-  fs.mkdirSync(genderBasedIncidentsDir, { recursive: true });
-}
-
-const uploadSupportingDocuments = multer({
-  storage: multer.diskStorage({
-    destination: (req, file, cb) => {
-      cb(null, genderBasedIncidentsDir);
-    },
-    filename: (req, file, cb) => {
-      cb(null, Date.now() + path.extname(file.originalname));
-    },
-  }),
-  limits: { fileSize: 5 * 1024 * 1024 },
-  fileFilter: (req, file, cb) => {
-    const allowedTypes = [
-      "image/jpeg",
-      "image/png",
-      "image/gif",
-      "application/pdf",
-    ];
     if (!allowedTypes.includes(file.mimetype)) {
       const error = new Error("INVALID_FILE_TYPE");
       error.code = "INVALID_FILE_TYPE";
@@ -1787,84 +1754,6 @@ app.get("/fetchUser/user/:id", (req, res) => {
   });
 });
 
-app.get("/fetchUserEntry/user/:id", (req, res) => {
-  const userID = req.params.id;
-  const scheduledDate = req.query.scheduledDate === "true";
-
-  let query = `
-    SELECT
-      diary_entries.*,
-      user_table.firstName,
-      user_table.lastName,
-      user_table.isAdmin,
-      user_table.isSuspended,
-      user_table.course,
-      user_table.departmentID,
-      user_profiles.profile_image,
-      user_profiles.alias
-    FROM diary_entries
-      JOIN user_table ON diary_entries.userID = user_table.userID
-      JOIN user_profiles ON diary_entries.userID = user_profiles.userID
-    WHERE diary_entries.userID = ?
-    
-  `;
-
-  if (!scheduledDate) {
-    query += `
-      AND (
-        diary_entries.isScheduled = 0
-        OR (
-          diary_entries.isScheduled = 1
-          AND diary_entries.scheduledDate <  NOW()
-        )
-      )
-    `;
-  }
-
-  query += `ORDER BY diary_entries.created_at DESC`;
-
-  db.query(query, [userID], (err, result) => {
-    if (err) {
-      console.error("Database error:", err);
-      return res.status(500).json({ message: "Internal server error" });
-    }
-
-    return res.status(200).json({ entries: result });
-  });
-});
-
-app.get("/fetchDiaryEntry/:entryID", (req, res) => {
-  const entryID = req.params.entryID;
-
-  const query = `
-  SELECT diary_entries.*, 
-         user_table.isAdmin, 
-         user_table.isSuspended, 
-         user_table.firstName, 
-         user_table.lastName, 
-         user_table.course, 
-         user_profiles.*, 
-         flagged_reports.isReviewed
-  FROM diary_entries 
-  INNER JOIN user_table ON diary_entries.userID = user_table.userID 
-  INNER JOIN user_profiles ON diary_entries.userID = user_profiles.userID 
-  LEFT JOIN flagged_reports ON diary_entries.entryID = flagged_reports.entryID 
-  WHERE diary_entries.entryID = ?
-`;
-
-  db.query(query, [entryID], (err, result) => {
-    if (err) {
-      return res.status(500).json({ error: "Database error" });
-    }
-
-    if (result.length === 0) {
-      return res.status(404).json({ error: "Entry not found" });
-    }
-
-    res.status(200).json({ entry: result[0] });
-  });
-});
-
 app.get("/users", (req, res) => {
   const query = `
     SELECT 
@@ -2119,65 +2008,6 @@ app.delete("/unfollow/:followUserId", (req, res) => {
       }
     );
   });
-});
-
-const getFollowedUsersFromDatabase = async (userID) => {
-  const query = `
-    SELECT user_table.userID, user_table.isAdmin, user_table.username, user_table.firstName , user_table.lastName, user_profiles.profile_image
-    FROM followers
-    INNER JOIN user_table ON followers.followedUserID = user_table.userID
-    INNER JOIN user_profiles ON followers.followedUserID = user_profiles.userID
-    WHERE followers.userID = ?
-  `;
-
-  return new Promise((resolve, reject) => {
-    db.query(query, [userID], (err, results) => {
-      if (err) {
-        return reject(err);
-      }
-      resolve(results);
-    });
-  });
-};
-
-app.get("/followedUsers/:userID", async (req, res) => {
-  const userID = req.params.userID;
-
-  try {
-    const followedUsers = await getFollowedUsersFromDatabase(userID);
-    res.status(200).json(followedUsers);
-  } catch (error) {
-    console.error("Error fetching followed users:", error);
-    res.status(500).json({ error: "Failed to fetch followed users" });
-  }
-});
-
-const getFollowersFromDatabase = async (userID) => {
-  const query = `
-    SELECT u.userID, u.username, u.firstName, u.lastName, u.isAdmin, up.profile_image
-    FROM followers f
-    JOIN user_table u ON f.userID = u.userID
-    JOIN user_profiles up ON f.userID = up.userID
-    WHERE f.followedUserID = ?
-  `;
-  return new Promise((resolve, reject) => {
-    db.query(query, [userID], (err, results) => {
-      if (err) {
-        return reject(err);
-      }
-      resolve(results);
-    });
-  });
-};
-
-app.get("/followers/:userID", async (req, res) => {
-  const userID = req.params.userID;
-  try {
-    const followers = await getFollowersFromDatabase(userID);
-    res.json(followers);
-  } catch (error) {
-    res.status(500).json({ error: "Failed to fetch followers" });
-  }
 });
 
 app.get("/fetchComments/:entryID", (req, res) => {
@@ -2823,130 +2653,6 @@ app.get("/user_profile/:userID", (req, res) => {
       return res.status(500).json({ error: "Error fetching users" });
     }
     res.status(200).json(results);
-  });
-});
-
-app.post("/submit-report/:userID", (req, res) => {
-  uploadSupportingDocuments.array("supportingDocuments", 5)(req, res, (err) => {
-    if (err) {
-      return res
-        .status(500)
-        .json({ error: "File upload error: " + err.message });
-    }
-    const { userID } = req.params;
-    const {
-      victimName,
-      perpetratorName,
-      contactInfo,
-      gender,
-      incidentDescription,
-      location,
-      date,
-      subjects,
-      isAddress,
-    } = req.body;
-
-    const supportingDocuments = req.files.map(
-      (file) => `/uploads/gender_based_incidents/${file.filename}`
-    );
-
-    const query = `
-      INSERT INTO gender_based_crime_reports 
-      (userID, victimName, perpetratorName, contactInfo, gender, incidentDescription, location, date, supportingDocuments, subjects, isAddress) 
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `;
-
-    db.query(
-      query,
-      [
-        userID,
-        victimName,
-        perpetratorName,
-        contactInfo,
-        gender,
-        incidentDescription,
-        location,
-        date,
-        JSON.stringify(supportingDocuments), // Save as JSON string
-        subjects,
-        false,
-      ],
-      (err, result) => {
-        if (err) {
-          console.error("Error inserting report:", err.message);
-          return res.status(500).json({ error: "Error submitting report" });
-        }
-        res.status(200).json({ message: "Report submitted successfully" });
-      }
-    );
-  });
-});
-
-app.put("/reports/:id", (req, res) => {
-  const reportID = req.params.id;
-
-  const query = `
-    UPDATE gender_based_crime_reports
-    SET isAddress = true
-    WHERE reportID = ?
-  `;
-
-  db.query(query, [reportID], (err, result) => {
-    if (err) {
-      console.error("Error updating report status:", err.message);
-      return res.status(500).json({ error: "Failed to update report" });
-    }
-    res
-      .status(200)
-      .json({ message: "Report marked as addressed successfully" });
-  });
-});
-
-app.get("/getAddressReports", (req, res) => {
-  const query = `
-  SELECT * FROM gender_based_crime_reports WHERE isAddress = 1 ORDER BY created_at DESC
-`;
-
-  db.query(query, (err, results) => {
-    if (err) {
-      console.error("Error fetching reports:", err.message);
-      return res.status(500).json({ error: "Error fetching flagged reports" });
-    }
-    res.status(200).json(results);
-  });
-});
-
-app.get("/reports", (req, res) => {
-  const query = `
-  SELECT * FROM gender_based_crime_reports ORDER BY isAddress ASC, created_at DESC
-`;
-
-  db.query(query, (err, results) => {
-    if (err) {
-      console.error("Error fetching reports:", err.message);
-      return res.status(500).json({ error: "Error fetching flagged reports" });
-    }
-    res.status(200).json(results);
-  });
-});
-
-app.get("/reports/:reportID", (req, res) => {
-  const { reportID } = req.params; // Get reportID from the URL parameters
-  const query = `
-    SELECT * FROM gender_based_crime_reports
-    WHERE reportID = ?`;
-
-  db.query(query, [reportID], (err, results) => {
-    if (err) {
-      console.error("Error fetching report:", err.message);
-      return res.status(500).json({ error: "Error fetching the report" });
-    }
-
-    if (results.length === 0) {
-      return res.status(404).json({ error: "Report not found" });
-    }
-
-    res.status(200).json(results[0]);
   });
 });
 
@@ -3983,27 +3689,6 @@ app.get("/actvity_logs/flags/:userID", (req, res) => {
     JOIN user_table ON flagged_reports.actorID = user_table.userID
     WHERE flagged_reports.actorID = ?
     ORDER BY flagged_reports.created_at DESC
-    `,
-    [userID],
-    (err, results) => {
-      if (err) {
-        console.error("Error fetching activity logs:", err);
-        return res.status(500).send("Error fetching activity logs.");
-      }
-      res.json(results);
-    }
-  );
-});
-
-app.get("/filedCases/:userID", (req, res) => {
-  const { userID } = req.params;
-
-  db.query(
-    `
-    SELECT *
-    FROM gender_based_crime_reports
-    WHERE gender_based_crime_reports.userID = ?
-    ORDER BY gender_based_crime_reports.created_at DESC
     `,
     [userID],
     (err, results) => {

@@ -55,7 +55,7 @@ const DiaryEntries = () => {
       const response = await axios.get(
         `${
           import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
-        }/fetchUserEntry/user/${user.userID}`
+        }/entries/fetchLeftSideEntry/${user.userID}`
       );
       if (response.data.entries && Array.isArray(response.data.entries)) {
         setEntries(response.data.entries);

@@ -11,20 +11,22 @@ import SendIcon from "../../../assets/SendIcon.png";
 import DefaultProfile from "../../../assets/anonymous.png";
 import axios from "axios";
 
-const ChatButton = () => {
+const ChatButton = ({ user }) => {
   const [show, setShow] = useState(false);
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState("");
-  const [user, setUser] = useState(null);
   const [selectedUser, setSelectedUser] = useState(null);
   const [users, setUsers] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const messagesEndRef = useRef(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const loaders = [1, 2, 3, 4, 5];
 
   const handleClose = () => {
     setShow(false);
     setSelectedUser(null);
     setMessages([]);
+    setUsers([]);
   };
 
   const handleShow = () => setShow(true);
@@ -32,8 +34,6 @@ const ChatButton = () => {
   useEffect(() => {
     const userData = localStorage.getItem("user");
     if (userData) {
-      const parsedUser = JSON.parse(userData);
-      setUser(parsedUser);
     } else {
       alert("You need to log in to access the chat.");
       window.location.href = "/";
@@ -41,6 +41,7 @@ const ChatButton = () => {
 
     const fetchUsers = async () => {
       try {
+        setIsLoading(true);
         const response = await axios.get(
           `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/users`
         );
@@ -51,11 +52,15 @@ const ChatButton = () => {
         setUsers(updatedUsers);
       } catch (error) {
         console.error("Error fetching users:", error);
+      } finally {
+        setTimeout(() => {
+          setIsLoading(false);
+        }, 1000);
       }
     };
 
     fetchUsers();
-  }, []);
+  }, [show]);
 
   useEffect(() => {
     if (!user) return;
@@ -109,10 +114,11 @@ const ChatButton = () => {
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+  }, [messages, isLoading]);
 
   const fetchMessagesForSelectedUser = async (withUserID) => {
     try {
+      setIsLoading(true);
       const response = await axios.get(
         `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/messages`,
         {
@@ -122,9 +128,12 @@ const ChatButton = () => {
           },
         }
       );
-
       setMessages(response.data);
       setSelectedUser(users.find((usr) => usr.userID === withUserID));
+      setTimeout(() => {
+        setIsLoading(false);
+        messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+      }, 1000);
 
       setUsers((prevUsers) =>
         prevUsers.map((userItem) =>
@@ -139,6 +148,7 @@ const ChatButton = () => {
       );
     } catch (error) {
       console.error("Error fetching messages:", error);
+      setIsLoading(false);
     }
   };
 
@@ -225,7 +235,12 @@ const ChatButton = () => {
 
   return (
     <>
-      <div className="ChatButton d-flex align-items-center justify-content-center">
+      <div
+        className="ChatButton d-flex align-items-center justify-content-center"
+        style={{
+          zIndex: "100",
+        }}
+      >
         <button className="shadow p-2 position-relative" onClick={handleShow}>
           <img src={ChatIcon} alt="Chat Icon" />
 
@@ -272,6 +287,7 @@ const ChatButton = () => {
                 className="UserList"
                 style={{ height: "clamp(400px, 30vh, 500px)" }}
               >
+                {/* SEARCHING USERS */}
                 <div className="d-flex justify-content-between px-3 py-2 mb-2 border-bottom">
                   <h5 className="m-0 mt-2">Users</h5>
                   <InputGroup className="m-0 w-50">
@@ -287,58 +303,85 @@ const ChatButton = () => {
                     />
                   </InputGroup>
                 </div>
+
+                {/* DISPLAYING USERS */}
                 <div style={{ height: "85%" }}>
                   <div
                     className="mb-4 pe-2 d-flex flex-column gap-2 overflow-y-scroll custom-scrollbar"
                     style={{ height: "100%" }}
                   >
-                    {filteredUsers.map((userItem, index) => (
-                      <div
-                        key={index}
-                        className="grayHover d-flex align-items-center justify-content-between gap-2 bg-light p-2 pe-3 rounded"
-                        onClick={() => handleUserClick(userItem)}
-                        style={{ cursor: "pointer" }}
-                      >
-                        <div className=" d-flex align-items-center gap-2">
-                          <div className="profilePicture">
-                            <img
-                              src={
-                                userItem.profile_image
-                                  ? `${
-                                      import.meta.env
-                                        .VITE_REACT_APP_BACKEND_BASEURL
-                                    }${userItem.profile_image}`
-                                  : DefaultProfile
-                              }
-                              alt="Profile"
-                              style={{
-                                width: "100%",
-                                height: "100%",
-                                objectFit: "cover",
-                              }}
-                            />
-                          </div>
-                          <p className="m-0">
-                            {userItem.firstName} {userItem.lastName}
-                          </p>
-                        </div>
-                        {userItem.unreadMessages > 0 ? (
+                    {isLoading ? (
+                      <>
+                        {loaders.map((loader, index) => (
                           <div
-                            className="p-0 m-0 d-flex align-items-center justify-content-center"
-                            style={{
-                              backgroundColor: "var(--primary)",
-                              height: "15px",
-                              width: "15px",
-                              borderRadius: "50%",
-                              color: "#ffff",
-                              fontSize: "0.8rem",
-                            }}
+                            key={index}
+                            className="grayHover d-flex align-items-center justify-content-between gap-2 bg-light p-2 pe-3 rounded"
+                            style={{ cursor: "pointer" }}
                           >
-                            {userItem.unreadMessages}
+                            <div className="w-100 d-flex align-items-center gap-2">
+                              <div className="profilePicture"></div>
+                              <p
+                                className="m-0 bg-secondary-subtle"
+                                style={{
+                                  height: "1rem",
+                                  width: `${index + 25}%`,
+                                }}
+                              ></p>
+                            </div>
                           </div>
-                        ) : null}
-                      </div>
-                    ))}
+                        ))}
+                      </>
+                    ) : (
+                      <>
+                        {filteredUsers.map((userItem, index) => (
+                          <div
+                            key={index}
+                            className="grayHover d-flex align-items-center justify-content-between gap-2 bg-light p-2 pe-3 rounded"
+                            onClick={() => handleUserClick(userItem)}
+                            style={{ cursor: "pointer" }}
+                          >
+                            <div className=" d-flex align-items-center gap-2">
+                              <div className="profilePicture">
+                                <img
+                                  src={
+                                    userItem.profile_image
+                                      ? `${
+                                          import.meta.env
+                                            .VITE_REACT_APP_BACKEND_BASEURL
+                                        }${userItem.profile_image}`
+                                      : DefaultProfile
+                                  }
+                                  alt="Profile"
+                                  style={{
+                                    width: "100%",
+                                    height: "100%",
+                                    objectFit: "cover",
+                                  }}
+                                />
+                              </div>
+                              <p className="m-0">
+                                {userItem.firstName} {userItem.lastName}
+                              </p>
+                            </div>
+                            {userItem.unreadMessages > 0 ? (
+                              <div
+                                className="p-0 m-0 d-flex align-items-center justify-content-center"
+                                style={{
+                                  backgroundColor: "var(--primary)",
+                                  height: "15px",
+                                  width: "15px",
+                                  borderRadius: "50%",
+                                  color: "#ffff",
+                                  fontSize: "0.8rem",
+                                }}
+                              >
+                                {userItem.unreadMessages}
+                              </div>
+                            ) : null}
+                          </div>
+                        ))}
+                      </>
+                    )}
                   </div>
                 </div>
               </div>
@@ -355,68 +398,95 @@ const ChatButton = () => {
                   >
                     <i className="bx bx-arrow-back"></i>
                   </div>
-
-                  <Link
-                    to={`/Profile/${selectedUser.userID}`}
-                    className="linkText d-flex align-items-center gap-1 text-decoration-none "
-                  >
-                    <div className="profilePicture">
-                      <img
-                        src={`${
-                          import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
-                        }${selectedUser.profile_image}`}
-                        alt="Profile"
-                        style={{
-                          width: "100%",
-                          height: "100%",
-                          objectFit: "cover",
-                        }}
-                      />
-                    </div>
-                    <h5 className="m-0">
-                      {selectedUser.firstName} {selectedUser.lastName}
-                    </h5>
-                  </Link>
+                  {isLoading ? (
+                    <>
+                      <Link
+                        to={`/Profile/${selectedUser.userID}`}
+                        className="linkText d-flex align-items-center gap-1 text-decoration-none "
+                      >
+                        <div className="profilePicture">
+                          <img src={``} />
+                        </div>
+                        <h5 className="m-0">Loading user.</h5>
+                      </Link>
+                    </>
+                  ) : (
+                    <>
+                      <Link
+                        to={`/Profile/${selectedUser.userID}`}
+                        className="linkText d-flex align-items-center gap-1 text-decoration-none "
+                      >
+                        <div className="profilePicture">
+                          <img
+                            src={`${
+                              import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+                            }${selectedUser.profile_image}`}
+                            alt="Profile"
+                            style={{
+                              width: "100%",
+                              height: "100%",
+                              objectFit: "cover",
+                            }}
+                          />
+                        </div>
+                        <h5 className="m-0">
+                          {selectedUser.firstName} {selectedUser.lastName}
+                        </h5>
+                      </Link>
+                    </>
+                  )}
                 </div>
                 <div>
                   <div
                     className="border rounded mb-1 p-2 custom-scrollbar "
                     style={{ height: "300px", overflowY: "scroll" }}
                   >
-                    {messages.map((msg, index) => (
-                      <div
-                        key={index}
-                        className={`w-100 p-0 d-flex justify-content-${
-                          msg.senderID === user?.userID ? "end" : "start"
-                        }`}
-                      >
-                        <div
-                          className="rounded p-2 mt-1 text-light text-start"
-                          style={{
-                            backgroundColor:
-                              msg.senderID === user?.userID
-                                ? "var(--secondary)"
-                                : "var(--primary)",
-                            maxWidth: "80%",
-                            minWidth: "20%",
-                            width: "fit-content",
-                            wordWrap: "break-word",
-                            whiteSpace: "pre-wrap",
-                          }}
-                        >
-                          <p className="m-0">{msg.message}</p>
-                          <p className="m-0 text-end">
-                            <span
+                    {isLoading ? (
+                      <>
+                        <p className="m-0 text-center text-secondary">
+                          Loading messages.
+                        </p>
+                      </>
+                    ) : (
+                      <>
+                        {messages.map((msg, index) => (
+                          <div
+                            key={index}
+                            className={`w-100 p-0 d-flex justify-content-${
+                              msg.senderID === user?.userID ? "end" : "start"
+                            }`}
+                          >
+                            <div
+                              className="rounded p-2 mt-1 text-light text-start"
                               style={{
-                                fontSize: "clamp(0.5rem, 1.5dvw, 0.6rem)",
+                                backgroundColor:
+                                  msg.senderID === user?.userID
+                                    ? "var(--secondary)"
+                                    : "var(--primary)",
+                                maxWidth: "80%",
+                                minWidth: "20%",
+                                width: "fit-content",
+                                wordWrap: "break-word",
+                                whiteSpace: "pre-wrap",
                               }}
                             >
-                              {msg.created_at ? formatDate(msg.created_at) : ""}
-                            </span>{" "}
-                          </p>
-                        </div>
-                      </div>
-                    ))}
+                              <p className="m-0">{msg.message}</p>
+                              <p className="m-0 text-end">
+                                <span
+                                  style={{
+                                    fontSize: "clamp(0.5rem, 1.5dvw, 0.6rem)",
+                                  }}
+                                >
+                                  {msg.created_at
+                                    ? formatDate(msg.created_at)
+                                    : ""}
+                                </span>{" "}
+                              </p>
+                            </div>
+                          </div>
+                        ))}
+                      </>
+                    )}
                     <div ref={messagesEndRef} /> {/* Scroll reference */}
                   </div>
                   <div className="position-relative">

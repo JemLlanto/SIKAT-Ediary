@@ -12,13 +12,7 @@ import MessageModal from "../DiaryEntry/messageModal";
 import { first } from "lodash";
 import UserList from "./UserList";
 
-const Followers = ({
-  ownProfile,
-  user,
-  currentUser,
-  followersCount,
-  followingCount,
-}) => {
+const Followers = ({ ownProfile, user, currentUser }) => {
   const [showModal, setShowModal] = useState(false);
   const [followers, setFollowers] = useState([]);
   const [followedUsers, setFollowedUsers] = useState([]);
@@ -44,18 +38,6 @@ const Followers = ({
     });
   };
 
-  // useEffect(() => {
-  //   const userData = localStorage.getItem("user");
-  //   if (userData) {
-  //     const parsedUser = JSON.parse(userData);
-  //     setUser(parsedUser);
-  //     fetchFollowers(parsedUser.userID);
-  //     fetchFollowedUsers(parsedUser.userID);
-  //   } else {
-  //     navigate("/");
-  //   }
-  // }, [navigate]);
-
   useEffect(() => {
     fetchFollowers(user.userID);
     fetchFollowedUsers(user.userID);
@@ -65,7 +47,9 @@ const Followers = ({
   const fetchFollowers = async (userID) => {
     try {
       const response = await axios.get(
-        `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/followers/${userID}`
+        `${
+          import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+        }/follow/fetchFollowers/${userID}`
       );
       setFollowers(response.data);
     } catch (error) {
@@ -78,7 +62,7 @@ const Followers = ({
       const response = await axios.get(
         `${
           import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
-        }/followedUsers/${userID}`
+        }/follow/fetchFollowedUsers/${userID}`
       );
       const followedUsersData = response.data;
       setFollowedUsers(followedUsersData);
@@ -170,7 +154,7 @@ const Followers = ({
       ></MessageModal>
       <button className="border-0 bg-transparent p-0" onClick={handleShow}>
         <p className="m-0 mt-1 text-secondary underlinedLink">
-          {followersCount} Followers - {followingCount} Following
+          {followers.length} Followers - {followedUsers.length} Following
         </p>
       </button>
       <Modal show={showModal} onHide={handleCLose} centered>

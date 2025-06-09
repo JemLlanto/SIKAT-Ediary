@@ -232,6 +232,52 @@ const fetchingEntries = (req, res) => {
   });
 };
 
+const fetchingUserEntries = (req, res) => {
+  const userID = req.params.id;
+  const scheduledDate = req.query.scheduledDate === "true";
+
+  let query = `
+    SELECT
+      diary_entries.*,
+      user_table.firstName,
+      user_table.lastName,
+      user_table.isAdmin,
+      user_table.isSuspended,
+      user_table.course,
+      user_table.departmentID,
+      user_profiles.profile_image,
+      user_profiles.alias
+    FROM diary_entries
+      JOIN user_table ON diary_entries.userID = user_table.userID
+      JOIN user_profiles ON diary_entries.userID = user_profiles.userID
+    WHERE diary_entries.userID = ?
+    
+  `;
+
+  if (!scheduledDate) {
+    query += `
+      AND (
+        diary_entries.isScheduled = 0
+        OR (
+          diary_entries.isScheduled = 1
+          AND diary_entries.scheduledDate <  NOW()
+        )
+      )
+    `;
+  }
+
+  query += `ORDER BY diary_entries.created_at DESC`;
+
+  db.query(query, [userID], (err, result) => {
+    if (err) {
+      console.error("Database error:", err);
+      return res.status(500).json({ message: "Internal server error" });
+    }
+
+    return res.status(200).json({ entries: result });
+  });
+};
+
 const uploadImageForAdminEntry = (req, res, next) => {
   uploadDiaryImageAdmin.single("file")(req, res, function (err) {
     if (err) {
@@ -307,4 +353,9 @@ const insertAdminPost = (req, res) => {
   });
 };
 
-module.exports = { fetchingEntries, uploadImageForAdminEntry, insertAdminPost };
+module.exports = {
+  fetchingEntries,
+  fetchingUserEntries,
+  uploadImageForAdminEntry,
+  insertAdminPost,
+};

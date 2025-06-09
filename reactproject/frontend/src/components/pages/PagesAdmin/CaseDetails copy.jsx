@@ -3,7 +3,6 @@ import { Modal } from "react-bootstrap";
 import { Link, useParams } from "react-router-dom";
 import axios from "axios";
 import sampleImage from "../../../assets/Background.jpg";
-import MainLayout from "../../Layouts/MainLayout";
 import MessageAlert from "../../Layouts/DiaryEntry/messageAlert";
 import MessageModal from "../../Layouts/DiaryEntry/messageModal";
 import BackButton from "../../Layouts/Home/BackButton";
@@ -102,11 +101,11 @@ const CaseDetails = () => {
 
   if (loading) {
     return (
-      <MainLayout ActiveTab="Complaints">
+      <>
         <div className="d-flex justify-content-center py-3">
           <p>Loading case details...</p>
         </div>
-      </MainLayout>
+      </>
     );
   }
 
@@ -117,11 +116,11 @@ const CaseDetails = () => {
 
   if (error) {
     return (
-      <MainLayout ActiveTab="Complaints">
+      <>
         <div className="d-flex justify-content-center py-3">
           <p className="text-danger">{error}</p>
         </div>
-      </MainLayout>
+      </>
     );
   }
 
@@ -265,7 +264,7 @@ const CaseDetails = () => {
   };
 
   return (
-    <MainLayout ActiveTab="Complaints">
+    <>
       <BackButton />
       <MessageAlert
         showModal={modal}
@@ -480,7 +479,7 @@ const CaseDetails = () => {
           </Modal.Body>
         </Modal>
       </div>
-    </MainLayout>
+    </>
   );
 };
 

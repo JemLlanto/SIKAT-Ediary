@@ -4,31 +4,48 @@ import axios from "axios";
 
 const FrequentlyAskQuestion = () => {
   const [faqs, setFaqs] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    setIsLoading(true);
     axios
       .get(`${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/faqs`)
       .then((response) => {
         setFaqs(response.data);
+        setIsLoading(false);
       })
       .catch((error) => {
         console.error("Error fetching FAQs:", error);
+        setIsLoading(false);
       });
   }, []);
 
   return (
     <div>
       <Accordion>
-        {faqs.map((faq, index) => (
-          <Accordion.Item key={faq.faqID} eventKey={String(index)}>
-            <Accordion.Header>
-              <h6 className="m-0">Q: {faq.question}</h6>
-            </Accordion.Header>
-            <Accordion.Body className="border-top">
-              <p className="m-0 ms-2 text-secondary">A: {faq.answer}</p>
-            </Accordion.Body>
-          </Accordion.Item>
-        ))}
+        {isLoading ? (
+          <>
+            <Accordion.Item eventKey={`Loaders`}>
+              <Accordion.Header>
+                <h6 className="m-0">Loading FAQs.</h6>
+              </Accordion.Header>
+            </Accordion.Item>
+          </>
+        ) : (
+          <>
+            {" "}
+            {faqs.map((faq, index) => (
+              <Accordion.Item key={faq.faqID} eventKey={String(index)}>
+                <Accordion.Header>
+                  <h6 className="m-0">Q: {faq.question}</h6>
+                </Accordion.Header>
+                <Accordion.Body className="border-top">
+                  <p className="m-0 ms-2 text-secondary">A: {faq.answer}</p>
+                </Accordion.Body>
+              </Accordion.Item>
+            ))}
+          </>
+        )}
       </Accordion>
     </div>
   );

@@ -19,6 +19,7 @@ import { SuspensionModal } from "../Layouts/Profile/SuspensionModal";
 import MessageModal from "../Layouts/DiaryEntry/messageModal";
 import MessageAlert from "../Layouts/DiaryEntry/messageAlert";
 import BackButton from "../Layouts/Home/BackButton";
+import CenterLoader from "../loaders/CenterLoader";
 // import Suspended from "../../components/pages/PagesUser/Suspended";
 
 const Profile = () => {
@@ -32,6 +33,7 @@ const Profile = () => {
   const [isHovered, setIsHovered] = useState(false);
   const [entries, setEntries] = useState([]);
   const [followedUsers, setFollowedUsers] = useState([]);
+  const [followers, setFollowers] = useState([]);
   const [expandButtons, setExpandButtons] = useState({});
   const [isLoading, setIsLoading] = useState(false);
 
@@ -64,7 +66,7 @@ const Profile = () => {
     const userData = localStorage.getItem("user");
 
     if (userData) {
-      setLoading(false);
+      // setLoading(false);
     } else {
       navigate("/");
     }
@@ -107,7 +109,7 @@ const Profile = () => {
       const response = await axios.get(
         `${
           import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
-        }/fetchUserEntry/user/${profileOwner.userID}`
+        }/entries/fetchLeftSideEntry/${profileOwner.userID}`
       );
 
       if (response.data.entries && Array.isArray(response.data.entries)) {
@@ -182,26 +184,15 @@ const Profile = () => {
         return;
       }
       const response = await axios.get(
-        `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/followedUsers/${
-          user.userID
-        }`
+        `${
+          import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+        }/follow/fetchFollowedUsers/${user.userID}`
       );
       const followedUsersData = response.data.map((user) => user.userID);
       setFollowedUsers(followedUsersData);
       console.log("Followed Users:", followedUsersData);
     } catch (error) {
       console.error("Error fetching followed users:", error);
-    }
-  };
-
-  const fetchFollowers = async (userID) => {
-    try {
-      const response = await axios.get(
-        `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/followers/${userID}`
-      );
-      setFollowers(response.data);
-    } catch (error) {
-      console.error("Error fetching followers:", error);
     }
   };
 
@@ -428,7 +419,6 @@ const Profile = () => {
     return `Y:${year} M:${month} D:${day} H:${hour} M:${minute}`;
   };
 
-  if (loading) return <p>Loading Profile...</p>;
   if (error) return <p>{error}</p>;
 
   const ownProfile = user?.userID == userID;
@@ -462,7 +452,7 @@ const Profile = () => {
           {profileOwner.isSuspended ? (
             <SuspensionModal
               name={profileOwner.firstName}
-              isAdmin={user.isAdmin}
+              isAdmin={user?.isAdmin}
               show={true}
             ></SuspensionModal>
           ) : (
@@ -537,136 +527,160 @@ const Profile = () => {
 
             <div className="col-md d-flex align-items-end justify-content-between flex-column text-dark text-center text-lg-start">
               <div
-                className="w-100 position-relative rounded border-bottom pt-2 pt-lg-5"
+                className="w-100 d-flex flex-column align-items-center align-items-lg-start gap-1 position-relative rounded border-bottom pt-2 pt-lg-5"
                 style={{ height: "80%" }}
               >
-                <div>
-                  <h4 className="m-0">
-                    {profileOwner.firstName} {profileOwner.lastName}
-                    {ownProfile ? (
-                      <> ({profileOwner.alias || "No Alias"})</>
-                    ) : null}
-                    {profileOwner.isAdmin ? (
-                      <>
-                        <h5 className="m-0 text-secondary d-flex align-items-center gap-1">
-                          {profileOwner.isAdmin === 1 &&
-                            `GAD-CCAT Campus Administrator`}
-                          {profileOwner.isAdmin === 2 &&
-                            `${profileOwner.DepartmentName} Moderator`}
-                          <i className="bx bx-check-shield text-primary"></i>
-                        </h5>
-                      </>
-                    ) : null}
-                  </h4>
-                  {user.isAdmin ? (
-                    <>
-                      {!profileOwner.isAdmin && (
-                        <>
-                          <p className="m-0 text-secondary">
-                            {profileOwner.cvsuEmail} -{" "}
-                            {profileOwner.studentNumber}
-                          </p>
-                          <p className="m-0 mb-1 text-secondary">
-                            {profileOwner.course}
-                          </p>
-                        </>
-                      )}
-                    </>
-                  ) : (
-                    ""
-                  )}
-                  {user.isAdmin ? (
-                    <h5 className="text-danger">
-                      {profileOwner.isSuspended ? "Suspended " : ""}
-                      {suspensionTime(profileOwner.suspendUntil)}
-                    </h5>
-                  ) : (
-                    ""
-                  )}
-                </div>
-
-                {!profileOwner.isAdmin ? (
-                  <Followers
-                    ownProfile={ownProfile}
-                    user={profileOwner}
-                    // currentUser={user}
-                    followersCount={profileOwner.followersCount}
-                    followingCount={profileOwner.followingCount}
-                  ></Followers>
-                ) : null}
-                <p className="mt-3 text-secondary">
-                  {profileOwner.bio || "No bio available."}
-                </p>
-              </div>
-              <div
-                className="w-100 d-flex justify-content-center  justify-content-lg-between algn-items-center pt-1"
-                style={{ height: "4rem" }}
-              >
-                {ownProfile ? (
-                  <div>
-                    {/* <button className="primaryButton py-2 px-5">
-                    <h5 className="m-0">Follow</h5>
-                  </button> */}
-                  </div>
-                ) : (
-                  <div className="d-flex align-items-center">
-                    {user.isAdmin ? (
-                      <>
-                        {profileOwner.isAdmin ? null : (
-                          <>
-                            <div className="d-flex gap-1">
-                              <FlaggedDiaries
-                                userID={profileOwner.userID}
-                              ></FlaggedDiaries>
-                              <ReportedComments
-                                userID={profileOwner.userID}
-                              ></ReportedComments>
-                            </div>
-                          </>
-                        )}
-                      </>
-                    ) : (
-                      <>
-                        {profileOwner.isAdmin ? null : (
-                          <>
-                            <button
-                              className="primaryButton py-2 px-5"
-                              onClick={() =>
-                                handleFollowToggle(profileOwner.userID)
-                              } // Use the user's ID directly
-                              disabled={profileOwner.isAdmin}
-                            >
-                              <h5 className="m-0">
-                                {" "}
-                                {followedUsers.includes(profileOwner.userID)
-                                  ? "Unfollow"
-                                  : "Follow"}
-                              </h5>
-                            </button>
-                          </>
-                        )}
-                      </>
-                    )}
-                  </div>
-                )}
-
-                {/* {currentUser && currentUser.isAdmin ? "Im Admin" : " Im Not"} */}
-                {profileOwner.isAdmin ? null : (
+                {loading ? (
                   <>
-                    {ownProfile ? (
-                      <ProfileDropdown
-                        userID={profileOwner.userID}
-                        isAdmin={user.isAdmin}
-                      />
-                    ) : (
-                      <OthersProfileDropdown
-                        user={user}
-                        profileOwner={profileOwner}
-                      />
-                    )}
+                    <div className="m-0 w-100 d-flex flex-column align-items-center align-items-lg-start gap-1">
+                      <div
+                        className="bg-secondary-subtle"
+                        style={{
+                          height: "1.5rem",
+                          width: "clamp(13rem, 40dvw, 17rem)",
+                        }}
+                      ></div>
+
+                      <div
+                        className="bg-secondary-subtle "
+                        style={{
+                          height: "1.5rem",
+                          width: "clamp(12rem, 40dvw, 14rem)",
+                        }}
+                      ></div>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div>
+                      <h4 className="m-0">
+                        {profileOwner.firstName} {profileOwner.lastName}
+                        {ownProfile ? (
+                          <> ({profileOwner.alias || "No Alias"})</>
+                        ) : null}
+                        {profileOwner.isAdmin ? (
+                          <>
+                            <h5 className="m-0 text-secondary d-flex align-items-center justify-content-center justify-content-lg-start gap-1">
+                              {profileOwner.isAdmin === 1 &&
+                                `GAD-CCAT Campus Administrator`}
+                              {profileOwner.isAdmin === 2 &&
+                                `${profileOwner.DepartmentName} Moderator`}
+                              <i className="bx bx-check-shield text-primary"></i>
+                            </h5>
+                          </>
+                        ) : null}
+                      </h4>
+                      {user?.isAdmin ? (
+                        <>
+                          {!profileOwner.isAdmin && (
+                            <>
+                              <p className="m-0 text-secondary">
+                                {profileOwner.cvsuEmail} -{" "}
+                                {profileOwner.studentNumber}
+                              </p>
+                              <p className="m-0 mb-1 text-secondary">
+                                {profileOwner.course}
+                              </p>
+                            </>
+                          )}
+                        </>
+                      ) : (
+                        ""
+                      )}
+                      {user?.isAdmin ? (
+                        <h5 className="text-danger">
+                          {profileOwner.isSuspended ? "Suspended " : ""}
+                          {suspensionTime(profileOwner.suspendUntil)}
+                        </h5>
+                      ) : (
+                        ""
+                      )}
+                    </div>
+                  </>
+                )}
+                {loading ? (
+                  <div
+                    className="bg-secondary-subtle mt-2"
+                    style={{ height: "1rem", width: "15rem" }}
+                  ></div>
+                ) : (
+                  <>
+                    {!profileOwner.isAdmin ? (
+                      <Followers
+                        ownProfile={ownProfile}
+                        user={profileOwner}
+                      ></Followers>
+                    ) : null}
+                  </>
+                )}
+                {loading ? (
+                  <div
+                    className="bg-secondary-subtle mt-2"
+                    style={{ height: "1rem", width: "25rem" }}
+                  ></div>
+                ) : (
+                  <>
+                    <p className="mt-3 text-secondary">
+                      {profileOwner.bio || "No bio available."}
+                    </p>
                   </>
                 )}
               </div>
+
+              {loading ? null : (
+                <>
+                  <div
+                    className="w-100 d-flex justify-content-center justify-content-lg-between algn-items-center pt-1"
+                    style={{ height: "4rem" }}
+                  >
+                    {ownProfile ? (
+                      <div>
+                        {/* <button className="primaryButton py-2 px-5">
+                    <h5 className="m-0">Follow</h5>
+                  </button> */}
+                      </div>
+                    ) : (
+                      <div className="d-flex align-items-center">
+                        {user?.isAdmin ? (
+                          <>
+                            {profileOwner.isAdmin ? null : (
+                              <>
+                                <div className="d-flex gap-1">
+                                  <FlaggedDiaries
+                                    userID={profileOwner.userID}
+                                  ></FlaggedDiaries>
+                                  <ReportedComments
+                                    userID={profileOwner.userID}
+                                  ></ReportedComments>
+                                </div>
+                              </>
+                            )}
+                          </>
+                        ) : (
+                          <>{profileOwner.isAdmin ? null : <></>}</>
+                        )}
+                      </div>
+                    )}
+
+                    {/* {currentUser && currentUser.isAdmin ? "Im Admin" : " Im Not"} */}
+                    {profileOwner.isAdmin ? null : (
+                      <>
+                        {ownProfile ? (
+                          <ProfileDropdown
+                            userID={profileOwner.userID}
+                            isAdmin={user?.isAdmin}
+                          />
+                        ) : (
+                          <OthersProfileDropdown
+                            user={user}
+                            profileOwner={profileOwner}
+                          />
+                        )}
+                      </>
+                    )}
+                  </div>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -676,10 +690,10 @@ const Profile = () => {
             <div className="col-lg-4 mb-2 p-0 px-md-1">
               {/* {currentUser && currentUser.isAdmin ? "Im Admin" : " Im Not"} */}
               <JournalEntries
-                user={profileOwner}
-                isAdmin={user.isAdmin}
-                userID={userID}
+                isAdmin={user?.isAdmin}
+                entries={entries}
                 ownProfile={ownProfile}
+                loadingEntries={loadingEntries}
               />
               {/* {user.isSuspended} */}
             </div>
@@ -687,18 +701,7 @@ const Profile = () => {
             <div className="col-md mb-2 p-0 px-md-1">
               {loadingEntries ? (
                 <>
-                  {" "}
-                  <p className="m-0 text-secondary mt-1 mt-xl-3">
-                    Loading diary entries...
-                    {/* , Post{" "}
-                <Link
-                  className="text-decoration-none"
-                  to={user && user.isAdmin ? "/Admin/Home" : "/Home"}
-                >
-                  here
-                </Link>
-                . */}
-                  </p>
+                  <CenterLoader />
                 </>
               ) : (
                 <>
@@ -706,7 +709,7 @@ const Profile = () => {
                     entries
                       .filter(
                         (entry) =>
-                          user.isAdmin ||
+                          user?.isAdmin ||
                           ownProfile ||
                           (entry.visibility !== "private" &&
                             entry.anonimity !== "private")

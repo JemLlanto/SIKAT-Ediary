@@ -48,7 +48,7 @@ const DiaryDetails = ({ entry, user }) => {
         style={{ zIndex: "20" }}
       >
         <div className="d-flex flex-column gap-1">
-          <h5 className="m-0">{entry.title}</h5>
+          <h5 className="m-0 text-start mb-2">{entry.title}</h5>
         </div>
         {entry.containsAlarmingWords === 1 && user.isAdmin ? (
           <div className="d-flex justify-content-center align-items-end pt-1 gap-1">

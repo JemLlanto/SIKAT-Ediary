@@ -10,10 +10,10 @@ const UserList = ({
 }) => (
   <div
     className="custom-scrollbar mt-2 pe-1"
-    style={{ height: "70vh", overflowY: "scroll" }}
+    style={{ height: "clamp(18rem, 30dvw, 25rem)", overflowY: "scroll" }}
   >
     {users
-      .filter((user) => user.isAdmin === 0)
+      // .filter((user) => user.isAdmin === 0)
       .map((user) => (
         <div key={user.userID} className="pb-2 pe-2 mb-2">
           <div className="position-relative d-flex align-items-center justify-content-between gap-2">

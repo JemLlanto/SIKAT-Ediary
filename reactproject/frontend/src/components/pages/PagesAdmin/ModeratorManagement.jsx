@@ -1,5 +1,4 @@
 import { React, useState, useEffect } from "react";
-import MainLayout from "../../Layouts/MainLayout";
 import { Table } from "react-bootstrap";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
@@ -81,7 +80,7 @@ const ModeratorManagement = () => {
   });
 
   return (
-    <MainLayout>
+    <>
       <MessageModal
         showModal={modal}
         closeModal={closeModal}
@@ -187,7 +186,7 @@ const ModeratorManagement = () => {
           </Table>
         </div>
       </div>
-    </MainLayout>
+    </>
   );
 };
 

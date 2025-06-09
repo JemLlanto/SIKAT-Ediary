@@ -65,7 +65,7 @@ const CenterLayout = ({ user }) => {
       const response = await axios.get(
         `${
           import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
-        }/followedUsers/${userID}`
+        }/follow/fetchFollowedUsers/${userID}`
       );
       const followedUsersData = response.data.map((user) => user.userID);
       setFollowedUsers(followedUsersData);

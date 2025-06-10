@@ -1,32 +1,49 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Doughnut } from "react-chartjs-2";
 
 const Reports = ({
+  loading,
   filteredGenderBasedIncidents,
   filteredFlags,
   filteredReportedComments,
   filteredReportedUsers,
 }) => {
-  const GenderBaseIncidentsTotal = filteredGenderBasedIncidents.length;
+  const [GenderBaseIncidentsTotal, setGenderBaseIncidentsTotal] = useState(0);
+  const [FlaggedDiariesTotal, setFlaggedDiariesTotal] = useState(0);
+  const [ReportedCommentsTotal, setReportedCommentsTotal] = useState(0);
+  const [ReportedUsersTotal, setReportedUsersTotal] = useState(0);
+  const [TotalData, setTotalData] = useState(0);
 
-  const uniqueEntryIDs = new Set(filteredFlags.map((flag) => flag.entryID));
-  const FlaggedDiariesTotal = uniqueEntryIDs.size;
+  useEffect(() => {
+    if (!loading) {
+      const GenderBaseIncidentsTotal = filteredGenderBasedIncidents.length;
+      setGenderBaseIncidentsTotal(GenderBaseIncidentsTotal);
 
-  const uniqueCommentIDs = new Set(
-    filteredReportedComments.map((comment) => comment.commentID)
-  );
-  const ReportedCommentsTotal = uniqueCommentIDs.size;
+      const uniqueEntryIDs = new Set(filteredFlags.map((flag) => flag.entryID));
+      const FlaggedDiariesTotal = uniqueEntryIDs.size;
+      setFlaggedDiariesTotal(FlaggedDiariesTotal);
 
-  const uniqueReportedUserIDs = new Set(
-    filteredReportedUsers.map((user) => user.userID)
-  );
-  const ReportedUsersTotal = uniqueReportedUserIDs.size;
-  const TotalData =
-    GenderBaseIncidentsTotal +
-    FlaggedDiariesTotal +
-    ReportedCommentsTotal +
-    ReportedUsersTotal;
+      const uniqueCommentIDs = new Set(
+        filteredReportedComments.map((comment) => comment.commentID)
+      );
+      const ReportedCommentsTotal = uniqueCommentIDs.size;
+      setReportedCommentsTotal(ReportedCommentsTotal);
+
+      const uniqueReportedUserIDs = new Set(
+        filteredReportedUsers.map((user) => user.userID)
+      );
+      const ReportedUsersTotal = uniqueReportedUserIDs.size;
+      setReportedUsersTotal(ReportedUsersTotal);
+
+      const TotalData =
+        GenderBaseIncidentsTotal +
+        FlaggedDiariesTotal +
+        ReportedCommentsTotal +
+        ReportedUsersTotal;
+      setTotalData(TotalData);
+    }
+  }, [loading]);
 
   const genderBasedIncidentsDonut = {
     labels: ["Filed Reports", "Other Reports"],
@@ -84,11 +101,16 @@ const Reports = ({
             className="position-relative text-light"
             style={{ height: "80%", width: "80%", objectFit: "contain" }}
           >
-            <Doughnut
-              className="overflow-visible"
-              data={genderBasedIncidentsDonut}
-              options={options}
-            />
+            {loading ? null : (
+              <>
+                <Doughnut
+                  className="overflow-visible"
+                  data={genderBasedIncidentsDonut}
+                  options={options}
+                />
+              </>
+            )}
+
             <h3
               className="m-0 position-absolute "
               style={{
@@ -99,7 +121,15 @@ const Reports = ({
                 zIndex: "-1",
               }}
             >
-              {GenderBaseIncidentsTotal}
+              {loading ? (
+                <>
+                  <h4>
+                    <i className="bx bx-loader bx-spin"></i>
+                  </h4>
+                </>
+              ) : (
+                <>{GenderBaseIncidentsTotal}</>
+              )}
             </h3>
           </div>
           <p
@@ -130,11 +160,16 @@ const Reports = ({
             className="position-relative text-light"
             style={{ height: "80%", width: "80%", objectFit: "contain" }}
           >
-            <Doughnut
-              className="overflow-visible"
-              data={DonutData(FlaggedDiariesTotal, "Flagged Diaries")}
-              options={options}
-            />
+            {loading ? null : (
+              <>
+                <Doughnut
+                  className="overflow-visible"
+                  data={DonutData(FlaggedDiariesTotal, "Flagged Diaries")}
+                  options={options}
+                />
+              </>
+            )}
+
             <h3
               className="m-0 position-absolute "
               style={{
@@ -145,7 +180,15 @@ const Reports = ({
                 zIndex: "-1",
               }}
             >
-              {FlaggedDiariesTotal}
+              {loading ? (
+                <>
+                  <h4>
+                    <i className="bx bx-loader bx-spin"></i>
+                  </h4>
+                </>
+              ) : (
+                <>{FlaggedDiariesTotal}</>
+              )}
             </h3>
           </div>
           <p
@@ -176,11 +219,16 @@ const Reports = ({
             className="position-relative text-light"
             style={{ height: "80%", width: "80%", objectFit: "contain" }}
           >
-            <Doughnut
-              className="overflow-visible"
-              data={DonutData(ReportedCommentsTotal, "Reported Comments")}
-              options={options}
-            />
+            {loading ? null : (
+              <>
+                <Doughnut
+                  className="overflow-visible"
+                  data={DonutData(ReportedCommentsTotal, "Reported Comments")}
+                  options={options}
+                />
+              </>
+            )}
+
             <h3
               className="m-0 position-absolute "
               style={{
@@ -191,7 +239,15 @@ const Reports = ({
                 zIndex: "-1",
               }}
             >
-              {ReportedCommentsTotal}
+              {loading ? (
+                <>
+                  <h4>
+                    <i className="bx bx-loader bx-spin"></i>
+                  </h4>
+                </>
+              ) : (
+                <>{ReportedCommentsTotal}</>
+              )}
             </h3>
           </div>
           <p
@@ -222,11 +278,16 @@ const Reports = ({
             className="position-relative text-light"
             style={{ height: "80%", width: "80%", objectFit: "contain" }}
           >
-            <Doughnut
-              className="overflow-visible"
-              data={DonutData(ReportedUsersTotal, "Reported Users")}
-              options={options}
-            />
+            {loading ? null : (
+              <>
+                <Doughnut
+                  className="overflow-visible"
+                  data={DonutData(ReportedUsersTotal, "Reported Users")}
+                  options={options}
+                />
+              </>
+            )}
+
             <h3
               className="m-0 position-absolute "
               style={{
@@ -237,7 +298,15 @@ const Reports = ({
                 zIndex: "-1",
               }}
             >
-              {ReportedUsersTotal}
+              {loading ? (
+                <>
+                  <h4>
+                    <i className="bx bx-loader bx-spin"></i>
+                  </h4>
+                </>
+              ) : (
+                <>{ReportedUsersTotal}</>
+              )}
             </h3>
           </div>
           <p

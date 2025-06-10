@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import anonymous from "../../../assets/anonymous.png";
-import userDefaultProfile from "../../../assets/userDefaultProfile.png";
 import CommentSection from "../CommentSection/CommentSection";
 import Dropdown from "react-bootstrap/Dropdown";
 import axios from "axios";
@@ -15,6 +14,7 @@ import Suspend from "../Profile/Suspend";
 import DiaryEntryHeader from "../DiaryEntry/DiaryEntryHeader";
 import FollowButton from "../DiaryEntry/FollowButton";
 import DiaryDetails from "../DiaryEntry/DiaryDetails";
+import DiaryLoader from "../../loaders/DiaryLoader";
 
 const DiaryEntryLayout = ({
   entry,
@@ -115,7 +115,7 @@ const DiaryEntryLayout = ({
 
   const fetchEntries = async (userID, filters) => {
     try {
-      console.log("Fetching single entry...");
+      // console.log("Fetching single entry...");
       // setLoading(true);
       const response = await axios.get(
         `${
@@ -143,7 +143,7 @@ const DiaryEntryLayout = ({
     } catch (error) {
       console.error("Error fetching diary entries:", error);
     } finally {
-      console.log("Entry fetched");
+      // console.log("Entry fetched");
       // setLoading(false);
     }
   };
@@ -184,131 +184,7 @@ const DiaryEntryLayout = ({
   };
 
   if (loading) {
-    return (
-      <div
-        className="position-relative rounded shadow-sm p-3 mb-2"
-        style={{ backgroundColor: "white" }}
-      >
-        <div className="position-absolute" style={{ right: "20px" }}>
-          {/* <HomeDiaryDropdown></HomeDiaryDropdown> */}
-        </div>
-        <div className="d-flex align-items-center border-bottom pb-2 gap-2">
-          <div className="profilePicture" style={{ backgroundColor: "#ffff" }}>
-            <img
-              src={userDefaultProfile}
-              alt="Profile"
-              style={{
-                width: "100%",
-                height: "100%",
-                objectFit: "cover",
-              }}
-            />
-          </div>
-          <p
-            className="m-0 mt-2"
-            style={{
-              height: "14px",
-              width: "70px",
-              backgroundColor: "lightgray",
-              marginBottom: "10px", // Optional, adds space between divs
-            }}
-          ></p>
-
-          <p
-            className="m-0 mt-2"
-            style={{
-              height: "14px",
-              width: "50px",
-              backgroundColor: "lightgray",
-              marginBottom: "10px", // Optional, adds space between divs
-            }}
-          ></p>
-        </div>
-
-        <div className="text-start border-bottom p-2">
-          <h5
-            className="m-0 mt-2"
-            style={{
-              height: "20px",
-              width: "190px",
-              backgroundColor: "lightgray",
-              marginBottom: "10px", // Optional, adds space between divs
-            }}
-          ></h5>
-          <div>
-            <p
-              className="m-0 mt-3"
-              style={{
-                height: "14px",
-                width: "100%",
-                backgroundColor: "lightgray",
-                marginBottom: "10px", // Optional, adds space between divs
-              }}
-            ></p>
-            <p
-              className="m-0 mt-3"
-              style={{
-                height: "14px",
-                width: "100%",
-                backgroundColor: "lightgray",
-                marginBottom: "10px", // Optional, adds space between divs
-              }}
-            ></p>
-            <p
-              className="m-0 mt-3"
-              style={{
-                height: "14px",
-                width: "50%",
-                backgroundColor: "lightgray",
-                marginBottom: "10px", // Optional, adds space between divs
-              }}
-            ></p>
-          </div>
-        </div>
-
-        <div className="row pt-2">
-          <div className="col">
-            <button className="InteractButton">
-              <p
-                className="m-0 my-2"
-                style={{
-                  height: "14px",
-                  width: "100%",
-                  backgroundColor: "lightgray",
-                  marginBottom: "10px", // Optional, adds space between divs
-                }}
-              ></p>
-            </button>
-          </div>
-          <div className="col">
-            <button className="InteractButton">
-              <p
-                className="m-0 my-2"
-                style={{
-                  height: "14px",
-                  width: "100%",
-                  backgroundColor: "lightgray",
-                  marginBottom: "10px", // Optional, adds space between divs
-                }}
-              ></p>
-            </button>
-          </div>
-          <div className="col">
-            <button className="InteractButton">
-              <p
-                className="m-0 my-2"
-                style={{
-                  height: "14px",
-                  width: "100%",
-                  backgroundColor: "lightgray",
-                  marginBottom: "10px", // Optional, adds space between divs
-                }}
-              ></p>
-            </button>
-          </div>
-        </div>
-      </div>
-    );
+    return <DiaryLoader />;
   }
 
   const ownDiary = currentUser?.userID === entry?.userID;

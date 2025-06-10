@@ -79,7 +79,7 @@ const CenterLayout = ({ user }) => {
       // console.log("Fetching entries for user:", userID);
       // console.log("Applied filters:", filters);
       setIsLoading(true);
-      console.log("Fetching entries with filters:", filters);
+      // console.log("Fetching entries with filters:", filters);
       const response = await axios.get(
         `${
           import.meta.env.VITE_REACT_APP_BACKEND_BASEURL

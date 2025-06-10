@@ -58,7 +58,9 @@ const UserDiaryEntryReports = ({
               <h2 className="m-0">
                 {loading ? (
                   <>
-                    <p>Loading new diaries</p>
+                    <h4>
+                      <i className="bx bx-loader bx-spin"></i>
+                    </h4>
                   </>
                 ) : (
                   <>{filteredEntries.length}</>
@@ -90,7 +92,9 @@ const UserDiaryEntryReports = ({
               <h2 className="m-0">
                 {loading ? (
                   <>
-                    <p>Loading new users</p>
+                    <h4>
+                      <i className="bx bx-loader bx-spin"></i>
+                    </h4>
                   </>
                 ) : (
                   <> {filteredUsers.length}</>
@@ -104,7 +108,14 @@ const UserDiaryEntryReports = ({
         <div className="">
           {loading ? (
             <>
-              <p>Loading Data</p>
+              <div
+                className="d-flex align-items-center justify-content-center"
+                style={{ height: "10rem" }}
+              >
+                <h2>
+                  <i className="bx bx-loader bx-spin"></i>
+                </h2>
+              </div>
             </>
           ) : (
             <>

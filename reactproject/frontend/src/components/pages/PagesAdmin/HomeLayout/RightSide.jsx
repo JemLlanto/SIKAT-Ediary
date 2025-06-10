@@ -26,7 +26,9 @@ const RightSide = () => {
     const fetchReports = async () => {
         try {
             const response = await axios.get(
-                `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/reports`
+                `${
+                    import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+                }/incidents/reports`
             );
             setReports(response.data);
         } catch (error) {

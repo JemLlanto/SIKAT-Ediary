@@ -15,15 +15,10 @@ import DiaryDetails from "../Layouts/DiaryEntry/DiaryDetails";
 import ImageModal from "../Layouts/DiaryEntry/imageModal";
 import FollowButton from "../Layouts/DiaryEntry/FollowButton";
 import MessageModal from "../Layouts/DiaryEntry/messageModal";
-import EditPostButton from "../Layouts/Home/EditPostButton";
-import EditDiaryEntryButton from "../Layouts/Home/EditDiaryEntryButton";
-import DeleteButton from "../Layouts/DiaryEntry/DeleteButton";
-import Suspend from "../Layouts/Profile/Suspend";
-import Reviewed from "../Layouts/Profile/Reviewed";
-import Hide from "../Layouts/Profile/Hide";
 import MessageAlert from "../Layouts/DiaryEntry/messageAlert";
 import BackButton from "../Layouts/Home/BackButton";
 import DiaryEntryHeader from "../Layouts/DiaryEntry/DiaryEntryHeader";
+import DiaryLoader from "../loaders/DiaryLoader";
 // import DiaryOwnerDetails from "../Layouts/DiaryEntry/DiaryOwnerDetails";
 
 const DiaryEntry = () => {
@@ -103,7 +98,7 @@ const DiaryEntry = () => {
       const response = await axios.get(
         `${
           import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
-        }/fetchDiaryEntry/${entryID}`
+        }/entries/fetchDiaryEntry/${entryID}`
       );
       const gadifyStatusResponse = await axios.get(
         `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/gadifyStatus/${
@@ -393,7 +388,17 @@ const DiaryEntry = () => {
       >
         <BackButton></BackButton>
         {isLoading ? (
-          <p>Loading...</p>
+          <>
+            <div
+              className="row d-flex justify-content-center gap-3 mt-3 mt-md-0"
+              style={{
+                width: "clamp(19rem, 85dvw, 40rem)",
+                height: "clamp(19rem, 85dvw, 30rem)",
+              }}
+            >
+              <DiaryLoader />
+            </div>
+          </>
         ) : entries.length === 0 ? (
           <p>{error || "No entries available."}</p>
         ) : (
@@ -402,7 +407,7 @@ const DiaryEntry = () => {
             return (
               <div
                 className="d-flex justify-content-center align-items-center mt-3 mt-lg-0 bg-light rounded shadow-sm p-3"
-                style={{ width: "clamp(30rem, 90vw, auto)" }}
+                style={{ width: "" }}
               >
                 <div
                   className="row d-flex justify-content-center gap-3"
@@ -414,7 +419,7 @@ const DiaryEntry = () => {
                 >
                   {entry.diary_image && (
                     // IMAGE SIDE
-                    <div className="col-lg-7 d-flex justify-content-center align-items-center overflow-hidden rounded">
+                    <div className="col-xl-7 d-flex justify-content-center align-items-center overflow-hidden rounded">
                       <div
                         style={{
                           width: "clamp(19rem, 90dvw, 90rem)",
@@ -454,7 +459,7 @@ const DiaryEntry = () => {
 
                   {/* DIARY DETAILS SIDE */}
                   <div
-                    className="col-lg col-md"
+                    className="col-xl col-md"
                     style={
                       {
                         // width: entry.diary_image

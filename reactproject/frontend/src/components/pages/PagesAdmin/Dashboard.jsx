@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useOutletContext } from "react-router-dom";
 
 import axios from "axios";
 import {
@@ -28,6 +28,7 @@ ChartJS.register(
 
 const Dashboard = () => {
   const [users, setUsers] = useState([]);
+  const { user } = useOutletContext();
   const [flags, setFlags] = useState([]);
   const [reportedComments, setReportedComments] = useState([]);
   const [filteredUsers, setFilteredUsers] = useState([]);
@@ -55,7 +56,6 @@ const Dashboard = () => {
 
   const usersPerPage = 4;
 
-  const [user, setUser] = useState(null);
   const navigate = useNavigate();
   const [modal, setModal] = useState({ show: false, message: "" });
   const closeModal = () => {
@@ -65,27 +65,25 @@ const Dashboard = () => {
   useEffect(() => {
     const userData = localStorage.getItem("user");
 
-    if (userData) {
-      const parsedUser = JSON.parse(userData);
-      setUser(parsedUser);
-
-      if (parsedUser.isAdmin !== 1) {
+    if (user) {
+      if (user?.isAdmin !== 1) {
+        // console.log("User is not superAdmin");
         setModal({
           show: true,
           message: `Permission Denied: You are not authorized to access this page.`,
         });
         setTimeout(() => {
-          parsedUser.isAdmin === 2
-            ? navigate("/Admin/Home")
-            : navigate("/Home");
+          user?.isAdmin === 2 ? navigate("/Admin/Home") : navigate("/Home");
         }, 1500);
       }
-    } else {
+    }
+    if (!userData) {
+      // console.log("No user found...");
       navigate("/");
     }
 
     setIsLoading(false);
-  }, [navigate]);
+  }, [user]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -239,7 +237,7 @@ const Dashboard = () => {
   const fetchGenderBasedIncidents = async () => {
     try {
       const response = await axios.get(
-        `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/reports`
+        `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/incidents/reports`
       );
       setGenderBasedIncidents(response.data);
     } catch (error) {

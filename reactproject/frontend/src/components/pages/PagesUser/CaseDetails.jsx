@@ -18,7 +18,9 @@ const CaseDetails = () => {
     // Fetch case details based on reportID
     axios
       .get(
-        `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/reports/${reportID}`
+        `${
+          import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+        }/incidents/reports/${reportID}`
       )
       .then((response) => {
         console.log(response.data);
@@ -42,7 +44,7 @@ const CaseDetails = () => {
         .put(
           `${
             import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
-          }/reports/${reportID}`
+          }/incidents/reports/${reportID}`
         )
         .then(() => {
           alert("The case has been addressed!");

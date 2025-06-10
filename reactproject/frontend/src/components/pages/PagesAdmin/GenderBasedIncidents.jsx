@@ -73,7 +73,9 @@ export default function GenderBasedIncidents() {
 
   const fetchReports = () => {
     axios
-      .get(`${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/reports`)
+      .get(
+        `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/incidents/reports`
+      )
       .then((response) => setReports(response.data))
       .catch((err) =>
         setError(err.response?.data?.error || "Failed to fetch reports")
@@ -100,7 +102,7 @@ export default function GenderBasedIncidents() {
           .put(
             `${
               import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
-            }/reports/${reportID}`
+            }/incidents/reports/${reportID}`
           )
           .then(() => {
             closeConfirmModal();

@@ -25,7 +25,7 @@ import CenterLoader from "../loaders/CenterLoader";
 const Profile = () => {
   const { userID } = useParams();
   const { user } = useOutletContext();
-  const [profileOwner, setProfileOwner] = useState([]);
+  const [profileOwner, setProfileOwner] = useState({});
   const [loading, setLoading] = useState(true);
   const [loadingEntries, setLoadingEntries] = useState(true);
   const [error, setError] = useState(null);
@@ -73,39 +73,44 @@ const Profile = () => {
   }, [user]);
 
   useEffect(() => {
-    const fetchUserData = async () => {
-      try {
-        const response = await fetch(
-          `${
-            import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
-          }/fetchUser/user/${userID}`
-        );
-        if (!response.ok) throw new Error("User not found");
-        const data = await response.json();
+    if (userID) {
+      console.log("Fetching profile data...");
+      const fetchUserData = async () => {
+        try {
+          const response = await fetch(
+            `${
+              import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+            }/fetchUser/user/${userID}`
+          );
+          if (!response.ok) throw new Error("User not found");
+          const data = await response.json();
 
-        console.log("User data:", data);
+          // console.log("User data:", data ? "Has data" : "");
 
-        setProfileOwner(data);
-      } catch (err) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
+          setProfileOwner(data);
+        } catch (err) {
+          setError(err.message);
+        } finally {
+          setLoading(false);
+        }
+      };
 
-    fetchUserData();
+      fetchUserData();
+    }
   }, [userID, navigate]);
 
   useEffect(() => {
-    if (user) {
-      fetchFollowedUsers(user.userID);
+    if (Object.keys(profileOwner).length > 0) {
+      console.log(Object.keys(profileOwner).length);
+      fetchFollowedUsers(user?.userID);
       fetchEntries();
     }
-  }, [profileOwner]);
+  }, [profileOwner, userID]);
 
   const fetchEntries = async () => {
     try {
       setLoadingEntries(true);
+      console.log("Fetching entry data...");
       const response = await axios.get(
         `${
           import.meta.env.VITE_REACT_APP_BACKEND_BASEURL

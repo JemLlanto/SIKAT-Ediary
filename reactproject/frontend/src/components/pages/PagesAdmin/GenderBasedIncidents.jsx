@@ -36,14 +36,12 @@ export default function GenderBasedIncidents() {
     });
   };
 
-  const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   useEffect(() => {
     const userData = localStorage.getItem("user");
 
     if (userData) {
       const parsedUser = JSON.parse(userData);
-      setUser(parsedUser);
 
       if (parsedUser.isAdmin !== 1) {
         setModal({
@@ -59,8 +57,6 @@ export default function GenderBasedIncidents() {
     } else {
       navigate("/");
     }
-
-    setIsLoading(false);
   }, [navigate]);
 
   useEffect(() => {
@@ -76,7 +72,10 @@ export default function GenderBasedIncidents() {
       .get(
         `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/incidents/reports`
       )
-      .then((response) => setReports(response.data))
+      .then((response) => {
+        setReports(response.data);
+        setIsLoading(false);
+      })
       .catch((err) =>
         setError(err.response?.data?.error || "Failed to fetch reports")
       );
@@ -91,35 +90,6 @@ export default function GenderBasedIncidents() {
       setFilteredReports(reports.filter((r) => r.isAddress === 0));
     }
     setCurrentPage(1); // Reset to first page when the filter changes
-  };
-
-  const handleAddressed = (reportID) => {
-    setConfirmModal({
-      show: true,
-      message: `Are you sure you want to mark this as addressed?`,
-      onConfirm: async () => {
-        axios
-          .put(
-            `${
-              import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
-            }/incidents/reports/${reportID}`
-          )
-          .then(() => {
-            closeConfirmModal();
-            setModal({
-              show: true,
-              message: `The case has been addressed.`,
-            });
-            fetchReports();
-          })
-          .catch((err) => {
-            setError(
-              err.response?.data?.error || "Failed to update case report"
-            );
-          });
-      },
-      onCancel: () => setConfirmModal({ show: false, message: "" }),
-    });
   };
 
   const AddressStatusDonut = {
@@ -209,8 +179,16 @@ export default function GenderBasedIncidents() {
                       zIndex: "-1",
                     }}
                   >
-                    {reports.filter((r) => !r.isAddress).length +
-                      reports.filter((r) => r.isAddress).length}
+                    {isLoading ? (
+                      <>
+                        <i className="bx bx-loader bx-spin"></i>
+                      </>
+                    ) : (
+                      <>
+                        {reports.filter((r) => !r.isAddress).length +
+                          reports.filter((r) => r.isAddress).length}
+                      </>
+                    )}
                   </h3>
                 </div>
               </div>
@@ -257,7 +235,8 @@ export default function GenderBasedIncidents() {
         </div>
 
         <ReportTable
-          handleAddressed={handleAddressed}
+          fetchReports={fetchReports}
+          isLoading={isLoading}
           filteredReports={filteredReports} // <-- Pass filtered reports
           currentPage={currentPage} // <-- Pass current page
           setCurrentPage={setCurrentPage} // <-- Pass setCurrentPage function

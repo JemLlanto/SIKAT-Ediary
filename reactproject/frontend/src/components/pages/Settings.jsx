@@ -137,10 +137,10 @@ const Settings = () => {
           <Col lg={9}>
             <Tab.Content>
               <Tab.Pane eventKey="profile">
-                <ProfileInformation></ProfileInformation>
+                <ProfileInformation user={user}></ProfileInformation>
               </Tab.Pane>
               <Tab.Pane eventKey="security">
-                <PasswordAndSecurity></PasswordAndSecurity>
+                <PasswordAndSecurity user={user}></PasswordAndSecurity>
               </Tab.Pane>
               <Tab.Pane eventKey="filter">
                 <FilterAndSubjects></FilterAndSubjects>

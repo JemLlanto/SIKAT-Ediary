@@ -4,9 +4,9 @@ import Col from "react-bootstrap/Col";
 import Form from "react-bootstrap/Form";
 import Row from "react-bootstrap/Row";
 import axios from "axios";
-import MessageModal from "../DiaryEntry/messageModal";
+import Swal from "sweetalert2";
 
-const PasswordAndSecurity = () => {
+const PasswordAndSecurity = ({ user }) => {
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [newPassword, setNewPassword] = useState("");
@@ -15,48 +15,33 @@ const PasswordAndSecurity = () => {
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const navigate = useNavigate();
-
-  const [modal, setModal] = useState({ show: false, message: "" });
-  const [confirmModal, setConfirmModal] = useState({
-    show: false,
-    message: "",
-    onConfirm: () => {},
-    onCancel: () => {},
-  });
-
-  const closeModal = () => {
-    setModal({ show: false, message: "" });
-  };
-  const closeConfirmModal = () => {
-    setConfirmModal({
-      show: false,
-      message: "",
-      onConfirm: () => {},
-      onCancel: () => {},
-    });
-  };
-
+  const [isLoading, setIsLoading] = useState(false);
   useEffect(() => {
-    const userData = localStorage.getItem("user");
-    if (userData) {
-      const parsedData = JSON.parse(userData);
-      setEmail(parsedData.cvsuEmail);
+    if (user) {
+      setEmail(user.cvsuEmail);
     } else {
       navigate("/");
     }
-  }, [navigate]);
+  }, [user]);
 
   const handlePasswordChange = async (e) => {
     e.preventDefault();
+
+    // Clear existing messages
     setErrorMessage("");
     setSuccessMessage("");
 
     if (newPassword !== confirmPassword) {
-      setErrorMessage("Passwords do not match.");
+      Swal.fire({
+        icon: "warning",
+        title: "Mismatch",
+        text: "Passwords do not match.",
+      });
       return;
     }
 
     try {
+      setIsLoading(true);
       const response = await axios.post(
         `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/reset-password`,
         {
@@ -64,18 +49,29 @@ const PasswordAndSecurity = () => {
           password: newPassword,
         }
       );
-      setModal({
-        show: true,
-        message: `Password Updated.`,
+
+      Swal.fire({
+        icon: "success",
+        title: "Success",
+        text: "Password updated.",
+        timer: 2000,
+        showConfirmButton: false,
       });
+      setNewPassword("");
+      setConfirmPassword("");
     } catch (error) {
-      if (error.response) {
-        setErrorMessage(error.response.data.error || "An error occurred.");
-      } else {
-        setErrorMessage("Unable to connect to the server.");
-      }
+      console.error("Password reset error:", error);
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: error.response?.data?.error || "Unable to connect to the server.",
+      });
+    } finally {
+      setIsLoading(false);
     }
   };
+
+  const isFormValid = newPassword === "" || confirmPassword === "";
 
   return (
     <div
@@ -85,21 +81,6 @@ const PasswordAndSecurity = () => {
         minHeight: "clamp(20rem, 20vh, 30rem)",
       }}
     >
-      <MessageModal
-        showModal={modal}
-        closeModal={closeModal}
-        title={"Notice"}
-        message={modal.message}
-      ></MessageModal>
-      <MessageModal
-        showModal={confirmModal}
-        closeModal={closeConfirmModal}
-        title={"Confirmation"}
-        message={confirmModal.message}
-        confirm={confirmModal.onConfirm}
-        needConfirm={1}
-      ></MessageModal>
-
       <h5 className="border-bottom border-2 pb-2">Password and Security</h5>
       <form onSubmit={handlePasswordChange} autoComplete="off">
         <Row className="g-2 pt-2 text-start ">
@@ -169,8 +150,23 @@ const PasswordAndSecurity = () => {
           <p className="text-success mt-2">{successMessage}</p>
         )}
         <div className="mt-4 d-flex justify-content-end">
-          <button type="submit" className="primaryButton px-5 py-2">
-            <p className="m-0">Save</p>
+          <button
+            type="submit"
+            className="primaryButton px-5 py-2"
+            disabled={isFormValid || isLoading}
+          >
+            <p className="m-0">
+              {isLoading ? (
+                <>
+                  <span className="d-flex align-items-center justify-content-center gap-1">
+                    <i className="bx bx-loader bx-spin"></i>
+                    Saving
+                  </span>
+                </>
+              ) : (
+                <>Save</>
+              )}
+            </p>
           </button>
         </div>
       </form>

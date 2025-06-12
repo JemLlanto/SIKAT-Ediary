@@ -1,10 +1,8 @@
 import { useState } from "react";
 import axios from "axios";
-import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
 import Form from "react-bootstrap/Form";
-import MessageModal from "../DiaryEntry/messageModal";
-import MessageAlert from "../DiaryEntry/messageAlert";
+import Swal from "sweetalert2";
 
 const UserAuthentication = ({ cvsuEmail }) => {
   const [show, setShow] = useState(false);
@@ -13,26 +11,6 @@ const UserAuthentication = ({ cvsuEmail }) => {
   const [isVerifying, setIsVerifying] = useState(false);
   const [isSendingOtp, setIsSendingOtp] = useState(false);
   const email = cvsuEmail;
-
-  const [modal, setModal] = useState({ show: false, message: "" });
-  const [confirmModal, setConfirmModal] = useState({
-    show: false,
-    message: "",
-    onConfirm: () => {},
-    onCancel: () => {},
-  });
-
-  const closeModal = () => {
-    setModal({ show: false, message: "" });
-  };
-  const closeConfirmModal = () => {
-    setConfirmModal({
-      show: false,
-      message: "",
-      onConfirm: () => {},
-      onCancel: () => {},
-    });
-  };
 
   const handleClose = () => {
     if (
@@ -66,21 +44,26 @@ const UserAuthentication = ({ cvsuEmail }) => {
       );
 
       if (response.status === 200) {
-        setModal({
-          show: true,
-          message: `OTP has been sent to your CvSU email.`,
+        Swal.fire({
+          icon: "success",
+          title: "OTP Sent",
+          text: "OTP has been sent to your CvSU email.",
+          timer: 2000,
+          showConfirmButton: false,
         });
       } else {
-        setModal({
-          show: true,
-          message: `Failed to send OTP. Please try again.`,
+        Swal.fire({
+          icon: "error",
+          title: "Failed",
+          text: "Failed to send OTP. Please try again.",
         });
       }
     } catch (error) {
       console.error("Error sending OTP:", error);
-      setModal({
-        show: true,
-        message: `Error sending OTP. Please check your connection.`,
+      Swal.fire({
+        icon: "error",
+        title: "Network Error",
+        text: "Error sending OTP. Please check your connection.",
       });
     } finally {
       setIsSendingOtp(false); // Reset sending state
@@ -92,8 +75,8 @@ const UserAuthentication = ({ cvsuEmail }) => {
   };
 
   const handleVerifyOtp = async () => {
-    setIsVerifying(true);
     try {
+      setIsVerifying(true);
       const response = await axios.post(
         `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/verify-otp`,
         {
@@ -105,18 +88,31 @@ const UserAuthentication = ({ cvsuEmail }) => {
       if (response.status === 200) {
         setTimeout(() => {
           setShow(false);
-          setModal({
-            show: true,
-            message: `OTP verified successfully`,
+          Swal.fire({
+            icon: "success",
+            title: "Success!",
+            text: "OTP verified successfully.",
+            timer: 2000,
+            showConfirmButton: false,
           });
-        }, 2000);
+          setOtp("");
+          setIsVerifying(false);
+        }, 1000);
       } else {
-        setVerificationStatus("OTP verification failed. Try again.");
+        Swal.fire({
+          icon: "error",
+          title: "Failed",
+          text: "OTP verification failed. Try again.",
+        });
+        setIsVerifying(false);
       }
     } catch (error) {
       console.error("Verification error:", error);
-      setVerificationStatus("OTP verification failed. Try again.");
-    } finally {
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "OTP verification failed. Try again.",
+      });
       setIsVerifying(false);
     }
   };
@@ -133,31 +129,18 @@ const UserAuthentication = ({ cvsuEmail }) => {
         </h5>
         <p className="m-0">Password and Security</p>
       </div>
-      <MessageAlert
-        showModal={modal}
-        closeModal={closeModal}
-        title={"Notice"}
-        message={modal.message}
-      ></MessageAlert>
-      <MessageModal
-        showModal={confirmModal}
-        closeModal={closeConfirmModal}
-        title={"Confirmation"}
-        message={confirmModal.message}
-        confirm={confirmModal.onConfirm}
-        needConfirm={1}
-      ></MessageModal>
 
       <Modal show={show} onHide={handleClose} centered>
         <Modal.Header closeButton>
           <Modal.Title>
-            <h5>Account Verification</h5>
+            <h5 className="m-0">Account Verification</h5>
           </Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <p className="text-secondary">
-            An OTP has been sent to your CvSU email to verify your identity to
-            access your security details.
+            An OTP has been sent to{" "}
+            <span className="text-success">{email}</span>, please verify your
+            identity to access your security details.
           </p>
           <Form.Floating className="mb-3 mt-0 position-relative">
             <Form.Control
@@ -181,14 +164,16 @@ const UserAuthentication = ({ cvsuEmail }) => {
             onClick={sendOtp}
             disabled={isSendingOtp}
           >
-            {isSendingOtp ? "Sending OTP..." : "Resend OTP"}
+            <p className="m-0">
+              {isSendingOtp ? "Sending OTP..." : "Resend OTP"}
+            </p>
           </button>
           <button
             className="primaryButton px-4 py-2"
             onClick={handleVerifyOtp}
-            disabled={isVerifying}
+            disabled={isVerifying || otp === ""}
           >
-            {isVerifying ? "Verifying..." : "Verify OTP"}
+            <p className="m-0">{isVerifying ? "Verifying..." : "Verify OTP"}</p>
           </button>
         </Modal.Footer>
       </Modal>

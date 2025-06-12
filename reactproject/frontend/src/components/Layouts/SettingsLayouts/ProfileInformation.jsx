@@ -1,130 +1,85 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import { Row, Col, InputGroup, Form, FloatingLabel } from "react-bootstrap";
-import AnonimityButton from "../../../components/Layouts/LayoutUser/AnonimityButton";
+import Swal from "sweetalert2";
+import { Form, FloatingLabel } from "react-bootstrap";
 import MessageModal from "../DiaryEntry/messageModal";
 
-const ProfileInformation = () => {
+const ProfileInformation = ({ user }) => {
   const [values, setValues] = useState({
     firstName: "",
     lastName: "",
-    cvsuEmail: "",
-    username: "",
-    password: "",
-    confirmPassword: "",
     alias: "",
     bio: "",
   });
-  const [errors, setErrors] = useState({});
   const navigate = useNavigate();
-
-  const [modal, setModal] = useState({ show: false, message: "" });
-  const [confirmModal, setConfirmModal] = useState({
-    show: false,
-    message: "",
-    onConfirm: () => {},
-    onCancel: () => {},
-  });
-
-  const closeModal = () => {
-    setModal({ show: false, message: "" });
+  const [userDetails, setUserDetails] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isUpdating, setIsUpdating] = useState(false);
+  const fetchUserDetails = async () => {
+    try {
+      setIsLoading(true);
+      const response = await axios.get(
+        `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/fetchUser/user/${
+          user.userID
+        }`
+      );
+      const userDetails = response.data;
+      setUserDetails(userDetails);
+      setIsLoading(false);
+      setValues({
+        firstName: userDetails.firstName || "",
+        lastName: userDetails.lastName || "",
+        alias: userDetails.alias || "",
+        bio: userDetails.bio || "",
+      });
+    } catch (error) {
+      console.error("Error fetching user details:", error);
+      setIsLoading(false);
+    }
   };
-  const closeConfirmModal = () => {
-    setConfirmModal({
-      show: false,
-      message: "",
-      onConfirm: () => {},
-      onCancel: () => {},
-    });
-  };
-
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem("user"));
-    if (user && user.username) {
-      const fetchUserDetails = async () => {
-        try {
-          const response = await axios.get(
-            `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/fetchUser/user/${
-              user.userID
-            }`
-          );
-          const userDetails = response.data;
-
-          setValues({
-            firstName: userDetails.firstName || "",
-            lastName: userDetails.lastName || "",
-            cvsuEmail: userDetails.cvsuEmail || "",
-            username: userDetails.username || user.username,
-            alias: userDetails.alias || "",
-            bio: userDetails.bio || "",
-            password: "",
-            confirmPassword: "",
-          });
-        } catch (error) {
-          console.error("Error fetching user details:", error);
-        }
-      };
+    if (user) {
       fetchUserDetails();
     } else {
       navigate("/Login");
     }
-  }, [navigate]);
+  }, [user]);
 
-  const UpdateValidation = (values) => {
-    let errors = {};
-    if (!values.username) {
-      errors.username = "Username is required";
-    }
-    if (values.password && values.password !== values.confirmPassword) {
-      errors.confirmPassword = "Passwords do not match";
-    }
-    return errors;
-  };
+  const handleSubmit = () => {
+    setIsUpdating(true);
+    axios
+      .put(
+        `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/EditProfile/${
+          user.userID
+        }`,
+        values
+      )
+      .then((res) => {
+        const currentUser = JSON.parse(localStorage.getItem("user"));
+        const updatedUser = {
+          ...currentUser,
+          ...values, // Override with new values
+        };
 
-  const handleSubmit = (event) => {
-    event.preventDefault();
-    const validationErrors = UpdateValidation(values);
-    setErrors(validationErrors);
-
-    if (Object.keys(validationErrors).length === 0) {
-      const userID = JSON.parse(localStorage.getItem("user")).userID;
-      const updatedValues = { ...values };
-
-      if (!updatedValues.password) {
-        delete updatedValues.password;
-      }
-      if (!updatedValues.confirmPassword) {
-        delete updatedValues.confirmPassword;
-      }
-
-      axios
-        .put(
-          `${
-            import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
-          }/EditProfile/${userID}`,
-          updatedValues
-        )
-        .then((res) => {
-          localStorage.setItem(
-            "user",
-            JSON.stringify({
-              ...updatedValues,
-              userID: userID,
-            })
-          );
-          setModal({
-            show: true,
-            message: `Profile successfully updated.`,
-          });
-        })
-        .catch((err) => {
-          setModal({
-            show: true,
-            message: `Failed to update profile. Please try again.`,
-          });
+        localStorage.setItem("user", JSON.stringify(updatedUser));
+        fetchUserDetails();
+        Swal.fire({
+          icon: "success",
+          title: "Profile Updated",
+          text: "Your profile has been successfully updated.",
         });
-    }
+        setIsUpdating(false);
+      })
+      .catch((err) => {
+        Swal.fire({
+          icon: "error",
+          title: "Update Failed",
+          text: "Failed to update profile. Please try again.",
+        });
+        setIsUpdating(false);
+      });
   };
 
   const handleInput = (event) => {
@@ -132,6 +87,14 @@ const ProfileInformation = () => {
       ...prev,
       [event.target.name]: event.target.value,
     }));
+  };
+  const hasChanges = () => {
+    return (
+      values.firstName === userDetails.firstName &&
+      values.lastName === userDetails.lastName &&
+      values.alias === userDetails.alias &&
+      values.bio === userDetails.bio
+    );
   };
 
   return (
@@ -142,23 +105,8 @@ const ProfileInformation = () => {
         minHeight: "clamp(22rem, 20vh, 30rem)",
       }}
     >
-      <MessageModal
-        showModal={modal}
-        closeModal={closeModal}
-        title={"Notice"}
-        message={modal.message}
-      ></MessageModal>
-      <MessageModal
-        showModal={confirmModal}
-        closeModal={closeConfirmModal}
-        title={"Confirmation"}
-        message={confirmModal.message}
-        confirm={confirmModal.onConfirm}
-        needConfirm={1}
-      ></MessageModal>
-
       <h4 className="border-bottom border-2 pb-2">Profile Information</h4>
-      <form onSubmit={handleSubmit}>
+      <div>
         <div className="row text-start">
           <h5 className="m-0">Display Name and Alias</h5>
           <p className="text-secondary m-0 mb-1" style={{ fontSize: ".9rem" }}>
@@ -167,34 +115,42 @@ const ProfileInformation = () => {
             allowing for open sharing without fear of judgment or backlash.
           </p>
           <div className=" row mt-1 pe-0 gy-1">
-            <div className="col-md-9 pe-0">
-              <InputGroup>
-                <InputGroup.Text className="py-3">
-                  First and Last name
-                </InputGroup.Text>
+            <div className="col-md pe-0">
+              <FloatingLabel controlId="floatingInputGrid" label="First name">
                 <Form.Control
-                  aria-label="First name"
+                  type="text"
                   name="firstName"
                   placeholder="First name"
-                  value={values.firstName}
+                  value={`${
+                    isLoading ? "Loading first name..." : `${values.firstName}`
+                  }`}
                   onChange={handleInput}
                 />
+              </FloatingLabel>
+            </div>
+            <div className="col-md pe-0">
+              <FloatingLabel controlId="floatingInputGrid" label="Last name">
                 <Form.Control
-                  aria-label="Last name"
+                  type="text"
                   name="lastName"
                   placeholder="Last name"
-                  value={values.lastName}
+                  value={`${
+                    isLoading ? "Loading last name..." : `${values.lastName}`
+                  }`}
                   onChange={handleInput}
                 />
-              </InputGroup>
+              </FloatingLabel>
             </div>
-            <div className="col pe-0">
+
+            <div className="col-md-3 pe-0">
               <FloatingLabel controlId="floatingInputGrid" label="Alias">
                 <Form.Control
                   type="text"
                   name="alias"
                   placeholder="Alias"
-                  value={values.alias}
+                  value={`${
+                    isLoading ? "Loading alias..." : `${values.alias}`
+                  }`}
                   onChange={handleInput}
                 />
               </FloatingLabel>
@@ -210,17 +166,6 @@ const ProfileInformation = () => {
             about yourself or your interests.
           </p>
           <div className="mt-1 gap-2">
-            {/* <Col md={12}>
-              <FloatingLabel controlId="floatingInputGrid" label="Username">
-                <Form.Control
-                  type="text"
-                  name="username"
-                  placeholder="Username"
-                  value={values.username}
-                  onChange={handleInput}
-                />
-              </FloatingLabel>
-            </Col> */}
             <div>
               <FloatingLabel controlId="floatingTextarea2" label="Bio">
                 <Form.Control
@@ -228,7 +173,7 @@ const ProfileInformation = () => {
                   name="bio"
                   placeholder="Bio"
                   style={{ height: "100px" }}
-                  value={values.bio}
+                  value={`${isLoading ? "Loading bio..." : `${values.bio}`}`}
                   onChange={handleInput}
                 />
               </FloatingLabel>
@@ -237,11 +182,26 @@ const ProfileInformation = () => {
         </div>
 
         <div className="mt-4 d-flex justify-content-end">
-          <button type="submit" className="primaryButton px-5 py-2">
-            <p className="m-0">Save</p>
+          <button
+            className="primaryButton px-5 py-2"
+            disabled={hasChanges() || isUpdating}
+            onClick={handleSubmit}
+          >
+            <p className="m-0">
+              {isUpdating ? (
+                <>
+                  <span className="d-flex align-items-center justify-content-center gap-1">
+                    <i className="bx bx-loader bx-spin"></i>
+                    Saving
+                  </span>
+                </>
+              ) : (
+                <>Save</>
+              )}
+            </p>
           </button>
         </div>
-      </form>
+      </div>
     </div>
   );
 };

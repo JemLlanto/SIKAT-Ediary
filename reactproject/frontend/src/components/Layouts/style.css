@@ -2,8 +2,9 @@
   --primary: #5c0099;
   --primary_hover: #4c0080;
   --primary_light: #7a00cc;
-  --primary_disabled: #ebccff;
+  --primary_disabled: #c099da;
   --secondary: #ffb31a;
+  --secondary_disabled: #e9bb60;
   --secondary_hover: #e65c00;
   --background: #ededed;
   --background_light: #f2f2f2;
@@ -191,13 +192,13 @@ body > div.fade.modal.show > div > div > div {
   transition: 0.3s;
   color: #ffff;
 }
-.primaryButtonDisabled {
-  background-color: var(--primary_disabled);
+.primaryButton:disabled {
+  background-color: var(--primary_disabled) !important;
   border: none;
   border-radius: 5px;
-  padding: 5px 20px 5px 20px;
+  padding: 5px 20px;
   transition: 0.3s;
-  color: #ffff;
+  color: #ffffff;
   cursor: not-allowed;
 }
 .primaryButton:hover {
@@ -233,6 +234,15 @@ body > div.fade.modal.show > div > div > div {
   color: white;
   transition: 0.2s;
   border-radius: 5px;
+}
+.orangeButton:disabled {
+  background-color: var(--secondary_disabled) !important;
+  border: none;
+  border-radius: 5px;
+  padding: 5px 20px;
+  transition: 0.3s;
+  color: #ffffff;
+  cursor: not-allowed;
 }
 .orangeButton:hover {
   background-color: var(--secondary_hover);

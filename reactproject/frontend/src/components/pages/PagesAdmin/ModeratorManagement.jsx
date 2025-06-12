@@ -6,8 +6,10 @@ import MessageModal from "../../Layouts/DiaryEntry/messageModal";
 import ManagingModeratorButton from "../../Layouts/LayoutAdmin/ManagingModerators/ManagingModeratorButton";
 
 const ModeratorManagement = () => {
-  const [isLoading, setIsLoading] = useState(false);
-  const [user, setUser] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [department, setDepartment] = useState([]);
+  const [courses, setCourses] = useState([]);
+  const [moderators, setModerators] = useState([]);
   const navigate = useNavigate();
   const [modal, setModal] = useState({ show: false, message: "" });
   const closeModal = () => {
@@ -19,7 +21,6 @@ const ModeratorManagement = () => {
 
     if (userData) {
       const parsedUser = JSON.parse(userData);
-      setUser(parsedUser);
 
       if (parsedUser.isAdmin !== 1) {
         setModal({
@@ -36,35 +37,41 @@ const ModeratorManagement = () => {
       navigate("/");
     }
 
-    setIsLoading(false);
+    // setIsLoading(false);
   }, [navigate]);
 
-  const [department, setDepartment] = useState([]);
   useEffect(() => {
+    console.log("Fetching departments...");
     axios
       .get(`${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/fetchDepartments`)
       .then((response) => {
         setDepartment(response.data);
+        console.log("Departments fetched...");
       })
       .catch((error) => {
         console.error("Error fetching departments:", error);
       });
   }, []);
 
-  const [courses, setCourses] = useState([]);
   useEffect(() => {
-    axios
-      .get(`${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/getCourses`)
-      .then((response) => {
-        setCourses(response.data);
-      })
-      .catch((error) => {
-        console.error("Error fetching courses:", error);
-      });
-  });
+    if (department) {
+      console.log("Fetching courses...");
 
-  const [moderators, setModerators] = useState([]);
-  useEffect(() => {
+      axios
+        .get(`${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/getCourses`)
+        .then((response) => {
+          setCourses(response.data);
+          console.log("Courses fetched...");
+        })
+        .catch((error) => {
+          console.error("Error fetching courses:", error);
+        });
+    }
+  }, [department]);
+
+  const fetchModerator = () => {
+    console.log("Fetching administrators...");
+
     axios
       .get(
         `${
@@ -73,11 +80,19 @@ const ModeratorManagement = () => {
       )
       .then((response) => {
         setModerators(response.data);
+        console.log("Moderators fetched...");
+        setIsLoading(false);
       })
       .catch((error) => {
         console.error("Error fetching moderators:", error);
       });
-  });
+  };
+
+  useEffect(() => {
+    if (courses) {
+      fetchModerator();
+    }
+  }, [courses]);
 
   return (
     <>
@@ -87,7 +102,7 @@ const ModeratorManagement = () => {
         title={"Notice"}
         message={modal.message}
       ></MessageModal>
-      <div className="mt-0 mt-lg-2 pt-2 px-2">
+      <div className="mt-0 mt-lg-2 pt-3 pt-lg-0 px-2">
         <div
           className="container rounded shadow"
           style={{ backgroundColor: "var(--primary)" }}
@@ -104,86 +119,120 @@ const ModeratorManagement = () => {
             backgroundColor: "#fff",
           }}
         >
-          <Table striped bordered hover size="lg">
-            <thead>
-              <tr className="fw-bold">
-                <th className="text-center align-middle py-2">
-                  <h4 className="m-0 text-center align-middle">Department</h4>
-                </th>
-                <th className="text-center align-middle">
-                  <h4 className="m-0 text-center align-middle">Courses</h4>
-                </th>
-                <th className="text-center align-middle">
-                  <h4 className="m-0 text-center align-middle">Moderators</h4>
-                </th>
-                <th className="text-center align-middle">
-                  <h4 className="m-0 text-center align-middle">Actions</h4>
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {department.map((dept) => (
-                <tr key={dept.departmentID}>
-                  <td className="text-center align-middle py-2">
-                    <p className="m-0 text-center align-middle">
-                      {dept.DepartmentName}
-                    </p>
-                  </td>
-                  <td className="text-center align-middle py-2">
-                    {courses.filter(
-                      (course) => dept.departmentID === course.departmentID
-                    ).length > 0 ? (
-                      courses
-                        .filter(
-                          (course) => dept.departmentID === course.departmentID
-                        )
-                        .map((course) => (
-                          <p
-                            key={course.courseID}
-                            className="m-0 text-center align-middle"
-                          >
-                            {course.courseName}
-                          </p>
-                        ))
-                    ) : (
-                      <>
-                        <p className="m-0 text-secondary">
-                          No courses available
-                        </p>
-                      </>
-                    )}
-                  </td>
-                  <td className="text-center align-middle py-2">
-                    {moderators.filter(
-                      (mod) => dept.departmentID === mod.departmentID
-                    ).length > 0 ? (
-                      moderators
-                        .filter((mod) => dept.departmentID === mod.departmentID)
-                        .map((mod) => (
-                          <p
-                            key={mod.userID}
-                            className="m-0 text-center align-middle"
-                          >
-                            {mod.firstName} {mod.lastName}
-                          </p>
-                        ))
-                    ) : (
-                      <>
-                        <p className="m-0 text-secondary">No moderator.</p>
-                      </>
-                    )}
-                  </td>
-                  <td className="text-center align-middle py-2">
-                    <ManagingModeratorButton
-                      departmentID={dept.departmentID}
-                      departmentName={dept.DepartmentName}
-                      moderators={moderators}
-                    />
-                  </td>
+          <div className="overflow-auto">
+            <Table striped bordered hover size="lg" className="m-0 rounded">
+              <thead>
+                <tr className="fw-bold">
+                  <th className="text-center align-middle py-2">
+                    <h4 className="m-0 text-center align-middle">Department</h4>
+                  </th>
+                  <th className="text-center align-middle">
+                    <h4 className="m-0 text-center align-middle">Courses</h4>
+                  </th>
+                  <th
+                    className="text-center align-middle"
+                    style={{ width: "20%" }}
+                  >
+                    <h4 className="m-0 text-center align-middle">Moderators</h4>
+                  </th>
+                  <th
+                    className="text-center align-middle"
+                    style={{ width: "15%" }}
+                  >
+                    <h4 className="m-0 text-center align-middle">Actions</h4>
+                  </th>
                 </tr>
-              ))}
-            </tbody>
-          </Table>
+              </thead>
+              <tbody>
+                {isLoading ? (
+                  <>
+                    <td
+                      colSpan={4}
+                      scope="row"
+                      className="text-center align-middle"
+                    >
+                      <h5 className="m-0 text-secondary ">
+                        <span className="d-flex align-items-center justify-content-center gap-1">
+                          <i className="bx bx-loader bx-spin"></i>Loading admin
+                          data.
+                        </span>
+                      </h5>
+                    </td>
+                  </>
+                ) : (
+                  <>
+                    {department.map((dept) => (
+                      <tr key={dept.departmentID}>
+                        <td className="text-center align-middle py-2">
+                          <p className="m-0 text-center align-middle">
+                            {dept.DepartmentName}
+                          </p>
+                        </td>
+                        <td className="text-center align-middle py-2">
+                          {courses.filter(
+                            (course) =>
+                              dept.departmentID === course.departmentID
+                          ).length > 0 ? (
+                            courses
+                              .filter(
+                                (course) =>
+                                  dept.departmentID === course.departmentID
+                              )
+                              .map((course) => (
+                                <p
+                                  key={course.courseID}
+                                  className="m-0 text-center align-middle"
+                                >
+                                  {course.courseName}
+                                </p>
+                              ))
+                          ) : (
+                            <>
+                              <p className="m-0 text-secondary">
+                                No courses available
+                              </p>
+                            </>
+                          )}
+                        </td>
+                        <td className="text-center align-middle py-2">
+                          {moderators.filter(
+                            (mod) => dept.departmentID === mod.departmentID
+                          ).length > 0 ? (
+                            moderators
+                              .filter(
+                                (mod) => dept.departmentID === mod.departmentID
+                              )
+                              .map((mod) => (
+                                <p
+                                  key={mod.userID}
+                                  className="m-0 text-center align-middle"
+                                >
+                                  {mod.firstName} {mod.lastName}
+                                </p>
+                              ))
+                          ) : (
+                            <>
+                              <p className="m-0 text-secondary">
+                                No moderator.
+                              </p>
+                            </>
+                          )}
+                        </td>
+                        <td className="text-center align-middle py-2">
+                          <ManagingModeratorButton
+                            fetchModerator={fetchModerator}
+                            departmentID={dept.departmentID}
+                            departmentName={dept.DepartmentName}
+                            moderators={moderators}
+                          />
+                        </td>
+                      </tr>
+                    ))}
+                  </>
+                )}
+              </tbody>
+            </Table>
+          </div>
         </div>
       </div>
     </>

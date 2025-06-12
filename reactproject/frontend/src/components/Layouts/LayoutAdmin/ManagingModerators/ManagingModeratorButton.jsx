@@ -3,14 +3,17 @@ import { Modal } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import AddingModeratorForm from "./AddingModeratorForm";
 import axios from "axios";
+import Swal from "sweetalert2";
 
 const ManagingModeratorButton = ({
+  fetchModerator,
   departmentID,
   departmentName,
   moderators,
 }) => {
   const [addingModerator, setAddingModerator] = useState(false);
   const [manageModerator, setManageModerator] = useState(false);
+  const [isLoadingMod, setIsLoadingMod] = useState();
 
   const handleCloseManageModerator = () => {
     setAddingModerator(false);
@@ -40,10 +43,14 @@ const ManagingModeratorButton = ({
 
   const handleSave = () => {
     if (!selectedUser) {
-      alert("Please select a user.");
+      Swal.fire({
+        icon: "warning",
+        title: "No User Selected",
+        text: "Please select a user before assigning.",
+      });
       return;
     }
-
+    setIsLoadingMod(true);
     axios
       .post(
         `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/assignModerator`,
@@ -54,38 +61,64 @@ const ManagingModeratorButton = ({
         }
       )
       .then((response) => {
-        alert(response.data.message);
+        Swal.fire({
+          icon: "success",
+          title: "Moderator Assigned",
+          text: response.data.message,
+        });
+        fetchModerator();
         setSelectedUser(null);
         setSearchTerm("");
+        setIsLoadingMod(false);
       })
       .catch((error) => {
         console.error("Error assigning moderator:", error);
-        alert("Failed to assign moderator.");
+        Swal.fire({
+          icon: "error",
+          title: "Failed to Assign Moderator",
+          text: "An error occurred while assigning the moderator.",
+        });
+        setIsLoadingMod(false);
       });
   };
 
-  const handleRemove = (mod) => {
+  const handleRemove = async (mod) => {
     if (!mod) {
-      alert("Please select a user.");
+      Swal.fire({
+        icon: "warning",
+        title: "No User Selected",
+        text: "Please select a user to remove as moderator.",
+      });
       return;
     }
 
-    axios
-      .post(
+    try {
+      setIsLoadingMod(mod.userID);
+      const response = await axios.post(
         `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/removeModerator`,
         {
           userID: mod.userID,
         }
-      )
-      .then((response) => {
-        alert(response.data.message);
-        setSelectedUser(null);
-        setSearchTerm("");
-      })
-      .catch((error) => {
-        console.error("Error removing moderator:", error);
-        alert("Failed to remove moderator.");
+      );
+
+      Swal.fire({
+        icon: "success",
+        title: "Moderator Removed",
+        text: response.data.message,
       });
+      fetchModerator();
+      setSelectedUser(null);
+      setSearchTerm("");
+    } catch (error) {
+      console.error("Error removing moderator:", error);
+      Swal.fire({
+        icon: "error",
+        title: "Removal Failed",
+        text: "Failed to remove moderator. Please try again later.",
+      });
+    } finally {
+      setIsLoadingMod();
+    }
   };
 
   return (
@@ -129,14 +162,22 @@ const ManagingModeratorButton = ({
                           : ""
                       }`}
                     >
-                      {user.firstName} {user.lastName}
+                      <p className="m-0">
+                        {user.firstName} {user.lastName}
+                      </p>
                       <button
-                        className=" primaryButton "
+                        className={` ${
+                          selectedUser?.userID === user.userID
+                            ? "btn btn-light py-1"
+                            : "primaryButton"
+                        }`}
                         onClick={() => setSelectedUser(user)}
                       >
-                        {selectedUser?.userID === user.userID
-                          ? "Selected"
-                          : "Select"}
+                        <p className="m-0">
+                          {selectedUser?.userID === user.userID
+                            ? "Selected"
+                            : "Select"}
+                        </p>
                       </button>
                     </li>
                   ))}
@@ -192,8 +233,20 @@ const ManagingModeratorButton = ({
                             onClick={() => {
                               handleRemove(mod);
                             }}
+                            disabled={isLoadingMod === mod.userID}
                           >
-                            <p className="m-0">Remove</p>
+                            <p className="m-0">
+                              {isLoadingMod === mod.userID ? (
+                                <>
+                                  <span className="d-flex align-items-center justify-content-center gap-1">
+                                    <i className="bx bx-loader bx-spin"></i>
+                                    Removing
+                                  </span>
+                                </>
+                              ) : (
+                                <>Remove</>
+                              )}
+                            </p>
                           </button>
                         </div>
                       </div>
@@ -222,9 +275,20 @@ const ManagingModeratorButton = ({
               <button
                 className="primaryButton py-2 rounded"
                 onClick={handleSave}
-                disabled={!selectedUser}
+                disabled={!selectedUser || isLoadingMod}
+                style={{ width: "100%" }}
               >
-                <p className="m-0">Save</p>
+                <p className="m-0">
+                  {isLoadingMod ? (
+                    <>
+                      <span className="d-flex align-items-center justify-content-center my-1">
+                        <i className="bx bx-loader bx-spin"></i>
+                      </span>
+                    </>
+                  ) : (
+                    <>Save</>
+                  )}
+                </p>
               </button>
             </div>
           ) : (

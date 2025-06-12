@@ -17,6 +17,8 @@ const authRoutes = require("./routes/auth");
 const entryRoutes = require("./routes/entries");
 const followRoutes = require("./routes/follow");
 const incidentRoutes = require("./routes/incidents");
+const analyticsRoutes = require("./routes/analytics");
+const settingsRoutes = require("./routes/settings");
 
 const allowedOrigins = [
   "http://localhost:5173",
@@ -39,6 +41,8 @@ app.use("/auth", authRoutes);
 app.use("/entries", entryRoutes);
 app.use("/follow", followRoutes);
 app.use("/incidents", incidentRoutes);
+app.use("/analytics", analyticsRoutes);
+app.use("/settings", settingsRoutes);
 
 app.use("/uploads", express.static("uploads"));
 
@@ -545,24 +549,29 @@ app.post("/Register", (req, res) => {
 });
 
 app.get("/getCourses", (req, res) => {
+  console.log("Fetching courses...");
   db.query("SELECT * FROM courses", (err, results) => {
     if (err) {
       return res.status(500).json({ error: err.message });
     }
+    console.log("Courses fetched...");
     res.json(results);
   });
 });
 
 app.get("/fetchDepartments", (req, res) => {
+  console.log("Fetching departments...");
   db.query("SELECT * FROM course_department", (err, results) => {
     if (err) {
       return res.status(500).json({ error: err.message });
     }
+    console.log("Departments fetched...");
     res.json(results);
   });
 });
 
 app.get("/fetchDepartmentModerators", (req, res) => {
+  console.log("Fetching administrators...");
   const query = `
     SELECT 
       course_department.departmentID, 
@@ -586,6 +595,7 @@ app.get("/fetchDepartmentModerators", (req, res) => {
     if (err) {
       return res.status(500).json({ error: err.message });
     }
+    console.log("Moderators fetched...");
     res.json(results);
   });
 });
@@ -1779,25 +1789,6 @@ app.get("/users", (req, res) => {
   });
 });
 
-app.get("/userAnalytics", (req, res) => {
-  const departmentID = req.query.departmentID;
-
-  let query = `
-    SELECT u.*
-    FROM user_table u
-    JOIN course_department c ON u.departmentID = c.departmentID
-    WHERE u.departmentID = ?
-  `;
-
-  db.query(query, [departmentID], (err, results) => {
-    if (err) {
-      console.error(err);
-      return res.status(500).json({ error: "Database error" });
-    }
-    res.json(results);
-  });
-});
-
 app.get("/admin", (req, res) => {
   db.query(
     `
@@ -2157,34 +2148,6 @@ app.get("/getReportedUsers", (req, res) => {
   });
 });
 
-app.get("/getReportedUsersAnalytics", (req, res) => {
-  const { departmentID } = req.query;
-
-  // Check if departmentID is provided
-  if (!departmentID) {
-    return res.status(400).json({ error: "Department ID is required" });
-  }
-
-  const query = `
- SELECT
-      user_table.*,
-      user_profiles.profile_image
-    FROM 
-      user_table
-    JOIN user_profiles ON user_table.userID = user_profiles.userID
-    WHERE user_table.isReported = 1 AND user_table.departmentID = ?
-    ORDER BY user_table.isReviewed, user_table.reportCount DESC;
-  `;
-
-  db.query(query, [departmentID], (err, results) => {
-    if (err) {
-      console.error("Error fetching reported users:", err.message);
-      return res.status(500).json({ error: "Error fetching reported users" });
-    }
-    res.status(200).json(results);
-  });
-});
-
 app.get("/fetchReportedUserReasons", (req, res) => {
   db.query("SELECT * FROM reported_users ", (err, results) => {
     if (err) {
@@ -2316,49 +2279,6 @@ app.get("/getReportedComments", (req, res) => {
   `;
 
   db.query(query, (err, results) => {
-    if (err) {
-      console.error("Error fetching reported comments:", err.message);
-      return res
-        .status(500)
-        .json({ error: "Error fetching reported comments" });
-    }
-    res.status(200).json(results);
-  });
-});
-
-app.get("/getReportedCommentsAnalytics", (req, res) => {
-  const departmentID = req.query.departmentID;
-
-  if (!departmentID) {
-    return res.status(400).json({ error: "Department ID is required" });
-  }
-
-  // SELECT
-  // comments.*,
-  // user_table.firstName,
-  // user_table.lastName,
-  // user_table.studentNumber
-  // FROM comments
-  // JOIN user_table ON comments.userID = user_table.userID
-  // WHERE comments.isReported = 1
-  // ORDER BY comments.isReviewed, comments.reportCount DESC ;
-
-  const query = `
-    SELECT
-      comments.*,
-      user_table.firstName,
-      user_table.lastName,
-      user_table.studentNumber,
-      diary_entries.*
-    FROM 
-      comments
-    JOIN user_table ON comments.userID = user_table.userID
-    JOIN diary_entries ON comments.entryID = diary_entries.entryID
-    WHERE comments.isReported = 1 AND user_table.departmentID = ?
-    ORDER BY comments.isReviewed, comments.reportCount DESC 
-  `;
-
-  db.query(query, [departmentID], (err, results) => {
     if (err) {
       console.error("Error fetching reported comments:", err.message);
       return res
@@ -3060,26 +2980,6 @@ app.delete("/flaggingDelete/:flagID", (req, res) => {
   );
 });
 
-app.post("/filters", (req, res) => {
-  const { subject } = req.body;
-
-  db.query(
-    "INSERT INTO filter_subjects (subject) VALUES (?)",
-    [subject],
-    (err, result) => {
-      if (err) {
-        console.error("Error adding filter:", err);
-        res.status(500).json({ error: "Failed to add filter" });
-      } else {
-        res.status(201).json({
-          message: "Filter added successfully",
-          filterID: result.insertId,
-        });
-      }
-    }
-  );
-});
-
 app.get("/filters", (req, res) => {
   db.query("SELECT * FROM filter_subjects", (err, results) => {
     if (err) {
@@ -3100,32 +3000,6 @@ app.get("/adminFilters", (req, res) => {
       res.json(results);
     }
   });
-});
-
-app.put("/filterEdit/:subjectID", (req, res) => {
-  const { subjectID } = req.params;
-  const { subject } = req.body;
-
-  if (subject) {
-    db.query(
-      "UPDATE filter_subjects SET subject = ? WHERE subjectID = ?",
-      [subject, subjectID],
-      (err, result) => {
-        if (err) {
-          console.error(err);
-          res.status(500).json({ error: "Failed to update subject" });
-        } else {
-          if (result.affectedRows > 0) {
-            res.json({ message: "Subject updated successfully" });
-          } else {
-            res.status(404).json({ error: "Subject not found" });
-          }
-        }
-      }
-    );
-  } else {
-    res.status(400).json({ error: "Reason is required" });
-  }
 });
 
 app.delete("/filterDelete/:subjectID", (req, res) => {

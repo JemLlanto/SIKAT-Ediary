@@ -7,7 +7,7 @@ import MessageModal from "../../DiaryEntry/messageModal";
 import MessageAlert from "../../DiaryEntry/messageAlert";
 import RegisterUserDownloadButton from "../../DownloadButton/RegisterUserDownloadButton";
 
-const RegisteredUsers = ({ users }) => {
+const RegisteredUsers = ({ users, isLoading }) => {
   const [filteredUsers, setFilteredUsers] = useState([]);
   const [selectedCourse, setSelectedCourse] = useState("All");
   const [selectedYear, setSelectedYear] = useState("All");
@@ -199,42 +199,62 @@ const RegisteredUsers = ({ users }) => {
               </tr>
             </thead>
             <tbody>
-              {currentUsers.length > 0 ? (
-                currentUsers.map((user) => (
-                  <tr key={user.userID}>
-                    <th scope="row" className="text-center align-middle">
-                      <p className="m-0">{user.studentNumber}</p>
-                    </th>
-                    <td className="text-center align-middle">
-                      <p className="m-0">{`${user.firstName} ${user.lastName}`}</p>
-                    </td>
-                    <td className="text-center align-middle">
-                      <p className="m-0">{user.sex}</p>
-                    </td>
-                    <td className="text-center align-middle">
-                      <p className="m-0">{user.course}</p>
-                    </td>
-                    <td className="text-center align-middle">
-                      <p className="m-0">{user.year}</p>
-                    </td>
-                    <td className="text-center align-middle">
-                      <p className="m-0">{user.cvsuEmail}</p>
-                    </td>
-                    <td className="text-center align-middle">
-                      <Link to={`/Profile/${user.userID}`}>
-                        <button className="primaryButton">
-                          <p className="m-0">Visit</p>
-                        </button>
-                      </Link>
+              {isLoading ? (
+                <>
+                  <tr>
+                    <td
+                      colSpan={7}
+                      scope="row"
+                      className="text-center align-middle"
+                    >
+                      <p className="m-0 text-secondary ">
+                        <span className="d-flex align-items-center justify-content-center gap-1">
+                          <i className="bx bx-loader bx-spin"></i>Loading users.
+                        </span>
+                      </p>
                     </td>
                   </tr>
-                ))
+                </>
               ) : (
-                <tr>
-                  <td colSpan="7" className="text-center">
-                    No registered users available.
-                  </td>
-                </tr>
+                <>
+                  {currentUsers.length > 0 ? (
+                    currentUsers.map((user) => (
+                      <tr key={user.userID}>
+                        <th scope="row" className="text-center align-middle">
+                          <p className="m-0">{user.studentNumber}</p>
+                        </th>
+                        <td className="text-center align-middle">
+                          <p className="m-0">{`${user.firstName} ${user.lastName}`}</p>
+                        </td>
+                        <td className="text-center align-middle">
+                          <p className="m-0">{user.sex}</p>
+                        </td>
+                        <td className="text-center align-middle">
+                          <p className="m-0">{user.course}</p>
+                        </td>
+                        <td className="text-center align-middle">
+                          <p className="m-0">{user.year}</p>
+                        </td>
+                        <td className="text-center align-middle">
+                          <p className="m-0">{user.cvsuEmail}</p>
+                        </td>
+                        <td className="text-center align-middle">
+                          <Link to={`/Profile/${user.userID}`}>
+                            <button className="primaryButton">
+                              <p className="m-0">Visit</p>
+                            </button>
+                          </Link>
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan="7" className="text-center">
+                        No registered users available.
+                      </td>
+                    </tr>
+                  )}
+                </>
               )}
             </tbody>
           </table>

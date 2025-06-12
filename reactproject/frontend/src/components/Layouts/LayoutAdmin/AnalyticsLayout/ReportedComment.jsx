@@ -8,7 +8,7 @@ import MessageModal from "../../DiaryEntry/messageModal";
 import MessageAlert from "../../DiaryEntry/messageAlert";
 import ReportedCommentDownloadButton from "../../DownloadButton/ReportedCommentDownloadButton";
 
-const ReportedComment = ({ reportedComments }) => {
+const ReportedComment = ({ reportedComments, isLoadings }) => {
   const [filteredUsers, setFilteredUsers] = useState([]);
   const [option, setOption] = useState([]);
   const [commentReportReasons, setCommentReportReasons] = useState([]);
@@ -240,92 +240,117 @@ const ReportedComment = ({ reportedComments }) => {
               </tr>
             </thead>
             <tbody>
-              {currentUsers.length > 0 ? (
-                currentUsers.map((reportedComment) => (
-                  <tr key={reportedComment.commentID}>
-                    <td className="text-center align-middle">
-                      <p className="m-0">{`${reportedComment.firstName} ${reportedComment.lastName}`}</p>
-                    </td>
-                    <td className="text-center align-middle">
-                      <p className="m-0">
-                        {commentReportReasons &&
-                        commentReportReasons.length > 0 ? (
-                          Object.entries(
-                            commentReportReasons
-                              .filter(
-                                (commentReportReason) =>
-                                  commentReportReason.commentID ===
-                                  reportedComment.commentID
-                              )
-                              .reduce((count, commentReportReason) => {
-                                count[commentReportReason.reason] =
-                                  (count[commentReportReason.reason] || 0) + 1;
-                                return count;
-                              }, {})
-                          ).map(([reason, count]) => (
-                            <div key={reason}>
-                              <p className="m-0">
-                                {reason} x{count}
-                              </p>
-                            </div>
-                          ))
-                        ) : (
-                          <p className="m-0">No reason available</p>
-                        )}
-                      </p>
-                    </td>
-                    <td className="text-center align-middle">
-                      <p className="m-0">
-                        {reportedComment.text.split(" ").slice(0, 10).join(" ")}
-                        {reportedComment.text.split(" ").length > 10
-                          ? "..."
-                          : ""}
-                      </p>
-                    </td>
-                    <td className="text-center align-middle">
-                      <p className="m-0">{reportedComment.reportCount}</p>
-                    </td>
-                    {/* <td className="text-center align-middle">
-                      <p className="m-0">00</p>
-                    </td> */}
-                    <td className="text-success text-center align-middle">
-                      {reportedComment.isReviewed === 1 ? (
-                        <p className="text-success m-0">Reviewed</p>
-                      ) : (
-                        <p className="text-danger m-0">Pending</p>
-                      )}
-                    </td>
+              {isLoadings ? (
+                <>
+                  <tr>
                     <td
+                      colSpan={7}
+                      scope="row"
                       className="text-center align-middle"
-                      style={{ width: "10rem" }}
                     >
-                      <div className=" d-flex flex-column gap-1">
-                        {/* Display actions only for pending reports */}
-                        {!reportedComment.isReviewed && (
-                          <button
-                            className="w-100 orangeButton py-2"
-                            onClick={() =>
-                              handleAddressed(reportedComment.commentID)
-                            }
-                          >
-                            <p className="m-0">Mark as Reviewed</p>
-                          </button>
-                        )}
-                        <Link to={`/DiaryEntry/${reportedComment.entryID}`}>
-                          <button className="w-100 primaryButton py-2">
-                            <p className="m-0">Check</p>
-                          </button>
-                        </Link>
-                      </div>
+                      <p className="m-0 text-secondary ">
+                        <span className="d-flex align-items-center justify-content-center gap-1">
+                          <i className="bx bx-loader bx-spin"></i>Loading
+                          reported comments.
+                        </span>
+                      </p>
                     </td>
                   </tr>
-                ))
+                </>
               ) : (
-                <tr>
-                  <td colSpan="7" className="text-center">
-                    No reported comments available.
-                  </td>
-                </tr>
+                <>
+                  {currentUsers.length > 0 ? (
+                    currentUsers.map((reportedComment) => (
+                      <tr key={reportedComment.commentID}>
+                        <td className="text-center align-middle">
+                          <p className="m-0">{`${reportedComment.firstName} ${reportedComment.lastName}`}</p>
+                        </td>
+                        <td className="text-center align-middle">
+                          <p className="m-0">
+                            {commentReportReasons &&
+                            commentReportReasons.length > 0 ? (
+                              Object.entries(
+                                commentReportReasons
+                                  .filter(
+                                    (commentReportReason) =>
+                                      commentReportReason.commentID ===
+                                      reportedComment.commentID
+                                  )
+                                  .reduce((count, commentReportReason) => {
+                                    count[commentReportReason.reason] =
+                                      (count[commentReportReason.reason] || 0) +
+                                      1;
+                                    return count;
+                                  }, {})
+                              ).map(([reason, count]) => (
+                                <div key={reason}>
+                                  <p className="m-0">
+                                    {reason} x{count}
+                                  </p>
+                                </div>
+                              ))
+                            ) : (
+                              <p className="m-0">No reason available</p>
+                            )}
+                          </p>
+                        </td>
+                        <td className="text-center align-middle">
+                          <p className="m-0">
+                            {reportedComment.text
+                              .split(" ")
+                              .slice(0, 10)
+                              .join(" ")}
+                            {reportedComment.text.split(" ").length > 10
+                              ? "..."
+                              : ""}
+                          </p>
+                        </td>
+                        <td className="text-center align-middle">
+                          <p className="m-0">{reportedComment.reportCount}</p>
+                        </td>
+                        {/* <td className="text-center align-middle">
+                      <p className="m-0">00</p>
+                    </td> */}
+                        <td className="text-success text-center align-middle">
+                          {reportedComment.isReviewed === 1 ? (
+                            <p className="text-success m-0">Reviewed</p>
+                          ) : (
+                            <p className="text-danger m-0">Pending</p>
+                          )}
+                        </td>
+                        <td
+                          className="text-center align-middle"
+                          style={{ width: "10rem" }}
+                        >
+                          <div className=" d-flex flex-column gap-1">
+                            {/* Display actions only for pending reports */}
+                            {!reportedComment.isReviewed && (
+                              <button
+                                className="w-100 orangeButton py-2"
+                                onClick={() =>
+                                  handleAddressed(reportedComment.commentID)
+                                }
+                              >
+                                <p className="m-0">Mark as Reviewed</p>
+                              </button>
+                            )}
+                            <Link to={`/DiaryEntry/${reportedComment.entryID}`}>
+                              <button className="w-100 primaryButton py-2">
+                                <p className="m-0">Check</p>
+                              </button>
+                            </Link>
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan="7" className="text-center">
+                        No reported comments available.
+                      </td>
+                    </tr>
+                  )}
+                </>
               )}
             </tbody>
           </table>

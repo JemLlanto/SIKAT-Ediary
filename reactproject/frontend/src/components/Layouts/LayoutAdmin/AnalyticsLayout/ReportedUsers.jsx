@@ -8,7 +8,7 @@ import MessageModal from "../../DiaryEntry/messageModal";
 import MessageAlert from "../../DiaryEntry/messageAlert";
 import ReportedUsersDownloadButton from "../../DownloadButton/ReportedUsersDownloadButton";
 
-const ReportedComment = ({ reportedUsers }) => {
+const ReportedComment = ({ reportedUsers, isLoadings }) => {
   const [filteredUsers, setFilteredUsers] = useState([]);
   const [option, setOption] = useState([]);
   const [reportUserReasons, setReportUserReasons] = useState([]);
@@ -233,81 +233,105 @@ const ReportedComment = ({ reportedUsers }) => {
               </tr>
             </thead>
             <tbody>
-              {currentUsers.length > 0 ? (
-                currentUsers.map((reportedUser) => (
-                  <tr key={reportedUser.userID}>
-                    <th scope="row" className="text-center align-middle">
-                      <p className="m-0">{reportedUser.studentNumber}</p>
-                    </th>
-                    <td className="text-center align-middle">
-                      <p className="m-0">{`${reportedUser.firstName} ${reportedUser.lastName}`}</p>
-                    </td>
-                    <td className="text-center align-middle">
-                      <p className="m-0">
-                        {reportUserReasons && reportUserReasons.length > 0 ? (
-                          Object.entries(
-                            reportUserReasons
-                              .filter(
-                                (reportUserReason) =>
-                                  reportUserReason.userID ===
-                                  reportedUser.userID
-                              )
-                              .reduce((count, reportUserReason) => {
-                                count[reportUserReason.reason] =
-                                  (count[reportUserReason.reason] || 0) + 1;
-                                return count;
-                              }, {})
-                          ).map(([reason, count]) => (
-                            <div key={reason}>
-                              <p className="m-0">
-                                {reason} x{count}
-                              </p>
-                            </div>
-                          ))
-                        ) : (
-                          <p className="m-0">No reason available</p>
-                        )}
+              {isLoadings ? (
+                <>
+                  <tr>
+                    <td
+                      colSpan={7}
+                      scope="row"
+                      className="text-center align-middle"
+                    >
+                      <p className="m-0 text-secondary ">
+                        <span className="d-flex align-items-center justify-content-center gap-1">
+                          <i className="bx bx-loader bx-spin"></i>Loading
+                          reported users.
+                        </span>
                       </p>
                     </td>
-                    <td scope="" className="text-center align-middle">
-                      <p className="m-0">{reportedUser.reportCount}</p>
-                    </td>
-                    <td className="text-success text-center align-middle">
-                      {reportedUser.isReviewed === 1 ? (
-                        <p className="text-success m-0">Addressed</p>
-                      ) : (
-                        <p className="text-danger m-0">Pending</p>
-                      )}
-                    </td>
-                    <td
-                      className="text-center align-middle"
-                      style={{ width: "10rem" }}
-                    >
-                      <div className="d-flex justify-content-center flex-column gap-1">
-                        {/* Display actions only for pending reports */}
-                        {!reportedUser.isReviewed && (
-                          <button
-                            className="w-100 orangeButton py-2"
-                            onClick={() => handleAddressed(reportedUser.userID)}
-                          >
-                            <p className="m-0">Mark as Reviewed</p>
-                          </button>
-                        )}
-                        <Link to={`/Profile/${reportedUser.userID}`}>
-                          <button className="w-100 primaryButton py-2">
-                            <p className="m-0">Check</p>
-                          </button>
-                        </Link>
-                      </div>
-                    </td>
                   </tr>
-                ))
+                </>
               ) : (
-                <tr>
-                  <td colSpan="7" className="text-center">
-                    No reported comments available.
-                  </td>
-                </tr>
+                <>
+                  {currentUsers.length > 0 ? (
+                    currentUsers.map((reportedUser) => (
+                      <tr key={reportedUser.userID}>
+                        <th scope="row" className="text-center align-middle">
+                          <p className="m-0">{reportedUser.studentNumber}</p>
+                        </th>
+                        <td className="text-center align-middle">
+                          <p className="m-0">{`${reportedUser.firstName} ${reportedUser.lastName}`}</p>
+                        </td>
+                        <td className="text-center align-middle">
+                          <p className="m-0">
+                            {reportUserReasons &&
+                            reportUserReasons.length > 0 ? (
+                              Object.entries(
+                                reportUserReasons
+                                  .filter(
+                                    (reportUserReason) =>
+                                      reportUserReason.userID ===
+                                      reportedUser.userID
+                                  )
+                                  .reduce((count, reportUserReason) => {
+                                    count[reportUserReason.reason] =
+                                      (count[reportUserReason.reason] || 0) + 1;
+                                    return count;
+                                  }, {})
+                              ).map(([reason, count]) => (
+                                <div key={reason}>
+                                  <p className="m-0">
+                                    {reason} x{count}
+                                  </p>
+                                </div>
+                              ))
+                            ) : (
+                              <p className="m-0">No reason available</p>
+                            )}
+                          </p>
+                        </td>
+                        <td scope="" className="text-center align-middle">
+                          <p className="m-0">{reportedUser.reportCount}</p>
+                        </td>
+                        <td className="text-success text-center align-middle">
+                          {reportedUser.isReviewed === 1 ? (
+                            <p className="text-success m-0">Addressed</p>
+                          ) : (
+                            <p className="text-danger m-0">Pending</p>
+                          )}
+                        </td>
+                        <td
+                          className="text-center align-middle"
+                          style={{ width: "10rem" }}
+                        >
+                          <div className="d-flex justify-content-center flex-column gap-1">
+                            {/* Display actions only for pending reports */}
+                            {!reportedUser.isReviewed && (
+                              <button
+                                className="w-100 orangeButton py-2"
+                                onClick={() =>
+                                  handleAddressed(reportedUser.userID)
+                                }
+                              >
+                                <p className="m-0">Mark as Reviewed</p>
+                              </button>
+                            )}
+                            <Link to={`/Profile/${reportedUser.userID}`}>
+                              <button className="w-100 primaryButton py-2">
+                                <p className="m-0">Check</p>
+                              </button>
+                            </Link>
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan="7" className="text-center">
+                        No reported comments available.
+                      </td>
+                    </tr>
+                  )}
+                </>
               )}
             </tbody>
           </table>

@@ -9,7 +9,7 @@ import MessageModal from "../../DiaryEntry/messageModal";
 import MessageAlert from "../../DiaryEntry/messageAlert";
 import FlaggedDiariesDownloadButton from "../../DownloadButton/FlaggedDiariesDownloadButton";
 
-const FlaggedDiaries = ({ flags }) => {
+const FlaggedDiaries = ({ flags, isLoading }) => {
   const [filteredUsers, setFilteredUsers] = useState([]);
   const [flaggedDiaryReasons, setFlaggedDiaryReasons] = useState([]);
   const [alarmingWords, setAlarmingWords] = useState([]);
@@ -259,85 +259,106 @@ const FlaggedDiaries = ({ flags }) => {
               </tr>
             </thead>
             <tbody>
-              {currentUsers.length > 0 ? (
-                currentUsers.map((flag, index) => (
-                  <tr key={index}>
-                    {/* <th scope="row" className="text-center align-middle">
-                      <p className="m-0">{flag.studentNumber}</p>
-                    </th> */}
-                    <td className="text-center align-middle">
-                      <p className="m-0">{`${flag.firstName} ${flag.lastName}`}</p>
-                    </td>
-                    <td className="text-center align-middle">
-                      <p className="m-0">
-                        {flaggedDiaryReasons &&
-                        flaggedDiaryReasons.length > 0 ? (
-                          Object.entries(
-                            flaggedDiaryReasons
-                              .filter(
-                                (flaggedReason) =>
-                                  flaggedReason.entryID === flag.entryID
-                              )
-                              .reduce((count, flaggedReason) => {
-                                count[flaggedReason.reason] =
-                                  (count[flaggedReason.reason] || 0) + 1;
-                                return count;
-                              }, {})
-                          ).map(([reason, count]) => (
-                            <div key={reason}>
-                              <p className="m-0">
-                                {reason} x{count}
-                              </p>
-                            </div>
-                          ))
-                        ) : (
-                          <p className="m-0">No reason available</p>
-                        )}
+              {isLoading ? (
+                <>
+                  <tr>
+                    <td
+                      colSpan={7}
+                      scope="row"
+                      className="text-center align-middle"
+                    >
+                      <p className="m-0 text-secondary ">
+                        <span className="d-flex align-items-center justify-content-center gap-1">
+                          <i className="bx bx-loader bx-spin"></i>Loading
+                          flagged diaries.
+                        </span>
                       </p>
                     </td>
-                    <td className="text-center align-middle">
-                      <p className="m-0">{flag.title}</p>
-                    </td>
-
-                    <td className="text-center align-middle">
-                      <p className="m-0">{flag.flagCount}</p>
-                    </td>
-                    <td className="text-center align-middle">
-                      {flag.isAddress === 1 ? (
-                        <p className="text-success m-0">Addressed</p>
-                      ) : (
-                        <p className="text-danger m-0">Pending</p>
-                      )}
-                    </td>
-                    <td
-                      className="text-center align-middle"
-                      style={{ width: "5rem" }}
-                    >
-                      <div className=" d-flex flex-column gap-1">
-                        {/* Display actions only for pending reports */}
-                        {!flag.isAddress && (
-                          <button
-                            className="w-100 orangeButton py-2"
-                            onClick={() => handleAddressed(flag.entryID)}
-                          >
-                            <p className="m-0">Mark as Reviewed</p>
-                          </button>
-                        )}
-                        <Link to={`/DiaryEntry/${flag.entryID}`}>
-                          <button className="w-100 primaryButton py-2">
-                            <p className="m-0">Check</p>
-                          </button>
-                        </Link>
-                      </div>
-                    </td>
                   </tr>
-                ))
+                </>
               ) : (
-                <tr>
-                  <td colSpan="7" className="text-center">
-                    No flagged diaries available.
-                  </td>
-                </tr>
+                <>
+                  {currentUsers.length > 0 ? (
+                    currentUsers.map((flag, index) => (
+                      <tr key={index}>
+                        {/* <th scope="row" className="text-center align-middle">
+                      <p className="m-0">{flag.studentNumber}</p>
+                    </th> */}
+                        <td className="text-center align-middle">
+                          <p className="m-0">{`${flag.firstName} ${flag.lastName}`}</p>
+                        </td>
+                        <td className="text-center align-middle">
+                          <p className="m-0">
+                            {flaggedDiaryReasons &&
+                            flaggedDiaryReasons.length > 0 ? (
+                              Object.entries(
+                                flaggedDiaryReasons
+                                  .filter(
+                                    (flaggedReason) =>
+                                      flaggedReason.entryID === flag.entryID
+                                  )
+                                  .reduce((count, flaggedReason) => {
+                                    count[flaggedReason.reason] =
+                                      (count[flaggedReason.reason] || 0) + 1;
+                                    return count;
+                                  }, {})
+                              ).map(([reason, count]) => (
+                                <div key={reason}>
+                                  <p className="m-0">
+                                    {reason} x{count}
+                                  </p>
+                                </div>
+                              ))
+                            ) : (
+                              <p className="m-0">No reason available</p>
+                            )}
+                          </p>
+                        </td>
+                        <td className="text-center align-middle">
+                          <p className="m-0">{flag.title}</p>
+                        </td>
+
+                        <td className="text-center align-middle">
+                          <p className="m-0">{flag.flagCount}</p>
+                        </td>
+                        <td className="text-center align-middle">
+                          {flag.isAddress === 1 ? (
+                            <p className="text-success m-0">Addressed</p>
+                          ) : (
+                            <p className="text-danger m-0">Pending</p>
+                          )}
+                        </td>
+                        <td
+                          className="text-center align-middle"
+                          style={{ width: "5rem" }}
+                        >
+                          <div className=" d-flex flex-column gap-1">
+                            {/* Display actions only for pending reports */}
+                            {!flag.isAddress && (
+                              <button
+                                className="w-100 orangeButton py-2"
+                                onClick={() => handleAddressed(flag.entryID)}
+                              >
+                                <p className="m-0">Mark as Reviewed</p>
+                              </button>
+                            )}
+                            <Link to={`/DiaryEntry/${flag.entryID}`}>
+                              <button className="w-100 primaryButton py-2">
+                                <p className="m-0">Check</p>
+                              </button>
+                            </Link>
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan="7" className="text-center">
+                        No flagged diaries available.
+                      </td>
+                    </tr>
+                  )}
+                </>
               )}
             </tbody>
           </table>

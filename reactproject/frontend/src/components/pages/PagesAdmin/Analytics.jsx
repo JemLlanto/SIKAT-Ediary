@@ -84,6 +84,7 @@ const Analytics = () => {
   useEffect(() => {
     const fetchAnalyticsData = async () => {
       try {
+        setIsLoading(true);
         if (!user) {
           throw new Error("Department ID is required");
         }
@@ -93,7 +94,7 @@ const Analytics = () => {
           user.isAdmin === 2 && user.departmentID
             ? `${
                 import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
-              }/userAnalytics?departmentID=${user.departmentID}`
+              }/analytics/userAnalytics?departmentID=${user.departmentID}`
             : `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/users`;
         const usersResponse = await axios.get(usersEndpoint);
         setUsers(usersResponse.data);
@@ -103,7 +104,7 @@ const Analytics = () => {
           user.isAdmin === 2
             ? `${
                 import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
-              }/flaggedAnalytics?departmentID=${user.departmentID}`
+              }/analytics/flaggedAnalytics?departmentID=${user.departmentID}`
             : `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/flagged`;
         const flagsResponse = await axios.get(flagsEndpoint);
         setFlags(flagsResponse.data);
@@ -113,7 +114,9 @@ const Analytics = () => {
           user.isAdmin === 2
             ? `${
                 import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
-              }/getReportedCommentsAnalytics?departmentID=${user.departmentID}`
+              }/analytics/getReportedCommentsAnalytics?departmentID=${
+                user.departmentID
+              }`
             : `${
                 import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
               }/getReportedComments`;
@@ -127,7 +130,9 @@ const Analytics = () => {
           user.isAdmin === 2
             ? `${
                 import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
-              }/getReportedUsersAnalytics?departmentID=${user.departmentID}`
+              }/analytics//getReportedUsersAnalytics?departmentID=${
+                user.departmentID
+              }`
             : `${
                 import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
               }/getReportedUsers`;
@@ -136,6 +141,8 @@ const Analytics = () => {
         setreportedUsers(reportedUsersData);
       } catch (error) {
         console.error("Error fetching analytics data:", error);
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -226,16 +233,22 @@ const Analytics = () => {
             <div>
               <Tab.Content>
                 <Tab.Pane eventKey="RegisteredUser">
-                  <RegisteredUsers users={users} />
+                  <RegisteredUsers users={users} isLoading={isLoading} />
                 </Tab.Pane>
                 <Tab.Pane eventKey="FlaggedDiaries">
-                  <FlaggedDiaries flags={flags} />
+                  <FlaggedDiaries flags={flags} isLoading={isLoading} />
                 </Tab.Pane>
                 <Tab.Pane eventKey="ReportedComments">
-                  <ReportedComment reportedComments={reportedComments} />
+                  <ReportedComment
+                    reportedComments={reportedComments}
+                    isLoadings={isLoading}
+                  />
                 </Tab.Pane>
                 <Tab.Pane eventKey="ReportedUsers">
-                  <ReportedUsers reportedUsers={reportedUsers} />
+                  <ReportedUsers
+                    reportedUsers={reportedUsers}
+                    isLoadings={isLoading}
+                  />
                 </Tab.Pane>
               </Tab.Content>
             </div>

@@ -6,8 +6,7 @@ import Button from "react-bootstrap/Button";
 import FloatingLabel from "react-bootstrap/FloatingLabel";
 import Pagination from "react-bootstrap/Pagination";
 import axios from "axios";
-import MessageAlert from "../DiaryEntry/messageAlert";
-import MessageModal from "../DiaryEntry/messageModal";
+import Swal from "sweetalert2";
 
 const ReportingComments = () => {
   const [reportComments, setReportComments] = useState([]);
@@ -17,63 +16,71 @@ const ReportingComments = () => {
   const [editingReportComments, setEditingReportComments] = useState(null);
   const [editedReportComments, setEditedReportComments] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 5;
+  const itemsPerPage = 10;
+  const [isLoading, setIsLoading] = useState(true);
+  const [isAdding, setIsAdding] = useState(false);
+  const [isEditing, setIsEditing] = useState();
+  const [isDeleting, setIsDeleting] = useState();
 
-  const [modal, setModal] = useState({ show: false, message: "" });
-  const [confirmModal, setConfirmModal] = useState({
-    show: false,
-    message: "",
-    onConfirm: () => {},
-    onCancel: () => {},
-  });
-
-  const closeModal = () => {
-    setModal({ show: false, message: "" });
-  };
-  const closeConfirmModal = () => {
-    setConfirmModal({
-      show: false,
-      message: "",
-      onConfirm: () => {},
-      onCancel: () => {},
-    });
+  const fetchReportComments = async () => {
+    try {
+      setIsLoading(true);
+      const response = await axios.get(
+        `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/reportComments`
+      );
+      setReportComments(response.data);
+      setFilteredComments(response.data);
+    } catch (error) {
+      console.error("Error fetching Comment reports:", error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   useEffect(() => {
-    const fetchReportComments = async () => {
-      try {
-        const response = await axios.get(
-          `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/reportComments`
-        );
-        setReportComments(response.data);
-        setFilteredComments(response.data);
-      } catch (error) {
-        console.error("Error fetching Comment reports:", error);
-      }
-    };
     fetchReportComments();
   }, []);
 
   const handleAddReportComments = async (e) => {
     e.preventDefault();
+
     if (newReportComments.trim()) {
       try {
-        await axios.post(
-          `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/reportComments`,
+        setIsAdding(true);
+        // Send to backend and get the response (e.g. with _id or modified data)
+        const res = await axios.post(
+          `${
+            import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+          }/commentAPI/reportComments`,
           {
             reason: newReportComments,
           }
         );
-        const newComment = { reason: newReportComments, count: 0 };
-        setReportComments([...reportComments, newComment]);
-        setFilteredComments([...reportComments, newComment]);
-        setNewReportComments("");
-        setModal({
-          show: true,
-          message: `Comment violation added successfully.`,
-        });
+        if (res.status === 201) {
+          // Update local state
+          fetchReportComments();
+          setNewReportComments("");
+          // Show success alert
+          Swal.fire({
+            icon: "success",
+            title: "Option Added",
+            text: `"${newReportComments}" was added successfully.`,
+          });
+        }
       } catch (error) {
-        console.error("Error adding comment report:", error);
+        console.error("Error adding Option:", error);
+
+        const errorMessage =
+          error.response?.data?.message ||
+          "An unexpected error occurred" + ", Please try again later.";
+
+        Swal.fire({
+          icon: "error",
+          title: "Failed to Add",
+          text: errorMessage,
+        });
+      } finally {
+        setIsAdding(false);
       }
     }
   };
@@ -86,57 +93,85 @@ const ReportingComments = () => {
   const handleSaveEdit = async (reportCommentID) => {
     if (editedReportComments.trim()) {
       try {
+        setIsEditing(reportCommentID);
         await axios.put(
           `${
             import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
-          }/reportCommentEdit/${reportCommentID}`,
+          }/commentAPI/reportCommentEdit/${reportCommentID}`,
           { reason: editedReportComments }
         );
-        const updatedComments = reportComments.map((comment) =>
-          comment.reportCommentID === reportCommentID
-            ? { ...comment, reason: editedReportComments }
-            : comment
-        );
-        setReportComments(updatedComments);
-        setFilteredComments(updatedComments);
+
         setEditingReportComments(null);
-        setModal({
-          show: true,
-          message: `Edited Successfully.`,
+        fetchReportComments();
+
+        // Success alert using SweetAlert
+        Swal.fire({
+          icon: "success",
+          title: "Success",
+          text: "Edited successfully.",
         });
       } catch (error) {
-        console.error("Error editing reports:", error);
+        console.error("Error editing option:", error);
+
+        const errorMessage =
+          error.response?.data?.message ||
+          "An unexpected error occurred" + ", Please try again later.";
+
+        Swal.fire({
+          icon: "error",
+          title: "Failed to Edit",
+          text: errorMessage,
+        });
+      } finally {
+        setIsEditing();
       }
     }
   };
 
   const handleDeleteReportComment = async (reportCommentID) => {
-    setConfirmModal({
-      show: true,
-      message: `Are you sure you want to delete this comment violation?`,
-      onConfirm: async () => {
-        try {
-          await axios.delete(
-            `${
-              import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
-            }/reportCommentDelete/${reportCommentID}`
-          );
-          const updatedComments = reportComments.filter(
-            (comment) => comment.reportCommentID !== reportCommentID
-          );
-          setReportComments(updatedComments);
-          setFilteredComments(updatedComments);
-          closeConfirmModal();
-          setModal({
-            show: true,
-            message: `Comment violation successfully.`,
-          });
-        } catch (error) {
-          console.error("Error deleting report comment:", error);
-        }
-      },
-      onCancel: () => setConfirmModal({ show: false, message: "" }),
+    const result = await Swal.fire({
+      title: "Are you sure?",
+      text: "Do you really want to delete this?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Yes, delete it!",
+      cancelButtonText: "Cancel",
     });
+
+    if (result.isConfirmed) {
+      try {
+        setIsDeleting(reportCommentID);
+        await axios.delete(
+          `${
+            import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+          }/commentAPI/reportCommentDelete/${reportCommentID}`
+        );
+
+        await Swal.fire({
+          icon: "success",
+          title: "Deleted!",
+          text: "Option deleted successfully.",
+        });
+        setIsDeleting();
+        fetchReportComments();
+      } catch (error) {
+        console.error("Error deleting option:", error);
+
+        const errorMessage =
+          error.response?.data?.message ||
+          "An unexpected error occurred" + ", Please try again later.";
+
+        Swal.fire({
+          icon: "error",
+          title: "Failed to Delete",
+          text: errorMessage,
+        });
+      } finally {
+        setIsDeleting();
+      }
+    }
   };
 
   const handleSearch = (e) => {
@@ -162,21 +197,6 @@ const ReportingComments = () => {
 
   return (
     <div className="p-3 rounded shadow-sm" style={{ backgroundColor: "#ffff" }}>
-      <MessageAlert
-        showModal={modal}
-        closeModal={closeModal}
-        title={"Notice"}
-        message={modal.message}
-      ></MessageAlert>
-      <MessageModal
-        showModal={confirmModal}
-        closeModal={closeConfirmModal}
-        title={"Confirmation"}
-        message={confirmModal.message}
-        confirm={confirmModal.onConfirm}
-        needConfirm={1}
-      ></MessageModal>
-
       <div className=" position-relative border-bottom d-flex justify-content-center align-items-center pb-2 gap-1">
         <h4 className="border-2 m-0">Report Comments</h4>
         <div className="informationToolTip">
@@ -221,64 +241,134 @@ const ReportingComments = () => {
             </tr>
           </thead>
           <tbody>
-            {currentItems.map((comment) => (
-              <tr key={comment.reportCommentID}>
-                <td>
-                  {editingReportComments === comment.reportCommentID ? (
-                    <Form.Control
-                      className="bg-transparent text-center border-0 border-bottom border-2"
-                      type="text"
-                      value={editedReportComments}
-                      onChange={(e) => setEditedReportComments(e.target.value)}
-                    />
-                  ) : (
-                    <p className="m-0 mt-2">{comment.reason}</p>
-                  )}
-                </td>
-                <td className="d-flex justify-content-center gap-1">
-                  {editingReportComments === comment.reportCommentID ? (
-                    <>
-                      <Button
-                        className="px-3"
-                        variant="primary"
-                        onClick={() => handleSaveEdit(comment.reportCommentID)}
-                      >
-                        <p className="m-0">Save</p>
-                      </Button>
-                      <Button
-                        className="px-3"
-                        variant="secondary"
-                        onClick={() => setEditingReportComments(null)}
-                      >
-                        <p className="m-0">Cancel</p>
-                      </Button>
-                    </>
-                  ) : (
-                    <>
-                      <button
-                        className="primaryButton"
-                        onClick={() =>
-                          handleEditReportComments(
-                            comment.reportCommentID,
-                            comment.reason
-                          )
-                        }
-                      >
-                        <p className="m-0">Edit</p>
-                      </button>
-                      <Button
-                        variant="danger"
-                        onClick={() =>
-                          handleDeleteReportComment(comment.reportCommentID)
-                        }
-                      >
-                        <p className="m-0">Remove</p>
-                      </Button>
-                    </>
-                  )}
-                </td>
-              </tr>
-            ))}
+            {isLoading ? (
+              <>
+                <tr>
+                  <td
+                    colSpan={7}
+                    scope="row"
+                    className="text-center align-middle"
+                  >
+                    <h5 className="m-0 text-secondary ">
+                      <span className="d-flex align-items-center justify-content-center gap-1">
+                        <i className="bx bx-loader bx-spin"></i>Loading
+                        reporting comment options.
+                      </span>
+                    </h5>
+                  </td>
+                </tr>
+              </>
+            ) : (
+              <>
+                {currentItems.length === 0 ? (
+                  <>
+                    <tr className="align-middle">
+                      <td colSpan={2}>
+                        <p className="m-0">No Reporting Comment Options</p>
+                      </td>
+                    </tr>
+                  </>
+                ) : (
+                  <>
+                    {currentItems.map((comment) => (
+                      <tr key={comment.reportCommentID}>
+                        <td>
+                          {editingReportComments === comment.reportCommentID ? (
+                            <Form.Control
+                              className="bg-transparent text-center border-0 border-bottom border-2"
+                              type="text"
+                              value={editedReportComments}
+                              onChange={(e) =>
+                                setEditedReportComments(e.target.value)
+                              }
+                            />
+                          ) : (
+                            <p className="m-0 mt-2">{comment.reason}</p>
+                          )}
+                        </td>
+                        <td className="d-flex justify-content-center gap-1">
+                          {editingReportComments === comment.reportCommentID ? (
+                            <>
+                              <Button
+                                className="px-3"
+                                variant="primary"
+                                disabled={
+                                  isEditing ||
+                                  comment.reportCommentID ===
+                                    editedReportComments
+                                }
+                                onClick={() =>
+                                  handleSaveEdit(comment.reportCommentID)
+                                }
+                              >
+                                <p className="m-0">
+                                  {isEditing ? (
+                                    <>
+                                      <span className="d-flex align-items-center justify-content-center gap-1">
+                                        <i className="bx bx-loader bx-spin"></i>
+                                        Saving
+                                      </span>
+                                    </>
+                                  ) : (
+                                    <>Save</>
+                                  )}
+                                </p>
+                              </Button>
+
+                              <Button
+                                className="px-3"
+                                variant="secondary"
+                                onClick={() => setEditingReportComments(null)}
+                              >
+                                <p className="m-0">Cancel</p>
+                              </Button>
+                            </>
+                          ) : (
+                            <>
+                              <button
+                                className="primaryButton"
+                                onClick={() =>
+                                  handleEditReportComments(
+                                    comment.reportCommentID,
+                                    comment.reason
+                                  )
+                                }
+                              >
+                                <p className="m-0">Edit</p>
+                              </button>
+                              <Button
+                                variant="danger"
+                                onClick={() =>
+                                  handleDeleteReportComment(
+                                    comment.reportCommentID
+                                  )
+                                }
+                                disabled={
+                                  isDeleting === comment.reportCommentID
+                                }
+                              >
+                                <p className="m-0">
+                                  {isDeleting === comment.reportCommentID ? (
+                                    <>
+                                      <span className="d-flex align-items-center justify-content-center gap-1">
+                                        <i className="bx bx-loader bx-spin"></i>
+                                        Removing
+                                      </span>
+                                    </>
+                                  ) : (
+                                    <>Remove</>
+                                  )}
+                                </p>
+                              </Button>
+                            </>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </>
+                )}
+              </>
+            )}
           </tbody>
         </Table>
       </div>
@@ -311,8 +401,23 @@ const ReportingComments = () => {
           />
         </FloatingLabel>
         <div className="mt-2 d-flex justify-content-end">
-          <button type="submit" className="w-100 primaryButton px-5 py-2">
-            <p className="m-0">Add</p>
+          <button
+            type="submit"
+            className="w-100 primaryButton px-5 py-2"
+            disabled={isAdding || newReportComments === ""}
+          >
+            <p className="m-0">
+              {isAdding ? (
+                <>
+                  <span className="d-flex align-items-center justify-content-center gap-1">
+                    <i className="bx bx-loader bx-spin"></i>
+                    Saving
+                  </span>
+                </>
+              ) : (
+                <>Save</>
+              )}
+            </p>
           </button>
         </div>
       </form>

@@ -41,7 +41,9 @@ const ReportedComment = ({ reportedUsers, isLoadings }) => {
     const fetchReportComments = async () => {
       try {
         const response = await axios.get(
-          `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/reportUsers`
+          `${
+            import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+          }/reportingUserAPI/reportUsers`
         );
         setOption(response.data);
       } catch (error) {

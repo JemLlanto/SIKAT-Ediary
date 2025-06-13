@@ -18,7 +18,11 @@ const entryRoutes = require("./routes/entries");
 const followRoutes = require("./routes/follow");
 const incidentRoutes = require("./routes/incidents");
 const analyticsRoutes = require("./routes/analytics");
-const settingsRoutes = require("./routes/settings");
+const settingsRoutes = require("./routes/filter");
+const flaggingOptionRoutes = require("./routes/flaggingOption");
+const commentRoutes = require("./routes/comment");
+const reportingUserRoutes = require("./routes/reportingUsers");
+const alarmingWordsRoutes = require("./routes/alarmingWords");
 
 const allowedOrigins = [
   "http://localhost:5173",
@@ -42,7 +46,11 @@ app.use("/entries", entryRoutes);
 app.use("/follow", followRoutes);
 app.use("/incidents", incidentRoutes);
 app.use("/analytics", analyticsRoutes);
-app.use("/settings", settingsRoutes);
+app.use("/filterAPI", settingsRoutes);
+app.use("/flaggingAPI", flaggingOptionRoutes);
+app.use("/commentAPI", commentRoutes);
+app.use("/reportingUserAPI", reportingUserRoutes);
+app.use("/alarmingWordsAPI", alarmingWordsRoutes);
 
 app.use("/uploads", express.static("uploads"));
 
@@ -2905,22 +2913,6 @@ app.put("/editComment/:commentID", (req, res) => {
 });
 
 // settings
-app.post("/flaggingOptions", (req, res) => {
-  const { option } = req.body;
-
-  db.query(
-    "INSERT INTO flagging_options (reason) VALUES (?)",
-    [option],
-    (err) => {
-      if (err) {
-        console.error(err); // Log error details for debugging
-        res.status(500).json({ error: "Failed to add option" });
-      } else {
-        res.status(201).json({ message: "Option added successfully" });
-      }
-    }
-  );
-});
 
 app.get("/flaggingOptions", (req, res) => {
   db.query("SELECT * FROM flagging_options", (err, results) => {
@@ -2931,53 +2923,6 @@ app.get("/flaggingOptions", (req, res) => {
       res.json(results);
     }
   });
-});
-
-app.put("/flaggingEdit/:flagID", (req, res) => {
-  const { flagID } = req.params;
-  const { reason } = req.body;
-
-  if (reason) {
-    db.query(
-      "UPDATE flagging_options SET reason = ? WHERE flagID = ?",
-      [reason, flagID],
-      (err, result) => {
-        if (err) {
-          console.error(err);
-          res.status(500).json({ error: "Failed to update option" });
-        } else {
-          if (result.affectedRows > 0) {
-            res.json({ message: "Option updated successfully" });
-          } else {
-            res.status(404).json({ error: "Option not found" });
-          }
-        }
-      }
-    );
-  } else {
-    res.status(400).json({ error: "Reason is required" });
-  }
-});
-
-app.delete("/flaggingDelete/:flagID", (req, res) => {
-  const { flagID } = req.params;
-
-  db.query(
-    "DELETE FROM flagging_options WHERE flagID = ?",
-    [flagID],
-    (err, result) => {
-      if (err) {
-        console.error(err);
-        res.status(500).json({ error: "Failed to delete option" });
-      } else {
-        if (result.affectedRows > 0) {
-          res.json({ message: "Option deleted successfully" });
-        } else {
-          res.status(404).json({ error: "Option not found" });
-        }
-      }
-    }
-  );
 });
 
 app.get("/filters", (req, res) => {
@@ -3023,26 +2968,6 @@ app.delete("/filterDelete/:subjectID", (req, res) => {
   );
 });
 
-app.post("/reportComments", (req, res) => {
-  const { reason } = req.body;
-
-  db.query(
-    "INSERT INTO report_comments (reason) VALUES (?)",
-    [reason],
-    (err, result) => {
-      if (err) {
-        console.error("Error adding filter:", err);
-        res.status(500).json({ error: "Failed to add filter" });
-      } else {
-        res.status(201).json({
-          message: "Filter added successfully",
-          reportCommentID: result.insertId,
-        });
-      }
-    }
-  );
-});
-
 app.get("/reportComments", (req, res) => {
   db.query("SELECT * FROM report_comments", (err, results) => {
     if (err) {
@@ -3052,203 +2977,6 @@ app.get("/reportComments", (req, res) => {
       res.json(results);
     }
   });
-});
-
-app.put("/reportCommentEdit/:reportCommentID", (req, res) => {
-  const { reportCommentID } = req.params;
-  const { reason } = req.body;
-
-  if (reason) {
-    db.query(
-      "UPDATE report_comments SET reason = ? WHERE reportCommentID = ?",
-      [reason, reportCommentID],
-      (err, result) => {
-        if (err) {
-          console.error(err);
-          res.status(500).json({ error: "Failed to update subject" });
-        } else {
-          if (result.affectedRows > 0) {
-            res.json({ message: "Subject updated successfully" });
-          } else {
-            res.status(404).json({ error: "Subject not found" });
-          }
-        }
-      }
-    );
-  } else {
-    res.status(400).json({ error: "Reason is required" });
-  }
-});
-
-app.delete("/reportCommentDelete/:reportCommentID", (req, res) => {
-  const { reportCommentID } = req.params;
-
-  db.query(
-    "DELETE FROM report_comments WHERE reportCommentID = ?",
-    [reportCommentID],
-    (err, result) => {
-      if (err) {
-        console.error(err);
-        res.status(500).json({ error: "Failed to delete subject" });
-      } else {
-        if (result.affectedRows > 0) {
-          res.json({ message: "Subject deleted successfully" });
-        } else {
-          res.status(404).json({ error: "Subject not found" });
-        }
-      }
-    }
-  );
-});
-
-app.post("/reportUsers", (req, res) => {
-  const { reason } = req.body;
-
-  db.query(
-    "INSERT INTO reporting_users (reason) VALUES (?)",
-    [reason],
-    (err, result) => {
-      if (err) {
-        console.error("Error adding filter:", err);
-        res.status(500).json({ error: "Failed to add filter" });
-      } else {
-        res.status(201).json({
-          message: "Filter added successfully",
-          reportUserID: result.insertId,
-        });
-      }
-    }
-  );
-});
-
-app.get("/reportUsers", (req, res) => {
-  db.query("SELECT * FROM reporting_users", (err, results) => {
-    if (err) {
-      console.error("Error fetching filters:", err);
-      res.status(500).json({ error: "Failed to retrieve filters" });
-    } else {
-      res.json(results);
-    }
-  });
-});
-
-app.put("/reportUsers/:reportingUserID", (req, res) => {
-  const { reportingUserID } = req.params;
-  const { reason } = req.body;
-
-  if (reason) {
-    db.query(
-      "UPDATE reporting_users SET reason = ? WHERE reportingUserID = ?",
-      [reason, reportingUserID],
-      (err, result) => {
-        if (err) {
-          console.error(err);
-          res.status(500).json({ error: "Failed to update subject" });
-        } else {
-          if (result.affectedRows > 0) {
-            res.json({ message: "Subject updated successfully" });
-          } else {
-            res.status(404).json({ error: "Subject not found" });
-          }
-        }
-      }
-    );
-  } else {
-    res.status(400).json({ error: "Reason is required" });
-  }
-});
-
-app.delete("/reportUsers/:reportingUserID", (req, res) => {
-  const { reportingUserID } = req.params;
-
-  db.query(
-    "DELETE FROM reporting_users WHERE reportingUserID = ?",
-    [reportingUserID],
-    (err, result) => {
-      if (err) {
-        console.error(err);
-        res.status(500).json({ error: "Failed to delete subject" });
-      } else {
-        if (result.affectedRows > 0) {
-          res.json({ message: "Subject deleted successfully" });
-        } else {
-          res.status(404).json({ error: "Subject not found" });
-        }
-      }
-    }
-  );
-});
-
-app.get("/alarmingWords", (req, res) => {
-  db.query("SELECT * FROM alarming_words", (error, rows) => {
-    if (error) {
-      console.error("Error fetching alarming words:", error);
-      res.status(500).send("Error fetching alarming words");
-    } else {
-      res.json(rows);
-    }
-  });
-});
-
-app.post("/alarmingWords", (req, res) => {
-  const { alarmingWord } = req.body;
-  if (alarmingWord) {
-    db.query(
-      "INSERT INTO alarming_words (alarmingWord) VALUES (?)",
-      [alarmingWord],
-      (error, result) => {
-        if (error) {
-          console.error("Error adding alarming word:", error);
-          res.status(500).send("Error adding alarming word");
-        } else {
-          res.json({ wordID: result.insertId, alarmingWord, count: 0 });
-        }
-      }
-    );
-  } else {
-    res.status(400).send("Alarming word is required");
-  }
-});
-
-app.put("/alarmingWordEdit/:wordID", (req, res) => {
-  const { wordID } = req.params;
-  const { alarmingWord } = req.body;
-  if (alarmingWord) {
-    db.query(
-      "UPDATE alarming_words SET alarmingWord = ? WHERE wordID = ?",
-      [alarmingWord, wordID],
-      (error) => {
-        if (error) {
-          console.error("Error updating alarming word:", error);
-          res.status(500).send("Error updating alarming word");
-        } else {
-          res.send("Alarming word updated successfully");
-        }
-      }
-    );
-  } else {
-    res.status(400).send("Alarming word is required");
-  }
-});
-
-app.delete("/alarmingWordDelete/:wordID", (req, res) => {
-  const { wordID } = req.params;
-  if (wordID) {
-    db.query(
-      "DELETE FROM alarming_words WHERE wordID = ?",
-      [wordID],
-      (error) => {
-        if (error) {
-          console.error("Error deleting alarming word:", error);
-          res.status(500).send("Error deleting alarming word");
-        } else {
-          res.send("Alarming word deleted successfully");
-        }
-      }
-    );
-  } else {
-    res.status(400).send("Word ID is required");
-  }
 });
 
 app.get("/faqs", (req, res) => {

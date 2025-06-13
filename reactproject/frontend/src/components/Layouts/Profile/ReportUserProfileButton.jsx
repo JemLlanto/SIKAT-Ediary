@@ -37,7 +37,9 @@ function ReportUserButton({ user, profileOwner }) {
     const fetchReportComments = async () => {
       try {
         const response = await axios.get(
-          `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/reportUsers`
+          `${
+            import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+          }/reportingUserAPI/reportUsers`
         );
         setReportComments(response.data);
       } catch (err) {

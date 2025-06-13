@@ -65,7 +65,9 @@ function Suspend({ profileOwner }) {
     const fetchReasons = async () => {
       try {
         const response = await axios.get(
-          `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/reportUsers`
+          `${
+            import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+          }/reportingUserAPI/reportUsers`
         );
         setReasons(response.data);
       } catch (error) {

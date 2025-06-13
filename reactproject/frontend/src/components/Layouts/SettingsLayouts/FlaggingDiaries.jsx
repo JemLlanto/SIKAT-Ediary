@@ -6,8 +6,7 @@ import Button from "react-bootstrap/Button";
 import FloatingLabel from "react-bootstrap/FloatingLabel";
 import axios from "axios";
 import Pagination from "react-bootstrap/Pagination";
-import MessageAlert from "../DiaryEntry/messageAlert";
-import MessageModal from "../DiaryEntry/messageModal";
+import Swal from "sweetalert2";
 
 const FlaggingDiaries = () => {
   const [flaggingOptions, setFlaggingOptions] = useState([]);
@@ -16,42 +15,29 @@ const FlaggingDiaries = () => {
   const [newOption, setNewOption] = useState("");
   const [editingOption, setEditingOption] = useState(null);
   const [editedReason, setEditedReason] = useState("");
-
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 5;
+  const itemsPerPage = 10;
+  const [isLoading, setIsLoading] = useState(true);
+  const [isAdding, setIsAdding] = useState(false);
+  const [isEditing, setIsEditing] = useState();
+  const [isDeleting, setIsDeleting] = useState();
 
-  const [modal, setModal] = useState({ show: false, message: "" });
-  const [confirmModal, setConfirmModal] = useState({
-    show: false,
-    message: "",
-    onConfirm: () => {},
-    onCancel: () => {},
-  });
-
-  const closeModal = () => {
-    setModal({ show: false, message: "" });
-  };
-  const closeConfirmModal = () => {
-    setConfirmModal({
-      show: false,
-      message: "",
-      onConfirm: () => {},
-      onCancel: () => {},
-    });
+  const fetchOptions = async () => {
+    try {
+      setIsLoading(true);
+      const response = await axios.get(
+        `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/flaggingOptions`
+      );
+      setFlaggingOptions(response.data);
+      setFilteredOptions(response.data);
+    } catch (error) {
+      console.error("Error fetching options:", error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   useEffect(() => {
-    const fetchOptions = async () => {
-      try {
-        const response = await axios.get(
-          `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/flaggingOptions`
-        );
-        setFlaggingOptions(response.data);
-        setFilteredOptions(response.data);
-      } catch (error) {
-        console.error("Error fetching options:", error);
-      }
-    };
     fetchOptions();
   }, []);
 
@@ -67,24 +53,44 @@ const FlaggingDiaries = () => {
 
   const handleAddOption = async (e) => {
     e.preventDefault();
+
     if (newOption.trim()) {
       try {
-        await axios.post(
-          `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/flaggingOptions`,
+        setIsAdding(true);
+        // Send to backend and get the response (e.g. with _id or modified data)
+        const res = await axios.post(
+          `${
+            import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+          }/flaggingAPI/flaggingOptions`,
           {
             option: newOption,
           }
         );
-        const newFlag = { reason: newOption, flagID: Date.now(), count: 0 };
-        setFlaggingOptions([...flaggingOptions, newFlag]);
-        setFilteredOptions([...flaggingOptions, newFlag]);
-        setNewOption("");
-        setModal({
-          show: true,
-          message: `Flaggin option added successfully.`,
-        });
+        if (res.status === 201) {
+          // Update local state
+          fetchOptions();
+          setNewOption("");
+          // Show success alert
+          Swal.fire({
+            icon: "success",
+            title: "Option Added",
+            text: `"${newOption}" was added successfully.`,
+          });
+        }
       } catch (error) {
-        console.error("Error adding option:", error);
+        console.error("Error adding Option:", error);
+
+        const errorMessage =
+          error.response?.data?.message ||
+          "An unexpected error occurred" + ", Please try again later.";
+
+        Swal.fire({
+          icon: "error",
+          title: "Failed to Add",
+          text: errorMessage,
+        });
+      } finally {
+        setIsAdding(false);
       }
     }
   };
@@ -97,61 +103,85 @@ const FlaggingDiaries = () => {
   const handleSaveEdit = async (flagID) => {
     if (editedReason.trim()) {
       try {
+        setIsEditing(flagID);
         await axios.put(
           `${
             import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
-          }/flaggingEdit/${flagID}`,
+          }/flaggingAPI/flaggingEdit/${flagID}`,
           {
             reason: editedReason,
           }
         );
-        const updatedOptions = flaggingOptions.map((option) =>
-          option.flagID === flagID
-            ? { ...option, reason: editedReason }
-            : option
-        );
-        setFlaggingOptions(updatedOptions);
-        setFilteredOptions(updatedOptions);
+
         setEditingOption(null);
-        setModal({
-          show: true,
-          message: `Edited successfully.`,
+        fetchOptions();
+
+        // Success alert using SweetAlert
+        Swal.fire({
+          icon: "success",
+          title: "Success",
+          text: "Edited successfully.",
         });
       } catch (error) {
         console.error("Error editing option:", error);
+
+        const errorMessage =
+          error.response?.data?.message ||
+          "An unexpected error occurred" + ", Please try again later.";
+
+        Swal.fire({
+          icon: "error",
+          title: "Failed to Edit",
+          text: errorMessage,
+        });
+      } finally {
+        setIsEditing();
       }
     }
   };
 
-  const handleDeleteOption = (flagID) => {
-    setConfirmModal({
-      show: true,
-      message: `Are you sure you want to delete this option?`,
-      onConfirm: async () => {
-        axios
-          .delete(
-            `${
-              import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
-            }/flaggingDelete/${flagID}`
-          )
-          .then(() => {
-            const updatedOptions = flaggingOptions.filter(
-              (option) => option.flagID !== flagID
-            );
-            setFlaggingOptions(updatedOptions);
-            setFilteredOptions(updatedOptions);
-            closeConfirmModal();
-            setModal({
-              show: true,
-              message: `Flagging option deleted successfully.`,
-            });
-          })
-          .catch((error) => {
-            console.error("Error deleting option:", error);
-          });
-      },
-      onCancel: () => setConfirmModal({ show: false, message: "" }),
+  const handleDeleteOption = async (flagID) => {
+    const result = await Swal.fire({
+      title: "Are you sure?",
+      text: "Do you really want to delete this?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Yes, delete it!",
+      cancelButtonText: "Cancel",
     });
+
+    if (result.isConfirmed) {
+      try {
+        setIsDeleting(flagID);
+        await axios.delete(
+          `${
+            import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+          }/flaggingAPI/flaggingDelete/${flagID}`
+        );
+
+        await Swal.fire({
+          icon: "success",
+          title: "Deleted!",
+          text: "Option deleted successfully.",
+        });
+        setIsDeleting();
+        fetchOptions();
+      } catch (error) {
+        console.error("Error deleting option:", error);
+
+        const errorMessage =
+          error.response?.data?.message ||
+          "An unexpected error occurred" + ", Please try again later.";
+
+        Swal.fire({
+          icon: "error",
+          title: "Failed to Delete",
+          text: errorMessage,
+        });
+      }
+    }
   };
 
   // Pagination calculations
@@ -173,21 +203,6 @@ const FlaggingDiaries = () => {
         minHeight: "clamp(20rem, 80vh, 30rem)",
       }}
     >
-      <MessageAlert
-        showModal={modal}
-        closeModal={closeModal}
-        title={"Notice"}
-        message={modal.message}
-      ></MessageAlert>
-      <MessageModal
-        showModal={confirmModal}
-        closeModal={closeConfirmModal}
-        title={"Confirmation"}
-        message={confirmModal.message}
-        confirm={confirmModal.onConfirm}
-        needConfirm={1}
-      ></MessageModal>
-
       <div className=" position-relative border-bottom d-flex justify-content-center align-items-center pb-2 gap-1">
         <h4 className="border-2 m-0">Flagging Diaries</h4>
         <div className="informationToolTip">
@@ -231,69 +246,118 @@ const FlaggingDiaries = () => {
             </tr>
           </thead>
           <tbody>
-            {currentItems.length === 0 ? (
+            {isLoading ? (
               <>
-                <tr className="align-middle">
-                  <td colSpan={2}>
-                    <p className="m-0">No Flagging Options</p>
+                <tr>
+                  <td
+                    colSpan={7}
+                    scope="row"
+                    className="text-center align-middle"
+                  >
+                    <h5 className="m-0 text-secondary ">
+                      <span className="d-flex align-items-center justify-content-center gap-1">
+                        <i className="bx bx-loader bx-spin"></i>Loading flagging
+                        options.
+                      </span>
+                    </h5>
                   </td>
                 </tr>
               </>
             ) : (
               <>
-                {currentItems.map((option) => (
-                  <tr key={option.flagID}>
-                    <td>
-                      {editingOption === option.flagID ? (
-                        <Form.Control
-                          className="bg-transparent text-center border-0 border-bottom border-2"
-                          type="text"
-                          value={editedReason}
-                          onChange={(e) => setEditedReason(e.target.value)}
-                        />
-                      ) : (
-                        <p className="m-0 mt-2">{option.reason}</p>
-                      )}
-                    </td>
-                    <td className="d-flex justify-content-center gap-1">
-                      {editingOption === option.flagID ? (
-                        <>
-                          <Button
-                            className="px-3"
-                            variant="primary"
-                            onClick={() => handleSaveEdit(option.flagID)}
-                          >
-                            <p className="m-0">Save</p>
-                          </Button>
-                          <Button
-                            className="px-3"
-                            variant="secondary"
-                            onClick={() => setEditingOption(null)}
-                          >
-                            <p className="m-0">Cancel</p>
-                          </Button>
-                        </>
-                      ) : (
-                        <>
-                          <button
-                            className="primaryButton"
-                            onClick={() =>
-                              handleEditOption(option.flagID, option.reason)
-                            }
-                          >
-                            <p className="m-0">Edit</p>
-                          </button>
-                          <Button
-                            variant="danger"
-                            onClick={() => handleDeleteOption(option.flagID)}
-                          >
-                            <p className="m-0">Remove</p>
-                          </Button>
-                        </>
-                      )}
-                    </td>
-                  </tr>
-                ))}
+                {currentItems.length === 0 ? (
+                  <>
+                    <tr className="align-middle">
+                      <td colSpan={2}>
+                        <p className="m-0">No Flagging Options</p>
+                      </td>
+                    </tr>
+                  </>
+                ) : (
+                  <>
+                    {currentItems.map((option) => (
+                      <tr key={option.flagID}>
+                        <td>
+                          {editingOption === option.flagID ? (
+                            <Form.Control
+                              className="bg-transparent text-center border-0 border-bottom border-2"
+                              type="text"
+                              value={editedReason}
+                              onChange={(e) => setEditedReason(e.target.value)}
+                            />
+                          ) : (
+                            <p className="m-0 mt-2">{option.reason}</p>
+                          )}
+                        </td>
+                        <td className="d-flex justify-content-center gap-1">
+                          {editingOption === option.flagID ? (
+                            <>
+                              <Button
+                                className="px-3"
+                                variant="primary"
+                                disabled={
+                                  isEditing || option.reason === editedReason
+                                }
+                                onClick={() => handleSaveEdit(option.flagID)}
+                              >
+                                <p className="m-0">
+                                  {isEditing ? (
+                                    <>
+                                      <span className="d-flex align-items-center justify-content-center gap-1">
+                                        <i className="bx bx-loader bx-spin"></i>
+                                        Saving
+                                      </span>
+                                    </>
+                                  ) : (
+                                    <>Save</>
+                                  )}
+                                </p>
+                              </Button>
+                              <Button
+                                className="px-3"
+                                variant="secondary"
+                                onClick={() => setEditingOption(null)}
+                              >
+                                <p className="m-0">Cancel</p>
+                              </Button>
+                            </>
+                          ) : (
+                            <>
+                              <button
+                                className="primaryButton"
+                                onClick={() =>
+                                  handleEditOption(option.flagID, option.reason)
+                                }
+                              >
+                                <p className="m-0">Edit</p>
+                              </button>
+                              <Button
+                                variant="danger"
+                                onClick={() =>
+                                  handleDeleteOption(option.flagID)
+                                }
+                                disabled={isDeleting === option.flagID}
+                              >
+                                <p className="m-0">
+                                  {isDeleting === option.flagID ? (
+                                    <>
+                                      <span className="d-flex align-items-center justify-content-center gap-1">
+                                        <i className="bx bx-loader bx-spin"></i>
+                                        Removing
+                                      </span>
+                                    </>
+                                  ) : (
+                                    <>Remove</>
+                                  )}
+                                </p>
+                              </Button>
+                            </>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </>
+                )}
               </>
             )}
           </tbody>
@@ -327,8 +391,23 @@ const FlaggingDiaries = () => {
           />
         </FloatingLabel>
         <div className="mt-2 d-flex justify-content-end">
-          <button type="submit" className="w-100 primaryButton px-5 py-2">
-            <p className="m-0">Save</p>
+          <button
+            type="submit"
+            className="w-100 primaryButton px-5 py-2"
+            disabled={isAdding || newOption === ""}
+          >
+            <p className="m-0">
+              {isAdding ? (
+                <>
+                  <span className="d-flex align-items-center justify-content-center gap-1">
+                    <i className="bx bx-loader bx-spin"></i>
+                    Saving
+                  </span>
+                </>
+              ) : (
+                <>Save</>
+              )}
+            </p>
           </button>
         </div>
       </form>

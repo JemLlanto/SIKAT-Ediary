@@ -6,8 +6,7 @@ import Button from "react-bootstrap/Button";
 import Pagination from "react-bootstrap/Pagination";
 import FloatingLabel from "react-bootstrap/FloatingLabel";
 import axios from "axios";
-import MessageAlert from "../DiaryEntry/messageAlert";
-import MessageModal from "../DiaryEntry/messageModal";
+import Swal from "sweetalert2";
 
 const AlarmingWords = () => {
   const [alarmingWords, setAlarmingWords] = useState([]);
@@ -17,60 +16,71 @@ const AlarmingWords = () => {
   const [editedAlarmingWord, setEditedAlarmingWord] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 5;
+  const itemsPerPage = 10;
+  const [isLoading, setIsLoading] = useState(true);
+  const [isAdding, setIsAdding] = useState(false);
+  const [isEditing, setIsEditing] = useState();
+  const [isDeleting, setIsDeleting] = useState();
 
-  const [modal, setModal] = useState({ show: false, message: "" });
-  const [confirmModal, setConfirmModal] = useState({
-    show: false,
-    message: "",
-    onConfirm: () => {},
-    onCancel: () => {},
-  });
-
-  const closeModal = () => {
-    setModal({ show: false, message: "" });
-  };
-  const closeConfirmModal = () => {
-    setConfirmModal({
-      show: false,
-      message: "",
-      onConfirm: () => {},
-      onCancel: () => {},
-    });
+  const fetchAlarmingWords = async () => {
+    try {
+      setIsLoading(true);
+      const response = await axios.get(
+        `${
+          import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+        }/alarmingWordsAPI/alarmingWords`
+      );
+      setAlarmingWords(response.data);
+      setFilteredAlarmingWords(response.data);
+    } catch (error) {
+      console.error("Error fetching alarming words:", error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   useEffect(() => {
-    const fetchAlarmingWords = async () => {
-      try {
-        const response = await axios.get(
-          `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/alarmingWords`
-        );
-        setAlarmingWords(response.data);
-        setFilteredAlarmingWords(response.data);
-      } catch (error) {
-        console.error("Error fetching alarming words:", error);
-      }
-    };
     fetchAlarmingWords();
   }, []);
 
   const handleAddAlarmingWord = async (e) => {
     e.preventDefault();
+
     if (newAlarmingWord.trim()) {
       try {
-        const response = await axios.post(
-          `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/alarmingWords`,
+        setIsAdding(true);
+        // Send to backend and get the response (e.g. with _id or modified data)
+        const res = await axios.post(
+          `${
+            import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+          }/alarmingWordsAPI/alarmingWords`,
           { alarmingWord: newAlarmingWord.trim() }
         );
-        setAlarmingWords([...alarmingWords, response.data]);
-        setFilteredAlarmingWords([...filteredAlarmingWords, response.data]);
-        setNewAlarmingWord("");
-        setModal({
-          show: true,
-          message: `Alarming word added successfully.`,
-        });
+        if (res.status === 201) {
+          // Update local state
+          fetchAlarmingWords();
+          setNewAlarmingWord("");
+          // Show success alert
+          Swal.fire({
+            icon: "success",
+            title: "Alarming word Added",
+            text: `"${newAlarmingWord}" was added successfully.`,
+          });
+        }
       } catch (error) {
-        console.error("Error adding alarming word:", error);
+        console.error("Error adding Alarming word:", error);
+
+        const errorMessage =
+          error.response?.data?.message ||
+          "An unexpected error occurred" + ", Please try again later.";
+
+        Swal.fire({
+          icon: "error",
+          title: "Failed to Add",
+          text: errorMessage,
+        });
+      } finally {
+        setIsAdding(false);
       }
     }
   };
@@ -83,59 +93,86 @@ const AlarmingWords = () => {
   const handleSaveEdit = async (wordID) => {
     if (editedAlarmingWord.trim()) {
       try {
+        setIsEditing(wordID);
         await axios.put(
           `${
             import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
-          }/alarmingWordEdit/${wordID}`,
+          }/alarmingWordsAPI/alarmingWordEdit/${wordID}`,
           {
             alarmingWord: editedAlarmingWord,
           }
         );
-        const updatedWords = alarmingWords.map((word) =>
-          word.wordID === wordID
-            ? { ...word, alarmingWord: editedAlarmingWord }
-            : word
-        );
-        setAlarmingWords(updatedWords);
-        setFilteredAlarmingWords(updatedWords);
+
         setEditingWordID(null);
-        setModal({
-          show: true,
-          message: `Edited successfully.`,
+        fetchAlarmingWords();
+        // Success alert using SweetAlert
+        Swal.fire({
+          icon: "success",
+          title: "Success",
+          text: "Edited successfully.",
         });
       } catch (error) {
-        console.error("Error editing alarming word:", error);
+        console.error("Error editing option:", error);
+
+        const errorMessage =
+          error.response?.data?.message ||
+          "An unexpected error occurred" + ", Please try again later.";
+
+        Swal.fire({
+          icon: "error",
+          title: "Failed to Edit",
+          text: errorMessage,
+        });
+      } finally {
+        setIsEditing();
       }
     }
   };
 
   const handleDeleteAlarmingWord = async (wordID) => {
-    setConfirmModal({
-      show: true,
-      message: `Are you sure you want to delete this alarming word?`,
-      onConfirm: async () => {
-        try {
-          await axios.delete(
-            `${
-              import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
-            }/alarmingWordDelete/${wordID}`
-          );
-          const updatedWords = alarmingWords.filter(
-            (word) => word.wordID !== wordID
-          );
-          setAlarmingWords(updatedWords);
-          setFilteredAlarmingWords(updatedWords);
-          closeConfirmModal();
-          setModal({
-            show: true,
-            message: `Alarming word deleted successfully.`,
-          });
-        } catch (error) {
-          console.error("Error deleting alarming word:", error);
-        }
-      },
-      onCancel: () => setConfirmModal({ show: false, message: "" }),
+    const result = await Swal.fire({
+      title: "Are you sure?",
+      text: "Do you really want to delete this?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Yes, delete it!",
+      cancelButtonText: "Cancel",
     });
+
+    if (result.isConfirmed) {
+      try {
+        setIsDeleting(wordID);
+        await axios.delete(
+          `${
+            import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+          }/alarmingWordsAPI/alarmingWordDelete/${wordID}`
+        );
+
+        await Swal.fire({
+          icon: "success",
+          title: "Deleted!",
+          text: "Alarming word deleted successfully.",
+        });
+        setIsDeleting();
+        fetchAlarmingWords();
+      } catch (error) {
+        console.error("Error deleting option Alarming word:", error);
+
+        const errorMessage =
+          error.response?.data?.message ||
+          "An unexpected error occurred" + ", Please try again later.";
+
+        Swal.fire({
+          icon: "error",
+          title: "Failed to Delete",
+          text: errorMessage,
+        });
+      } finally {
+        setIsDeleting();
+      }
+    }
   };
 
   const handleSearch = (e) => {
@@ -165,21 +202,6 @@ const AlarmingWords = () => {
         minHeight: "clamp(20rem, 80vh, 30rem)",
       }}
     >
-      <MessageAlert
-        showModal={modal}
-        closeModal={closeModal}
-        title={"Notice"}
-        message={modal.message}
-      ></MessageAlert>
-      <MessageModal
-        showModal={confirmModal}
-        closeModal={closeConfirmModal}
-        title={"Confirmation"}
-        message={confirmModal.message}
-        confirm={confirmModal.onConfirm}
-        needConfirm={1}
-      ></MessageModal>
-
       <div className="position-relative border-bottom d-flex justify-content-center align-items-center pb-2 gap-1">
         <h4 className="border-2 m-0">Alarming Words</h4>
         <div className="informationToolTip">
@@ -211,82 +233,140 @@ const AlarmingWords = () => {
         className="overflow-y-scroll custom-scrollbar"
         style={{ height: "30vh" }}
       >
-        {filteredAlarmingWords.length === 0 ? (
-          <div className="text-center my-4">
-            <p className="text-muted">No alarming words found.</p>
-          </div>
-        ) : (
-          <Table striped bordered hover responsive>
-            <thead>
-              <tr>
-                <th className="w-50">
-                  <h5 className="m-0">Word</h5>
-                </th>
-                <th>
-                  <h5 className="m-0">Actions</h5>
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {currentItems.map((word) => (
-                <tr key={word.wordID}>
-                  <td className="">
-                    {editingWordID === word.wordID ? (
-                      <Form.Control
-                        className="bg-transparent text-center border-0 border-bottom border-2"
-                        type="text"
-                        value={editedAlarmingWord}
-                        onChange={(e) => setEditedAlarmingWord(e.target.value)}
-                      />
-                    ) : (
-                      <p className="m-0 mt-2">{word.alarmingWord}</p>
-                    )}
-                  </td>
-                  <td>
-                    {editingWordID === word.wordID ? (
-                      <div className="d-flex justify-content-center gap-1 ">
-                        <Button
-                          className="px-3"
-                          variant="success"
-                          onClick={() => handleSaveEdit(word.wordID)}
-                        >
-                          <p className="m-0">Save</p>
-                        </Button>
-                        <Button
-                          className="px-3"
-                          variant="secondary"
-                          onClick={() => setEditingWordID(null)}
-                        >
-                          <p className="m-0">Cancel</p>
-                        </Button>
-                      </div>
-                    ) : (
-                      <div className="d-flex justify-content-center gap-1">
-                        <button
-                          className="primaryButton"
-                          onClick={() =>
-                            handleEditAlarmingWord(
-                              word.wordID,
-                              word.alarmingWord
-                            )
-                          }
-                        >
-                          <p className="m-0">Edit</p>
-                        </button>
-                        <Button
-                          variant="danger"
-                          onClick={() => handleDeleteAlarmingWord(word.wordID)}
-                        >
-                          <p className="m-0">Delete</p>
-                        </Button>
-                      </div>
-                    )}
+        <Table striped bordered hover responsive>
+          <thead>
+            <tr>
+              <th className="w-50">
+                <h5 className="m-0">Word</h5>
+              </th>
+              <th>
+                <h5 className="m-0">Actions</h5>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {isLoading ? (
+              <>
+                <tr>
+                  <td
+                    colSpan={7}
+                    scope="row"
+                    className="text-center align-middle"
+                  >
+                    <h5 className="m-0 text-secondary ">
+                      <span className="d-flex align-items-center justify-content-center gap-1">
+                        <i className="bx bx-loader bx-spin"></i>Loading alarming
+                        words.
+                      </span>
+                    </h5>
                   </td>
                 </tr>
-              ))}
-            </tbody>
-          </Table>
-        )}
+              </>
+            ) : (
+              <>
+                {currentItems.length === 0 ? (
+                  <>
+                    <tr className="align-middle">
+                      <td colSpan={2}>
+                        <p className="m-0">No alarming words found.</p>
+                      </td>
+                    </tr>
+                  </>
+                ) : (
+                  <>
+                    {currentItems.map((word) => (
+                      <tr key={word.wordID}>
+                        <td className="">
+                          {editingWordID === word.wordID ? (
+                            <Form.Control
+                              className="bg-transparent text-center border-0 border-bottom border-2"
+                              type="text"
+                              value={editedAlarmingWord}
+                              onChange={(e) =>
+                                setEditedAlarmingWord(e.target.value)
+                              }
+                            />
+                          ) : (
+                            <p className="m-0 mt-2">{word.alarmingWord}</p>
+                          )}
+                        </td>
+                        <td>
+                          {editingWordID === word.wordID ? (
+                            <div className="d-flex justify-content-center gap-1 ">
+                              <Button
+                                className="px-3"
+                                variant="primary"
+                                disabled={
+                                  isEditing ||
+                                  word.alarmingWord === editedAlarmingWord
+                                }
+                                onClick={() => handleSaveEdit(word.wordID)}
+                              >
+                                <p className="m-0">
+                                  {isEditing ? (
+                                    <>
+                                      <span className="d-flex align-items-center justify-content-center gap-1">
+                                        <i className="bx bx-loader bx-spin"></i>
+                                        Saving
+                                      </span>
+                                    </>
+                                  ) : (
+                                    <>Save</>
+                                  )}
+                                </p>
+                              </Button>
+                              <Button
+                                className="px-3"
+                                variant="secondary"
+                                onClick={() => setEditingWordID(null)}
+                              >
+                                <p className="m-0">Cancel</p>
+                              </Button>
+                            </div>
+                          ) : (
+                            <div className="d-flex justify-content-center gap-1">
+                              <button
+                                className="primaryButton"
+                                onClick={() =>
+                                  handleEditAlarmingWord(
+                                    word.wordID,
+                                    word.alarmingWord
+                                  )
+                                }
+                              >
+                                <p className="m-0">Edit</p>
+                              </button>
+                              <Button
+                                variant="danger"
+                                onClick={() =>
+                                  handleDeleteAlarmingWord(word.wordID)
+                                }
+                                disabled={isDeleting === word.wordID}
+                              >
+                                <p className="m-0">
+                                  {isDeleting === word.wordID ? (
+                                    <>
+                                      <span className="d-flex align-items-center justify-content-center gap-1">
+                                        <i className="bx bx-loader bx-spin"></i>
+                                        Removing
+                                      </span>
+                                    </>
+                                  ) : (
+                                    <>Remove</>
+                                  )}
+                                </p>
+                              </Button>
+                            </div>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </>
+                )}
+              </>
+            )}
+          </tbody>
+        </Table>
       </div>
       {/* Pagination */}
       <div className="mt-3">
@@ -319,10 +399,23 @@ const AlarmingWords = () => {
           />
         </FloatingLabel>
         <button
+          type="submit"
           className="w-100 primaryButton px-5 py-2"
+          disabled={isAdding || newAlarmingWord === ""}
           onClick={handleAddAlarmingWord}
         >
-          <p className="m-0">Save</p>
+          <p className="m-0">
+            {isAdding ? (
+              <>
+                <span className="d-flex align-items-center justify-content-center gap-1">
+                  <i className="bx bx-loader bx-spin"></i>
+                  Saving
+                </span>
+              </>
+            ) : (
+              <>Save</>
+            )}
+          </p>
         </button>
       </div>
     </div>

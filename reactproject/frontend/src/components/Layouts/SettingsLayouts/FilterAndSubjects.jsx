@@ -24,7 +24,7 @@ const FilterAndSubjects = () => {
 
   const fetchFilters = async () => {
     try {
-      setIsLoading(false);
+      setIsLoading(true);
       const response = await axios.get(
         `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/filters`
       );
@@ -51,7 +51,7 @@ const FilterAndSubjects = () => {
 
         // Send to backend and get the response (e.g. with _id or modified data)
         const res = await axios.post(
-          `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/settings/filters`,
+          `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/filterAPI/filters`,
           newFilterObj
         );
         if (res.status === 201) {
@@ -69,7 +69,8 @@ const FilterAndSubjects = () => {
         console.error("Error adding filter:", error);
 
         const errorMessage =
-          error.response?.data?.message || "An unexpected error occurred";
+          error.response?.data?.message ||
+          "An unexpected error occurred" + ", Please try again later.";
 
         Swal.fire({
           icon: "error",
@@ -94,7 +95,7 @@ const FilterAndSubjects = () => {
         await axios.put(
           `${
             import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
-          }/settings/filterEdit/${subjectID}`,
+          }/filterAPI/filterEdit/${subjectID}`,
           {
             subject: editedFilter,
           }
@@ -113,7 +114,8 @@ const FilterAndSubjects = () => {
         console.error("Error editing filter:", error);
 
         const errorMessage =
-          error.response?.data?.message || "An unexpected error occurred";
+          error.response?.data?.message ||
+          "An unexpected error occurred" + ", Please try again later.";
 
         Swal.fire({
           icon: "error",
@@ -144,7 +146,7 @@ const FilterAndSubjects = () => {
         await axios.delete(
           `${
             import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
-          }/settings/filterDelete/${subjectID}`
+          }/filterAPI/filterDelete/${subjectID}`
         );
 
         await Swal.fire({
@@ -158,7 +160,8 @@ const FilterAndSubjects = () => {
         console.error("Error deleting filter:", error);
 
         const errorMessage =
-          error.response?.data?.message || "An unexpected error occurred";
+          error.response?.data?.message ||
+          "An unexpected error occurred" + ", Please try again later.";
 
         Swal.fire({
           icon: "error",
@@ -371,7 +374,7 @@ const FilterAndSubjects = () => {
           <button
             type="submit"
             className="w-100 primaryButton px-5 py-2"
-            disabled
+            disabled={isAdding || newFilter === ""}
           >
             <p className="m-0">
               {isAdding ? (

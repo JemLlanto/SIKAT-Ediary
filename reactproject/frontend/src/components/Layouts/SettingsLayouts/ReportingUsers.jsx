@@ -6,8 +6,7 @@ import FloatingLabel from "react-bootstrap/FloatingLabel";
 import Button from "react-bootstrap/Button";
 import Pagination from "react-bootstrap/Pagination";
 import axios from "axios";
-import MessageAlert from "../DiaryEntry/messageAlert";
-import MessageModal from "../DiaryEntry/messageModal";
+import Swal from "sweetalert2";
 
 const ReportingUsers = () => {
   const [reportUsers, setReportUsers] = useState([]);
@@ -17,124 +16,163 @@ const ReportingUsers = () => {
   const [editedReportUsers, setEditedReportUsers] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 5;
+  const itemsPerPage = 10;
+  const [isLoading, setIsLoading] = useState(true);
+  const [isAdding, setIsAdding] = useState(false);
+  const [isEditing, setIsEditing] = useState();
+  const [isDeleting, setIsDeleting] = useState();
 
-  const [modal, setModal] = useState({ show: false, message: "" });
-  const [confirmModal, setConfirmModal] = useState({
-    show: false,
-    message: "",
-    onConfirm: () => {},
-    onCancel: () => {},
-  });
-
-  const closeModal = () => {
-    setModal({ show: false, message: "" });
-  };
-  const closeConfirmModal = () => {
-    setConfirmModal({
-      show: false,
-      message: "",
-      onConfirm: () => {},
-      onCancel: () => {},
-    });
+  const fetchReportUsers = async () => {
+    try {
+      setIsLoading(true);
+      const response = await axios.get(
+        `${
+          import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+        }/reportingUserAPI/reportUsers`
+      );
+      // console.log(response.data);
+      setReportUsers(response.data);
+      setFilteredReportUsers(response.data);
+    } catch (error) {
+      console.error("Error fetching report users:", error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   useEffect(() => {
-    const fetchReportUsers = async () => {
-      try {
-        const response = await axios.get(
-          `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/reportUsers`
-        );
-        setReportUsers(response.data);
-        setFilteredReportUsers(response.data);
-      } catch (error) {
-        console.error("Error fetching report users:", error);
-      }
-    };
     fetchReportUsers();
   }, []);
 
   const handleAddReportUsers = async (e) => {
     e.preventDefault();
+
     if (newReportUsers.trim()) {
       try {
-        const newUser = { reason: newReportUsers, count: 0 };
-        await axios.post(
-          `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/reportUsers`,
-          newUser
+        setIsAdding(true);
+        // Send to backend and get the response (e.g. with _id or modified data)
+        const res = await axios.post(
+          `${
+            import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+          }/reportingUserAPI/reportUsers`,
+          {
+            reason: newReportUsers,
+          }
         );
-        setReportUsers([...reportUsers, newUser]);
-        setFilteredReportUsers([...filteredReportUsers, newUser]);
-        setNewReportUsers("");
-        setModal({
-          show: true,
-          message: `User violation added successfully.`,
-        });
+        if (res.status === 201) {
+          // Update local state
+          fetchReportUsers();
+          setNewReportUsers("");
+          // Show success alert
+          Swal.fire({
+            icon: "success",
+            title: "Option Added",
+            text: `"${newReportUsers}" was added successfully.`,
+          });
+        }
       } catch (error) {
-        console.error("Error adding report user:", error);
+        console.error("Error adding Option:", error);
+
+        const errorMessage =
+          error.response?.data?.message ||
+          "An unexpected error occurred" + ", Please try again later.";
+
+        Swal.fire({
+          icon: "error",
+          title: "Failed to Add",
+          text: errorMessage,
+        });
+      } finally {
+        setIsAdding(false);
       }
     }
   };
 
-  const handleEditReportUsers = (reportingUserID, currentReportUsers) => {
-    setEditingReportUsers(reportingUserID);
+  const handleEditReportUsers = (reportedUserID, currentReportUsers) => {
+    setEditingReportUsers(reportedUserID);
     setEditedReportUsers(currentReportUsers);
   };
-
-  const handleSaveEdit = async (reportingUserID) => {
+  const handleSaveEdit = async (reportedUserID) => {
     if (editedReportUsers.trim()) {
       try {
+        setIsEditing(reportedUserID);
         await axios.put(
           `${
             import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
-          }/reportUsers/${reportingUserID}`,
+          }/reportingUserAPI/reportUsers/${reportedUserID}`,
           { reason: editedReportUsers }
         );
-        const updatedUsers = reportUsers.map((user) =>
-          user.reportingUserID === reportingUserID
-            ? { ...user, reason: editedReportUsers }
-            : user
-        );
-        setReportUsers(updatedUsers);
-        setFilteredReportUsers(updatedUsers);
+
         setEditingReportUsers(null);
-        setModal({
-          show: true,
-          message: `Edited successfully.`,
+        fetchReportUsers;
+        // Success alert using SweetAlert
+        Swal.fire({
+          icon: "success",
+          title: "Success",
+          text: "Edited successfully.",
         });
       } catch (error) {
-        console.error("Error editing report user:", error);
+        console.error("Error editing option:", error);
+
+        const errorMessage =
+          error.response?.data?.message ||
+          "An unexpected error occurred" + ", Please try again later.";
+
+        Swal.fire({
+          icon: "error",
+          title: "Failed to Edit",
+          text: errorMessage,
+        });
+      } finally {
+        setIsEditing();
       }
     }
   };
 
-  const handleDeleteReportUser = async (reportingUserID) => {
-    setConfirmModal({
-      show: true,
-      message: `Are you sure you want to delete this user violation?`,
-      onConfirm: async () => {
-        try {
-          await axios.delete(
-            `${
-              import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
-            }/reportUsers/${reportingUserID}`
-          );
-          const updatedUsers = reportUsers.filter(
-            (user) => user.reportingUserID !== reportingUserID
-          );
-          setReportUsers(updatedUsers);
-          setFilteredReportUsers(updatedUsers);
-          closeConfirmModal();
-          setModal({
-            show: true,
-            message: `User violation deleted successfully.`,
-          });
-        } catch (error) {
-          console.error("Error deleting report user:", error);
-        }
-      },
-      onCancel: () => setConfirmModal({ show: false, message: "" }),
+  const handleDeleteReportUser = async (reportedUserID) => {
+    const result = await Swal.fire({
+      title: "Are you sure?",
+      text: "Do you really want to delete this?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Yes, delete it!",
+      cancelButtonText: "Cancel",
     });
+
+    if (result.isConfirmed) {
+      try {
+        setIsDeleting(reportedUserID);
+        await axios.delete(
+          `${
+            import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+          }/reportingUserAPI/reportUsers/${reportedUserID}`
+        );
+
+        await Swal.fire({
+          icon: "success",
+          title: "Deleted!",
+          text: "Option deleted successfully.",
+        });
+        setIsDeleting();
+        fetchReportUsers();
+      } catch (error) {
+        console.error("Error deleting option:", error);
+
+        const errorMessage =
+          error.response?.data?.message ||
+          "An unexpected error occurred" + ", Please try again later.";
+
+        Swal.fire({
+          icon: "error",
+          title: "Failed to Delete",
+          text: errorMessage,
+        });
+      } finally {
+        setIsDeleting();
+      }
+    }
   };
 
   const handleSearch = (e) => {
@@ -158,21 +196,6 @@ const ReportingUsers = () => {
 
   return (
     <div className="p-3 rounded shadow-sm" style={{ backgroundColor: "#fff" }}>
-      <MessageAlert
-        showModal={modal}
-        closeModal={closeModal}
-        title={"Notice"}
-        message={modal.message}
-      ></MessageAlert>
-      <MessageModal
-        showModal={confirmModal}
-        closeModal={closeConfirmModal}
-        title={"Confirmation"}
-        message={confirmModal.message}
-        confirm={confirmModal.onConfirm}
-        needConfirm={1}
-      ></MessageModal>
-
       <div className="position-relative border-bottom d-flex justify-content-center align-items-center pb-2 gap-1">
         <h4 className="border-2 m-0">Reporting Users</h4>
         <div className="informationToolTip">
@@ -216,64 +239,127 @@ const ReportingUsers = () => {
             </tr>
           </thead>
           <tbody>
-            {currentItems.map((user) => (
-              <tr key={user.reportingUserID}>
-                <td>
-                  {editingReportUsers === user.reportingUserID ? (
-                    <Form.Control
-                      className="bg-transparent text-center border-0 border-bottom border-2"
-                      type="text"
-                      value={editedReportUsers}
-                      onChange={(e) => setEditedReportUsers(e.target.value)}
-                    />
-                  ) : (
-                    <p className="m-0 mt-2">{user.reason}</p>
-                  )}
-                </td>
-                <td className="d-flex justify-content-center gap-1">
-                  {editingReportUsers === user.reportingUserID ? (
-                    <>
-                      <Button
-                        className="px-3"
-                        variant="success"
-                        onClick={() => handleSaveEdit(user.reportingUserID)}
-                      >
-                        <p className="m-0">Save</p>
-                      </Button>
-                      <Button
-                        className="px-3"
-                        variant="secondary"
-                        onClick={() => setEditingReportUsers(null)}
-                      >
-                        <p className="m-0">Cancel</p>
-                      </Button>
-                    </>
-                  ) : (
-                    <>
-                      <button
-                        className="primaryButton"
-                        onClick={() =>
-                          handleEditReportUsers(
-                            user.reportingUserID,
-                            user.reason
-                          )
-                        }
-                      >
-                        <p className="m-0">Edit</p>
-                      </button>
-                      <Button
-                        variant="danger"
-                        onClick={() =>
-                          handleDeleteReportUser(user.reportingUserID)
-                        }
-                      >
-                        <p className="m-0">Remove</p>
-                      </Button>
-                    </>
-                  )}
-                </td>
-              </tr>
-            ))}
+            {isLoading ? (
+              <>
+                <tr>
+                  <td
+                    colSpan={7}
+                    scope="row"
+                    className="text-center align-middle"
+                  >
+                    <h5 className="m-0 text-secondary ">
+                      <span className="d-flex align-items-center justify-content-center gap-1">
+                        <i className="bx bx-loader bx-spin"></i>Loading
+                        reporting user options.
+                      </span>
+                    </h5>
+                  </td>
+                </tr>
+              </>
+            ) : (
+              <>
+                {currentItems.length === 0 ? (
+                  <>
+                    <tr className="align-middle">
+                      <td colSpan={2}>
+                        <p className="m-0">No Reporting User Options</p>
+                      </td>
+                    </tr>
+                  </>
+                ) : (
+                  <>
+                    {currentItems.map((user) => (
+                      <tr key={user.reportedUserID}>
+                        <td>
+                          {editingReportUsers === user.reportedUserID ? (
+                            <Form.Control
+                              className="bg-transparent text-center border-0 border-bottom border-2"
+                              type="text"
+                              value={editedReportUsers}
+                              onChange={(e) =>
+                                setEditedReportUsers(e.target.value)
+                              }
+                            />
+                          ) : (
+                            <p className="m-0 mt-2">{user.reason}</p>
+                          )}
+                        </td>
+                        <td className="d-flex justify-content-center gap-1">
+                          {editingReportUsers === user.reportedUserID ? (
+                            <>
+                              <Button
+                                className="px-3"
+                                variant="primary"
+                                disabled={
+                                  isEditing || user.reason === editedReportUsers
+                                }
+                                onClick={() =>
+                                  handleSaveEdit(user.reportedUserID)
+                                }
+                              >
+                                <p className="m-0">
+                                  {isEditing ? (
+                                    <>
+                                      <span className="d-flex align-items-center justify-content-center gap-1">
+                                        <i className="bx bx-loader bx-spin"></i>
+                                        Saving
+                                      </span>
+                                    </>
+                                  ) : (
+                                    <>Save</>
+                                  )}
+                                </p>
+                              </Button>
+                              <Button
+                                className="px-3"
+                                variant="secondary"
+                                onClick={() => setEditingReportUsers(null)}
+                              >
+                                <p className="m-0">Cancel</p>
+                              </Button>
+                            </>
+                          ) : (
+                            <>
+                              <button
+                                className="primaryButton"
+                                onClick={() =>
+                                  handleEditReportUsers(
+                                    user.reportedUserID,
+                                    user.reason
+                                  )
+                                }
+                              >
+                                <p className="m-0">Edit</p>
+                              </button>
+                              <Button
+                                variant="danger"
+                                onClick={() =>
+                                  handleDeleteReportUser(user.reportedUserID)
+                                }
+                                disabled={isDeleting === user.reportedUserID}
+                              >
+                                <p className="m-0">
+                                  {isDeleting === user.reportedUserID ? (
+                                    <>
+                                      <span className="d-flex align-items-center justify-content-center gap-1">
+                                        <i className="bx bx-loader bx-spin"></i>
+                                        Removing
+                                      </span>
+                                    </>
+                                  ) : (
+                                    <>Remove</>
+                                  )}
+                                </p>
+                              </Button>
+                            </>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </>
+                )}
+              </>
+            )}
           </tbody>
         </Table>
       </div>
@@ -304,8 +390,23 @@ const ReportingUsers = () => {
         <h5></h5>
 
         <div className="mt-2 d-flex justify-content-end">
-          <button type="submit" className="w-100 primaryButton px-5 py-2">
-            <p className="m-0">Save</p>
+          <button
+            type="submit"
+            className="w-100 primaryButton px-5 py-2"
+            disabled={isAdding || newReportUsers === ""}
+          >
+            <p className="m-0">
+              {isAdding ? (
+                <>
+                  <span className="d-flex align-items-center justify-content-center gap-1">
+                    <i className="bx bx-loader bx-spin"></i>
+                    Saving
+                  </span>
+                </>
+              ) : (
+                <>Save</>
+              )}
+            </p>
           </button>
         </div>
       </Form>

@@ -4,7 +4,7 @@ const {
   addFilter,
   editingFilter,
   deletingFilter,
-} = require("../controllers/settingsController");
+} = require("../controllers/filterController");
 
 router.post("/filters", addFilter);
 

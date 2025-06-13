@@ -17,12 +17,16 @@ const UserAuthentication = ({ cvsuEmail }) => {
       !verificationStatus ||
       verificationStatus !== "OTP verified successfully!"
     ) {
-      setModal({
-        show: true,
-        message: `OTP Required!`,
+      Swal.fire({
+        icon: "warning",
+        title: "OTP Required!",
+        text: "Please verify the OTP before proceeding.",
+      }).then(() => {
+        window.location.reload();
       });
-      window.location.reload();
+      return; // Prevent proceeding if OTP is not verified
     }
+
     setShow(false);
     setOtp("");
     setVerificationStatus(null);

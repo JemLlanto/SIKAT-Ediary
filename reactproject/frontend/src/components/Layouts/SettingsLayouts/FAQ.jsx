@@ -6,8 +6,7 @@ import Button from "react-bootstrap/Button";
 import Pagination from "react-bootstrap/Pagination";
 import FloatingLabel from "react-bootstrap/FloatingLabel";
 import axios from "axios";
-import MessageAlert from "../DiaryEntry/messageAlert";
-import MessageModal from "../DiaryEntry/messageModal";
+import Swal from "sweetalert2";
 
 const FAQ = () => {
   const [faqs, setFaqs] = useState([]); // Rename filters to faqs
@@ -19,67 +18,75 @@ const FAQ = () => {
   const [editedAnswer, setEditedAnswer] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 5;
+  const itemsPerPage = 10;
+  const [isLoading, setIsLoading] = useState(true);
+  const [isAdding, setIsAdding] = useState(false);
+  const [isEditing, setIsEditing] = useState();
+  const [isDeleting, setIsDeleting] = useState();
 
-  const [modal, setModal] = useState({ show: false, message: "" });
-  const [confirmModal, setConfirmModal] = useState({
-    show: false,
-    message: "",
-    onConfirm: () => {},
-    onCancel: () => {},
-  });
-
-  const closeModal = () => {
-    setModal({ show: false, message: "" });
-  };
-  const closeConfirmModal = () => {
-    setConfirmModal({
-      show: false,
-      message: "",
-      onConfirm: () => {},
-      onCancel: () => {},
-    });
+  const fetchFaqs = async () => {
+    try {
+      setIsLoading(true);
+      const response = await axios.get(
+        `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/FAQAPI/faqs`
+      ); // Rename filters endpoint to faqs
+      setFaqs(response.data);
+      setFilteredFaqs(response.data); // Rename setFilteredFilters to setFilteredFaqs
+    } catch (error) {
+      console.error("Error fetching faqs:", error); // Rename filters to faqs
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   useEffect(() => {
-    const fetchFaqs = async () => {
-      try {
-        const response = await axios.get(
-          `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/faqs`
-        ); // Rename filters endpoint to faqs
-        setFaqs(response.data);
-        setFilteredFaqs(response.data); // Rename setFilteredFilters to setFilteredFaqs
-      } catch (error) {
-        console.error("Error fetching faqs:", error); // Rename filters to faqs
-      }
-    };
     fetchFaqs();
   }, []);
 
   const handleAddFaq = async (e) => {
     e.preventDefault();
-    if (newQuestion.trim() && newAnswer.trim()) {
+
+    const newFaqObj = {
+      // Rename filterObj to faqObj
+      question: newQuestion,
+      answer: newAnswer,
+      count: 0,
+    };
+
+    if (newFaqObj) {
       try {
-        const newFaqObj = {
-          // Rename filterObj to faqObj
-          question: newQuestion,
-          answer: newAnswer,
-          count: 0,
-        };
-        await axios.post(
-          `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/faqs`,
+        setIsAdding(true);
+        // Send to backend and get the response (e.g. with _id or modified data)
+        const res = await axios.post(
+          `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/FAQAPI/faqs`,
           newFaqObj
-        ); // Change endpoint to /faqs
-        setFaqs([...faqs, newFaqObj]); // Rename filters to faqs
-        setFilteredFaqs([...filteredFaqs, newFaqObj]); // Rename filteredFilters to filteredFaqs
-        setNewQuestion("");
-        setNewAnswer("");
-        setModal({
-          show: true,
-          message: `FAQ added successfully.`,
-        });
+        );
+        if (res.status === 201) {
+          // Update local state
+          fetchFaqs();
+          setNewAnswer("");
+          setNewQuestion("");
+          // Show success alert
+          Swal.fire({
+            icon: "success",
+            title: "FAQ Added",
+            text: `FAQ was added successfully.`,
+          });
+        }
       } catch (error) {
-        console.error("Error adding faq:", error); // Rename filter to faq
+        console.error("Error adding FAQ:", error);
+
+        const errorMessage =
+          error.response?.data?.message ||
+          "An unexpected error occurred" + ", Please try again later.";
+
+        Swal.fire({
+          icon: "error",
+          title: "Failed to Add",
+          text: errorMessage,
+        });
+      } finally {
+        setIsAdding(false);
       }
     }
   };
@@ -92,56 +99,89 @@ const FAQ = () => {
   };
 
   const handleSaveEdit = async (faqID) => {
-    if (editedQuestion.trim() && editedAnswer.trim()) {
+    if (editedQuestion.trim()) {
       try {
+        setIsEditing(faqID);
         await axios.put(
-          `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/faqedit/${faqID}`,
+          `${
+            import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+          }/FAQAPI/faqedit/${faqID}`,
           {
             question: editedQuestion,
             answer: editedAnswer,
           }
         );
-        const updatedFaqs = faqs.map((faq) =>
-          faq.faqID === faqID
-            ? { ...faq, question: editedQuestion, answer: editedAnswer }
-            : faq
-        );
-        setFaqs(updatedFaqs);
-        setFilteredFaqs(updatedFaqs);
+
         setEditingFaq(null);
-        setModal({
-          show: true,
-          message: `Edited successfully.`,
+        fetchFaqs();
+        // Success alert using SweetAlert
+        Swal.fire({
+          icon: "success",
+          title: "Success",
+          text: "Edited successfully.",
         });
       } catch (error) {
-        console.error("Error editing faq:", error);
+        console.error("Error editing FAQ:", error);
+
+        const errorMessage =
+          error.response?.data?.message ||
+          "An unexpected error occurred" + ", Please try again later.";
+
+        Swal.fire({
+          icon: "error",
+          title: "Failed to Edit",
+          text: errorMessage,
+        });
+      } finally {
+        setIsEditing();
       }
     }
   };
 
   const handleDeleteFaq = async (faqID) => {
-    setConfirmModal({
-      show: true,
-      message: `Are you sure you want to delete this FAQ?`,
-      onConfirm: async () => {
-        try {
-          await axios.delete(
-            `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/faq/${faqID}`
-          );
-          const updatedFaqs = faqs.filter((faq) => faq.faqID !== faqID);
-          setFaqs(updatedFaqs);
-          setFilteredFaqs(updatedFaqs);
-          closeConfirmModal();
-          setModal({
-            show: true,
-            message: `Successfully deleted.`,
-          });
-        } catch (error) {
-          console.error("Error deleting faq:", error);
-        }
-      },
-      onCancel: () => setConfirmModal({ show: false, message: "" }),
+    const result = await Swal.fire({
+      title: "Are you sure?",
+      text: "Do you really want to delete this?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Yes, delete it!",
+      cancelButtonText: "Cancel",
     });
+
+    if (result.isConfirmed) {
+      try {
+        setIsDeleting(faqID);
+        await axios.delete(
+          `${
+            import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+          }/FAQAPI/faq/${faqID}`
+        );
+
+        await Swal.fire({
+          icon: "success",
+          title: "Deleted!",
+          text: "FAQ deleted successfully.",
+        });
+        setIsDeleting();
+        fetchFaqs();
+      } catch (error) {
+        console.error("Error deleting option FAQ:", error);
+
+        const errorMessage =
+          error.response?.data?.message ||
+          "An unexpected error occurred" + ", Please try again later.";
+
+        Swal.fire({
+          icon: "error",
+          title: "Failed to Delete",
+          text: errorMessage,
+        });
+      } finally {
+        setIsDeleting();
+      }
+    }
   };
 
   const handleSearch = (e) => {
@@ -173,20 +213,6 @@ const FAQ = () => {
         minHeight: "clamp(20rem, 80vh, 30rem)",
       }}
     >
-      <MessageAlert
-        showModal={modal}
-        closeModal={closeModal}
-        title={"Notice"}
-        message={modal.message}
-      ></MessageAlert>
-      <MessageModal
-        showModal={confirmModal}
-        closeModal={closeConfirmModal}
-        title={"Confirmation"}
-        message={confirmModal.message}
-        confirm={confirmModal.onConfirm}
-        needConfirm={1}
-      ></MessageModal>
       <div className=" position-relative border-bottom d-flex justify-content-center align-items-center pb-2 gap-1">
         <h4 className="border-2 m-0">Frequently Asked Questions (FAQs)</h4>
         <div className="informationToolTip">
@@ -233,77 +259,145 @@ const FAQ = () => {
             </tr>
           </thead>
           <tbody>
-            {currentItems.map(
-              (
-                faq // Rename filter to faq
-              ) => (
-                <tr key={faq.faqID}>
-                  <td className="">
-                    {editingFaq === faq.faqID ? ( // Rename editingFilter to editingFaq
-                      <Form.Control
-                        className="bg-transparent text-center border-0 border-bottom border-2"
-                        type="text"
-                        value={editedQuestion}
-                        onChange={(e) => setEditedQuestion(e.target.value)}
-                      />
-                    ) : (
-                      <p className="m-0 mt-2">{faq.question}</p> // Rename filter to faq
-                    )}
-                  </td>
-                  <td className="">
-                    {editingFaq === faq.faqID ? ( // Rename editingFilter to editingFaq
-                      <Form.Control
-                        className="bg-transparent text-center border-0 border-bottom border-2"
-                        type="text"
-                        value={editedAnswer}
-                        onChange={(e) => setEditedAnswer(e.target.value)}
-                      />
-                    ) : (
-                      <p className="m-0 mt-2">{faq.answer}</p> // Rename filter to faq
-                    )}
-                  </td>
-                  <td className="align-middle">
-                    <div className="d-flex justify-content-center gap-1">
-                      {editingFaq === faq.faqID ? (
-                        <>
-                          <Button
-                            className="px-3"
-                            variant="primary"
-                            onClick={() => handleSaveEdit(faq.faqID)}
-                          >
-                            <p className="m-0">Save</p>
-                          </Button>
-                          <Button
-                            className="px-3"
-                            variant="secondary"
-                            onClick={() => setEditingFaq(null)}
-                          >
-                            <p className="m-0">Cancel</p>
-                          </Button>
-                        </>
-                      ) : (
-                        <>
-                          <button
-                            className="px-3 primaryButton"
-                            onClick={() =>
-                              handleEditFaq(faq.faqID, faq.question, faq.answer)
-                            }
-                          >
-                            <p className="m-0">Edit</p>
-                          </button>
-                          <Button
-                            className="px-3"
-                            variant="danger"
-                            onClick={() => handleDeleteFaq(faq.faqID)}
-                          >
-                            <p className="m-0">Delete</p>
-                          </Button>
-                        </>
-                      )}
-                    </div>
+            {isLoading ? (
+              <>
+                <tr>
+                  <td
+                    colSpan={7}
+                    scope="row"
+                    className="text-center align-middle"
+                  >
+                    <h5 className="m-0 text-secondary ">
+                      <span className="d-flex align-items-center justify-content-center gap-1">
+                        <i className="bx bx-loader bx-spin"></i>Loading FAQs.
+                      </span>
+                    </h5>
                   </td>
                 </tr>
-              )
+              </>
+            ) : (
+              <>
+                {currentItems.length === 0 ? (
+                  <>
+                    <tr className="align-middle">
+                      <td colSpan={3}>
+                        <p className="m-0">No FAQs found.</p>
+                      </td>
+                    </tr>
+                  </>
+                ) : (
+                  <>
+                    {currentItems.map(
+                      (
+                        faq // Rename filter to faq
+                      ) => (
+                        <tr key={faq.faqID}>
+                          <td className="">
+                            {editingFaq === faq.faqID ? ( // Rename editingFilter to editingFaq
+                              <Form.Control
+                                className="bg-transparent text-center border-0 border-bottom border-2"
+                                type="text"
+                                value={editedQuestion}
+                                onChange={(e) =>
+                                  setEditedQuestion(e.target.value)
+                                }
+                              />
+                            ) : (
+                              <p className="m-0 mt-2">{faq.question}</p> // Rename filter to faq
+                            )}
+                          </td>
+                          <td className="">
+                            {editingFaq === faq.faqID ? ( // Rename editingFilter to editingFaq
+                              <Form.Control
+                                className="bg-transparent text-center border-0 border-bottom border-2"
+                                type="text"
+                                value={editedAnswer}
+                                onChange={(e) =>
+                                  setEditedAnswer(e.target.value)
+                                }
+                              />
+                            ) : (
+                              <p className="m-0 mt-2">{faq.answer}</p> // Rename filter to faq
+                            )}
+                          </td>
+                          <td className="align-middle">
+                            <div className="d-flex justify-content-center gap-1">
+                              {editingFaq === faq.faqID ? (
+                                <>
+                                  <Button
+                                    className="px-3"
+                                    variant="primary"
+                                    disabled={
+                                      isEditing ||
+                                      (faq.question === editedQuestion &&
+                                        faq.answer === editedAnswer)
+                                    }
+                                    onClick={() => handleSaveEdit(faq.faqID)}
+                                  >
+                                    <p className="m-0">
+                                      {isEditing ? (
+                                        <>
+                                          <span className="d-flex align-items-center justify-content-center gap-1">
+                                            <i className="bx bx-loader bx-spin"></i>
+                                            Saving
+                                          </span>
+                                        </>
+                                      ) : (
+                                        <>Save</>
+                                      )}
+                                    </p>
+                                  </Button>
+
+                                  <Button
+                                    className="px-3"
+                                    variant="secondary"
+                                    onClick={() => setEditingFaq(null)}
+                                  >
+                                    <p className="m-0">Cancel</p>
+                                  </Button>
+                                </>
+                              ) : (
+                                <>
+                                  <button
+                                    className="px-3 primaryButton"
+                                    onClick={() =>
+                                      handleEditFaq(
+                                        faq.faqID,
+                                        faq.question,
+                                        faq.answer
+                                      )
+                                    }
+                                  >
+                                    <p className="m-0">Edit</p>
+                                  </button>
+                                  <Button
+                                    variant="danger"
+                                    onClick={() => handleDeleteFaq(faq.faqID)}
+                                    disabled={isDeleting === faq.faqID}
+                                  >
+                                    <p className="m-0">
+                                      {isDeleting === faq.faqID ? (
+                                        <>
+                                          <span className="d-flex align-items-center justify-content-center gap-1">
+                                            <i className="bx bx-loader bx-spin"></i>
+                                            Removing
+                                          </span>
+                                        </>
+                                      ) : (
+                                        <>Remove</>
+                                      )}
+                                    </p>
+                                  </Button>
+                                </>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      )
+                    )}
+                  </>
+                )}
+              </>
             )}
           </tbody>
         </Table>
@@ -357,10 +451,23 @@ const FAQ = () => {
 
         <div className="d-flex justify-content-end">
           <button
+            type="submit"
             className="w-100 primaryButton px-5 py-2"
-            onClick={handleAddFaq} // Rename handleAddFilter to handleAddFaq
+            disabled={isAdding || newQuestion === "" || newAnswer === ""}
+            onClick={handleAddFaq}
           >
-            <p className="m-0">Save</p>
+            <p className="m-0">
+              {isAdding ? (
+                <>
+                  <span className="d-flex align-items-center justify-content-center gap-1">
+                    <i className="bx bx-loader bx-spin"></i>
+                    Saving
+                  </span>
+                </>
+              ) : (
+                <>Save</>
+              )}
+            </p>
           </button>
         </div>
       </div>

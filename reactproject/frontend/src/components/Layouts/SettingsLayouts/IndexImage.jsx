@@ -8,8 +8,7 @@ import Pagination from "react-bootstrap/Pagination";
 import axios from "axios";
 import sampleImage from "../../../assets/Background.jpg";
 import { Dropdown } from "react-bootstrap";
-import MessageAlert from "../DiaryEntry/messageAlert";
-import MessageModal from "../DiaryEntry/messageModal";
+import Swal from "sweetalert2";
 
 const IndexImage = () => {
   const [images, setImages] = useState([]);
@@ -17,43 +16,32 @@ const IndexImage = () => {
   const [imagePreview, setImagePreview] = useState(null);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [editingTitle, setEditingTitle] = useState("");
+  const [editingDescription, setEditingDescription] = useState("");
   const [editingImage, setEditingImage] = useState(null); // For edit mode
-  const [loading, setLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isAdding, setIsAdding] = useState(false);
+  const [isEditing, setIsEditing] = useState();
 
-  const [modal, setModal] = useState({ show: false, message: "" });
-  const [confirmModal, setConfirmModal] = useState({
-    show: false,
-    message: "",
-    onConfirm: () => {},
-    onCancel: () => {},
-  });
-
-  const closeModal = () => {
-    setModal({ show: false, message: "" });
-  };
-  const closeConfirmModal = () => {
-    setConfirmModal({
-      show: false,
-      message: "",
-      onConfirm: () => {},
-      onCancel: () => {},
-    });
+  const fetchImages = async () => {
+    try {
+      setIsLoading(true);
+      const response = await axios.get(
+        `${
+          import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+        }/indexImagesAPI/index-images`
+      );
+      setImages(response.data);
+    } catch (error) {
+      console.error("Error fetching images:", error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   useEffect(() => {
     fetchImages();
   }, []);
-
-  const fetchImages = async () => {
-    try {
-      const response = await axios.get(
-        `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/api/index-images`
-      );
-      setImages(response.data);
-    } catch (error) {
-      console.error("Error fetching images:", error);
-    }
-  };
 
   const handleFileChange = (event) => {
     const file = event.target.files[0];
@@ -69,89 +57,118 @@ const IndexImage = () => {
     }
   };
 
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-    if (!title || (!imageFile && !editingImage)) {
-      alert("Title and image are required.");
-      return;
-    }
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
     const formData = new FormData();
     formData.append("title", title);
     formData.append("description", description);
     if (imageFile) formData.append("image", imageFile);
 
-    setLoading(true);
+    if (formData) {
+      try {
+        setIsEditing(true);
+        if (editingImage) {
+          await axios.put(
+            `${
+              import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+            }/indexImagesAPI/index-images/${editingImage.index_imagesID}`,
+            { title, description }
+          );
 
-    try {
-      if (editingImage) {
-        await axios.put(
-          `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/api/index-images/${
-            editingImage.index_imagesID
-          }`,
-          { title, description }
-        );
-        setModal({
-          show: true,
-          message: `Index image updated successfully.`,
+          await Swal.fire({
+            icon: "success",
+            title: "Updated!",
+            text: "Index image updated successfully.",
+          });
+        } else {
+          setIsAdding(true);
+
+          await axios.post(
+            `${
+              import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+            }/indexImagesAPI/index-images`,
+            formData,
+            {
+              headers: { "Content-Type": "multipart/form-data" },
+            }
+          );
+
+          await Swal.fire({
+            icon: "success",
+            title: "Added!",
+            text: "Index image added successfully.",
+          });
+        }
+
+        resetForm();
+        fetchImages();
+      } catch (error) {
+        console.error("Error saving image:", error);
+
+        const errorMessage =
+          error.response?.data?.message || "Failed to save image.";
+
+        Swal.fire({
+          icon: "error",
+          title: "Error",
+          text: errorMessage,
         });
-      } else {
-        await axios.post(
-          `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/api/index-images`,
-          formData,
-          {
-            headers: { "Content-Type": "multipart/form-data" },
-          }
-        );
-        setModal({
-          show: true,
-          message: `Index image added successfully.`,
-        });
+      } finally {
+        setIsEditing(false);
+        setIsAdding(false);
       }
-
-      resetForm();
-      fetchImages();
-    } catch (error) {
-      console.error("Error saving image:", error);
-      setModal({
-        show: true,
-        message: `Failed to save image.`,
-      });
-    } finally {
-      setLoading(false);
     }
   };
 
   const handleDelete = async (index_imagesID) => {
-    setConfirmModal({
-      show: true,
-      message: `Are you sure you want to delete this index image?`,
-      onConfirm: async () => {
-        try {
-          await axios.delete(
-            `${
-              import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
-            }/index-images/${index_imagesID}`
-          );
-          closeConfirmModal();
-          setModal({
-            show: true,
-            message: `Index image deleted successfully.`,
-          });
-          fetchImages();
-        } catch (error) {
-          console.error("Error deleting image:", error);
-          alert("Failed to delete image.");
-        }
-      },
-      onCancel: () => setConfirmModal({ show: false, message: "" }),
+    const result = await Swal.fire({
+      title: "Are you sure?",
+      text: "Do you really want to delete this index image?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Yes, delete it!",
+      cancelButtonText: "Cancel",
     });
+
+    if (result.isConfirmed) {
+      try {
+        await axios.delete(
+          `${
+            import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+          }/indexImagesAPI/index-images/${index_imagesID}`
+        );
+
+        await Swal.fire({
+          icon: "success",
+          title: "Deleted!",
+          text: "Index image deleted successfully.",
+        });
+
+        fetchImages();
+      } catch (error) {
+        console.error("Error deleting image:", error);
+
+        const errorMessage =
+          error.response?.data?.message || "Failed to delete image.";
+
+        Swal.fire({
+          icon: "error",
+          title: "Error",
+          text: errorMessage,
+        });
+      }
+    }
   };
 
   const handleEdit = (image) => {
     setEditingImage(image);
     setTitle(image.title);
     setDescription(image.description);
+    setEditingTitle(image.title);
+    setEditingDescription(image.description);
     setImagePreview(
       image.image_path
         ? `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}${image.image_path}`
@@ -169,21 +186,6 @@ const IndexImage = () => {
 
   return (
     <div className="p-3 rounded shadow-sm" style={{ backgroundColor: "#fff" }}>
-      <MessageAlert
-        showModal={modal}
-        closeModal={closeModal}
-        title={"Notice"}
-        message={modal.message}
-      ></MessageAlert>
-      <MessageModal
-        showModal={confirmModal}
-        closeModal={closeConfirmModal}
-        title={"Confirmation"}
-        message={confirmModal.message}
-        confirm={confirmModal.onConfirm}
-        needConfirm={1}
-      ></MessageModal>
-
       <div className=" position-relative border-bottom d-flex justify-content-center align-items-end pb-2 gap-1">
         <h4 className="border-2 m-0">Index Page Images</h4>
         <div className="informationToolTip">
@@ -199,86 +201,115 @@ const IndexImage = () => {
         className="custom-scrollbar overflow-y-scroll p-3"
         style={{ height: "clamp(15rem, 20dvw, 20rem)" }}
       >
-        {images.map((image) => (
-          <div
-            key={image.index_imagesID}
-            className="row d-flex justify-content-center gap-3 mb-3"
-          >
-            <div
-              className="col-md-4 px-0 position-relative"
-              style={{
-                height: "clamp(7rem, 8dvw, 8rem)",
-                width: "clamp(14rem, 15dvw, 16rem)",
-              }}
-            >
-              <img
-                src={
-                  image && image.image_path
-                    ? `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}${
-                        image.image_path
-                      }`
-                    : sampleImage
-                }
-                alt={image.title}
-                className="rounded"
-                style={{ width: "100%", height: "100%", objectFit: "cover" }}
-              />
-              {/* Dropdown for Edit/Save/Delete */}
-              <Dropdown
-                className="position-absolute"
-                style={{ right: ".5rem", top: ".5rem" }}
-              >
-                <Dropdown.Toggle variant="light" bsPrefix>
-                  <h5 className="m-0 d-flex align-items-center">
-                    <i className="bx bx-dots-horizontal-rounded"></i>
-                  </h5>
-                </Dropdown.Toggle>
-                {editingImage ? (
-                  <Dropdown.Menu>
-                    <Dropdown.Item className="btn p-0 px-2" onClick={resetForm}>
-                      <button className="btn btn-light w-100">
-                        <p className="m-0">Cancel</p>
-                      </button>
-                    </Dropdown.Item>
-                    <Dropdown.Item className="btn p-0 px-2">
-                      <button className="btn btn-light w-100">
-                        <p className="m-0">Save</p>
-                      </button>
-                    </Dropdown.Item>
-                  </Dropdown.Menu>
-                ) : (
-                  <Dropdown.Menu>
-                    <Dropdown.Item
-                      className="btn p-0 px-2"
-                      onClick={() => handleEdit(image)}
+        {isLoading ? (
+          <>
+            <h5 className="m-0 text-secondary ">
+              <span className="d-flex align-items-center justify-content-center gap-1">
+                <i className="bx bx-loader bx-spin"></i>Loading index images.
+              </span>
+            </h5>
+          </>
+        ) : (
+          <>
+            {images.length === 0 ? (
+              <>
+                <p className="m-0">No index images found.</p>
+              </>
+            ) : (
+              <>
+                {images.map((image) => (
+                  <div
+                    key={image.index_imagesID}
+                    className="row d-flex justify-content-center gap-3 mb-3"
+                  >
+                    <div
+                      className="col-md-4 px-0 position-relative"
+                      style={{
+                        height: "clamp(7rem, 8dvw, 8rem)",
+                        width: "clamp(14rem, 15dvw, 16rem)",
+                      }}
                     >
-                      <button className="btn btn-light w-100">
-                        <p className="m-0">Edit</p>
-                      </button>
-                    </Dropdown.Item>
-                    <Dropdown.Item className="btn p-0 px-2">
-                      <button
-                        className="btn btn-light w-100"
-                        onClick={() => handleDelete(image.index_imagesID)}
+                      <img
+                        src={
+                          image && image.image_path
+                            ? `${
+                                import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+                              }${image.image_path}`
+                            : sampleImage
+                        }
+                        alt={image.title}
+                        className="rounded"
+                        style={{
+                          width: "100%",
+                          height: "100%",
+                          objectFit: "cover",
+                        }}
+                      />
+                      {/* Dropdown for Edit/Save/Delete */}
+                      <Dropdown
+                        className="position-absolute"
+                        style={{ right: ".5rem", top: ".5rem" }}
                       >
-                        <p className="m-0">Delete</p>
-                      </button>
-                    </Dropdown.Item>
-                  </Dropdown.Menu>
-                )}
-              </Dropdown>
-            </div>
-            <div className="col-md px-0 py-1 text-start d-flex flex-column justify-content-start">
-              <div className="d-flex align-items-center align-items-md-start flex-column gap-2">
-                <div className="d-flex align-items-center justify-content-center justify-content-md-start gap-1">
-                  {/* Title Section */}
-                  <h5 className="m-0">{image.title}</h5>
-                </div>
-                <p className="m-0">{image.description}</p>
-              </div>
-            </div>
-          </div>
-        ))}
+                        <Dropdown.Toggle variant="light" bsPrefix>
+                          <h5 className="m-0 d-flex align-items-center">
+                            <i className="bx bx-dots-horizontal-rounded"></i>
+                          </h5>
+                        </Dropdown.Toggle>
+                        {editingImage ? (
+                          <Dropdown.Menu>
+                            <Dropdown.Item
+                              className="btn p-0 px-2"
+                              onClick={resetForm}
+                            >
+                              <button className="btn btn-light w-100">
+                                <p className="m-0">Cancel</p>
+                              </button>
+                            </Dropdown.Item>
+                            <Dropdown.Item className="btn p-0 px-2">
+                              <button className="btn btn-light w-100">
+                                <p className="m-0">Save</p>
+                              </button>
+                            </Dropdown.Item>
+                          </Dropdown.Menu>
+                        ) : (
+                          <Dropdown.Menu>
+                            <Dropdown.Item
+                              className="btn p-0 px-2"
+                              onClick={() => handleEdit(image)}
+                            >
+                              <button className="btn btn-light w-100">
+                                <p className="m-0">Edit</p>
+                              </button>
+                            </Dropdown.Item>
+                            <Dropdown.Item className="btn p-0 px-2">
+                              <button
+                                className="btn btn-light w-100"
+                                onClick={() =>
+                                  handleDelete(image.index_imagesID)
+                                }
+                              >
+                                <p className="m-0">Delete</p>
+                              </button>
+                            </Dropdown.Item>
+                          </Dropdown.Menu>
+                        )}
+                      </Dropdown>
+                    </div>
+                    <div className="col-md px-0 py-1 text-start d-flex flex-column justify-content-start">
+                      <div className="d-flex align-items-center align-items-md-start flex-column gap-2">
+                        <div className="d-flex align-items-center justify-content-center justify-content-md-start gap-1">
+                          {/* Title Section */}
+                          <h5 className="m-0">{image.title}</h5>
+                        </div>
+                        <p className="m-0">{image.description}</p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </>
+            )}
+          </>
+        )}
       </div>
 
       <Form onSubmit={handleSubmit}>
@@ -376,9 +407,26 @@ const IndexImage = () => {
 
         {/* Submit Button */}
         <div className="mt-3 d-flex justify-content-end">
-          <button type="submit" className="w-100 primaryButton px-5 py-2">
+          <button
+            type="submit"
+            className="w-100 primaryButton px-5 py-2"
+            disabled={
+              isAdding || isEditing || editingImage
+                ? title === editingTitle && description === editingDescription
+                : !imageFile || title === "" || description === ""
+            }
+          >
             <p className="m-0">
-              {loading ? "Saving..." : editingImage ? "Update" : "Save"}
+              {isAdding || isEditing ? (
+                <>
+                  <span className="d-flex align-items-center justify-content-center gap-1">
+                    <i className="bx bx-loader bx-spin"></i>
+                    Saving
+                  </span>
+                </>
+              ) : (
+                <>{editingImage ? "Update" : "Save"}</>
+              )}
             </p>
           </button>
         </div>

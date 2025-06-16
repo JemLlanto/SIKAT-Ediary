@@ -4,7 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { LeftSideLoader } from "../../loaders/LeftSideLoader";
 import axios from "axios";
 
-const LeftSideAdmin = ({ user }) => {
+const LeftSideAdmin = ({ load, user }) => {
   const [entries, setEntries] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -23,7 +23,7 @@ const LeftSideAdmin = ({ user }) => {
     if (user) {
       fetchEntries();
     }
-  }, [user, isLoading]);
+  }, [user, isLoading, load]);
 
   const fetchEntries = async () => {
     try {
@@ -84,13 +84,7 @@ const LeftSideAdmin = ({ user }) => {
             }}
           >
             <img
-              src={
-                user.profile_image
-                  ? `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}${
-                      user.profile_image
-                    }`
-                  : DefaultProfile
-              }
+              src={user.profile_image}
               alt="Profile"
               style={{ width: "100%", height: "100%", objectFit: "cover" }}
             />

@@ -7,18 +7,24 @@ import { PreLoader } from "./PreLoader";
 import axios from "axios";
 import IndexFooter from "../Layouts/IndexPage/IndexFooter";
 import IndexCarousel from "../Layouts/IndexPage/IndexCarousel";
+import ImageModal from "../Layouts/DiaryEntry/imageModal";
 // import ExampleCarouselImage from "components/ExampleCarouselImage";
 
 const IndexPage = () => {
-  const [isLoginPage, setIsLoginPage] = useState(true);
-  const [fadeIn, setFadeIn] = useState(true);
   const [latestAnnouncement, setLatestAnnouncement] = useState({});
   const [users, setUsers] = useState([]);
   const [entries, setEntries] = useState([]);
   const [reports, setReports] = useState([]);
   const [images, setImages] = useState([]);
-
   const [scrollUpButton, setScrollUpButton] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  const [showModal, setShowModal] = useState(false);
+  const handleShowModal = () => {
+    setShowModal(true);
+  };
+  const handleCloseModal = () => setShowModal(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -59,11 +65,16 @@ const IndexPage = () => {
     const fetchImages = async () => {
       try {
         const response = await axios.get(
-          `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/api/index-images`
+          `${
+            import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+          }/indexImagesAPI/index-images`
         );
         setImages(response.data);
+        console.log("Index images: ", response.data);
+        setIsLoading(false);
       } catch (error) {
         console.error("Error fetching images:", error);
+        setIsLoading(false);
       }
     };
 
@@ -119,7 +130,9 @@ const IndexPage = () => {
   const fetchReports = async () => {
     try {
       const response = await axios.get(
-        `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/getAddressReports`
+        `${
+          import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+        }/incidents/getAddressReports`
       );
       setReports(response.data);
     } catch (err) {
@@ -161,7 +174,10 @@ const IndexPage = () => {
         <div className="d-flex flex-column gap-5" style={{ height: "100dvh" }}>
           {/* CAROUSEL */}
           <div className="shadow">
-            <IndexCarousel images={images}></IndexCarousel>
+            <IndexCarousel
+              isLoading={isLoading}
+              images={images}
+            ></IndexCarousel>
           </div>
 
           {/* EVENTS AND ANNOUNCEMENTS */}
@@ -183,15 +199,20 @@ const IndexPage = () => {
               >
                 <img
                   className="rounded"
-                  src={
-                    latestAnnouncement && latestAnnouncement.diary_image
-                      ? `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}${
-                          latestAnnouncement.diary_image
-                        }`
-                      : sampleImage
-                  }
+                  src={latestAnnouncement.diary_image}
                   alt=""
-                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    objectFit: "cover",
+                    cursor: "pointer",
+                  }}
+                  onClick={() => handleShowModal()} // Open modal on click
+                />
+                <ImageModal
+                  showModal={showModal}
+                  handleCloseModal={handleCloseModal}
+                  diaryImage={latestAnnouncement.diary_image}
                 />
               </div>
               <div className="col-lg d-flex flex-column align-items-center justify-content-center gap-2">
@@ -202,7 +223,7 @@ const IndexPage = () => {
                   {latestAnnouncement.title}
                 </h4>
                 <p
-                  className="m-0 text-secondary overflow-y-scroll custom-scrollbar"
+                  className="m-0 text-secondary overflow-auto custom-scrollbar"
                   style={{ maxHeight: "clamp(12rem, 20dvw, 20rem)" }}
                 >
                   {latestAnnouncement.description}

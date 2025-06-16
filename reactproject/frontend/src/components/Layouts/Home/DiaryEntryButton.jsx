@@ -8,12 +8,12 @@ import FloatingLabel from "react-bootstrap/FloatingLabel";
 import axios from "axios";
 import Spinner from "react-bootstrap/Spinner";
 import SubjectSelection from "../LayoutUser/SubjectSelection";
-import userDefaultProfile from "../../../assets/userDefaultProfile.png";
+import Swal from "sweetalert2";
 import alarmingWords from "../AlarmingWords";
 import MessageAlert from "../DiaryEntry/messageAlert";
 import MessageModal from "../DiaryEntry/messageModal";
 
-function DiaryEntryButton({ onEntrySaved }) {
+function DiaryEntryButton({ setLoad, onEntrySaved }) {
   const [show, setShow] = useState(false);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -70,29 +70,43 @@ function DiaryEntryButton({ onEntrySaved }) {
 
   const handleFileChange = (event) => {
     const selectedFile = event.target.files[0];
+    const maxSize = 3 * 1024 * 1024;
+    const allowedTypes = ["image/png", "image/jpeg", "image/jpg"];
 
-    setFile(selectedFile);
-    if (selectedFile) {
-      setImagePreview(URL.createObjectURL(selectedFile));
-    } else {
+    if (!selectedFile) {
+      setFile(null);
       setImagePreview(null);
+      return;
     }
-    const maxSize = 5 * 1024 * 1024;
 
-    if (selectedFile) {
-      if (selectedFile.size > maxSize) {
-        setModal({
-          show: true,
-          message: `File size exceeds the 2MB limit. Please select a smaller file.`,
-        });
-        setFile(null);
-        setImagePreview(null);
-      } else {
-        setFileError("");
-        setFile(selectedFile);
-        setImagePreview(URL.createObjectURL(selectedFile));
-      }
+    // Check file type
+    if (!allowedTypes.includes(selectedFile.type)) {
+      Swal.fire({
+        icon: "error",
+        title: "Invalid File Type",
+        text: "Only PNG and JPEG files are allowed.",
+      });
+      setFile(null);
+      setImagePreview(null);
+      return;
     }
+
+    // Check file size
+    if (selectedFile.size > maxSize) {
+      Swal.fire({
+        icon: "error",
+        title: "File Too Large",
+        text: "File size exceeds the 3MB limit. Please select a smaller file.",
+      });
+      setFile(null);
+      setImagePreview(null);
+      return;
+    }
+
+    // Success
+    setFileError("");
+    setFile(selectedFile);
+    setImagePreview(URL.createObjectURL(selectedFile));
   };
 
   useEffect(() => {
@@ -122,33 +136,49 @@ function DiaryEntryButton({ onEntrySaved }) {
     return alarmingWords.some((word) => text.toLowerCase().includes(word));
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     let errors = {};
     if (!title) errors.title = "Title is required.";
     if (!description) errors.description = "Description is required.";
-
     if (!selectedSubjects || selectedSubjects.trim() === "") {
       errors.subjects = "At least one subject must be selected.";
     }
 
     setFormErrors(errors);
 
-    if (containsAlarmingWords(title) || containsAlarmingWords(description)) {
-      setAlarmingWordWarning(
-        "Warning: Your entry contains potentially harmful words. Proceed with caution."
-      );
+    const hasAlarmingWords =
+      containsAlarmingWords(title) || containsAlarmingWords(description);
+
+    if (hasAlarmingWords) {
+      const { isConfirmed } = await Swal.fire({
+        icon: "warning",
+        title: "Alarming Content Detected",
+        text: "Your entry contains potentially harmful words. Do you want to continue?",
+        showCancelButton: true,
+        confirmButtonText: "Yes, post anyway",
+        cancelButtonText: "Cancel",
+      });
+
+      if (!isConfirmed) return;
     } else {
       setAlarmingWordWarning("");
     }
 
-    if (Object.keys(errors).length > 0) return;
+    if (Object.keys(errors).length > 0) {
+      await Swal.fire({
+        icon: "error",
+        title: "Missing Required Fields",
+        html: Object.values(errors).join("<br>"),
+      });
+      return;
+    }
 
     if (!user || !user.userID) {
-      setModal({
-        show: true,
-        message: `User not authenticated. Please log in again.`,
+      await Swal.fire({
+        icon: "error",
+        title: "Authentication Error",
+        text: "User not authenticated. Please log in again.",
       });
-      // setServerError("User not authenticated. Please log in again.");
       return;
     }
 
@@ -159,7 +189,7 @@ function DiaryEntryButton({ onEntrySaved }) {
     formData.append("visibility", visibility);
     formData.append("anonimity", anonimity);
 
-    if (selectedSubjects && selectedSubjects.trim() !== "") {
+    if (selectedSubjects?.trim()) {
       formData.append("subjects", selectedSubjects);
     }
 
@@ -170,41 +200,40 @@ function DiaryEntryButton({ onEntrySaved }) {
     setLoading(true);
     setServerError("");
 
-    axios
-      .post(
-        `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/entry`,
+    try {
+      const response = await axios.post(
+        `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/entries/entry`,
         formData,
         {
           headers: {
             "Content-Type": "multipart/form-data",
           },
         }
-      )
-      .then((response) => {
-        console.log(response.data.message);
-        setTitle("");
-        setDescription("");
-        setFile(null);
-        handleClose();
-        if (onEntrySaved) {
-          onEntrySaved();
-        }
-        setModal({
-          show: true,
-          message: `Diary posted.`,
-        });
-      })
-      .catch((error) => {
-        console.error("There was an error saving the diary entry!", error);
-        setModal({
-          show: true,
-          message: `Failed to save diary entry. Please try again.`,
-        });
-        // setServerError("Failed to save diary entry. Please try again.");
-      })
-      .finally(() => {
-        setLoading(false);
+      );
+
+      console.log(response.data.message);
+      setTitle("");
+      setDescription("");
+      setFile(null);
+      handleClose();
+      onEntrySaved?.();
+      setLoad((prev) => !prev);
+
+      await Swal.fire({
+        icon: "success",
+        title: "Success",
+        text: "Diary posted.",
       });
+    } catch (error) {
+      console.error("There was an error saving the diary entry!", error);
+      await Swal.fire({
+        icon: "error",
+        title: "Failed",
+        text: "Failed to save diary entry. Please try again.",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -243,13 +272,7 @@ function DiaryEntryButton({ onEntrySaved }) {
             <div className="w-50 d-flex align-items-center gap-2">
               <div className="profilePicture">
                 <img
-                  src={
-                    user?.profile_image
-                      ? `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}${
-                          user?.profile_image
-                        }`
-                      : userDefaultProfile
-                  }
+                  src={user?.profile_image}
                   alt="Profile"
                   style={{
                     width: "100%",

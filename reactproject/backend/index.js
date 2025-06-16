@@ -25,6 +25,7 @@ const reportingUserRoutes = require("./routes/reportingUsers");
 const alarmingWordsRoutes = require("./routes/alarmingWords");
 const FAQWordsRoutes = require("./routes/FAQ");
 const IndexImagesRoutes = require("./routes/indexImage");
+const uploadProfileRoutes = require("./routes/uploadProfile");
 
 const allowedOrigins = [
   "http://localhost:5173",
@@ -55,6 +56,7 @@ app.use("/reportingUserAPI", reportingUserRoutes);
 app.use("/alarmingWordsAPI", alarmingWordsRoutes);
 app.use("/FAQAPI", FAQWordsRoutes);
 app.use("/indexImagesAPI", IndexImagesRoutes);
+app.use("/uploadProfileAPI", uploadProfileRoutes);
 
 app.use("/uploads", express.static("uploads"));
 
@@ -118,36 +120,6 @@ const diaryImageStorageUser = multer.diskStorage({
 
 const uploadDiaryImageUser = multer({
   storage: diaryImageStorageUser,
-  limits: { fileSize: 5 * 1024 * 1024 },
-  fileFilter: (req, file, cb) => {
-    const allowedTypes = ["image/jpeg", "image/png", "image/gif"];
-    if (!allowedTypes.includes(file.mimetype)) {
-      const error = new Error("INVALID_FILE_TYPE");
-      error.code = "INVALID_FILE_TYPE";
-      return cb(error);
-    }
-    cb(null, true);
-  },
-});
-
-//profile picture upload
-const profilePicturesDir = path.join(__dirname, "uploads", "profile_pictures");
-
-if (!fs.existsSync(profilePicturesDir)) {
-  fs.mkdirSync(profilePicturesDir, { recursive: true });
-}
-
-const profilePictureStorage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, profilePicturesDir);
-  },
-  filename: (req, file, cb) => {
-    cb(null, Date.now() + path.extname(file.originalname));
-  },
-});
-
-const uploadProfilePicture = multer({
-  storage: profilePictureStorage,
   limits: { fileSize: 5 * 1024 * 1024 },
   fileFilter: (req, file, cb) => {
     const allowedTypes = ["image/jpeg", "image/png", "image/gif"];
@@ -800,206 +772,6 @@ app.put("/EditProfile/:userID", (req, res) => {
 // const containsAlarmingWords = (text) => {
 //   return alarmingWords.some((word) => text.toLowerCase().includes(word));
 // };
-
-app.post(
-  "/entry",
-  (req, res, next) => {
-    uploadDiaryImageUser.single("file")(req, res, function (err) {
-      if (err) {
-        if (err.code === "LIMIT_FILE_SIZE") {
-          return res
-            .status(400)
-            .send({ message: "File size is too large. Maximum 5MB allowed." });
-        }
-        if (err.code === "INVALID_FILE_TYPE") {
-          return res
-            .status(400)
-            .send({ message: "Only image files are allowed." });
-        }
-        return res.status(500).send({ message: "File upload error." });
-      }
-      next();
-    });
-  },
-  (req, res) => {
-    const { title, description, userID, visibility, anonimity, subjects } =
-      req.body;
-    const file = req.file;
-
-    if (!title || !description || !userID) {
-      return res
-        .status(400)
-        .send({ message: "Title, description, and userID are required." });
-    }
-
-    let diary_image = "";
-    if (file) {
-      diary_image = `/uploads/user_diary_images/${file.filename}`;
-    }
-
-    db.query("SELECT alarmingWord FROM alarming_words", (err, rows) => {
-      if (err) {
-        console.error("Error fetching alarming words:", err);
-        return res
-          .status(500)
-          .send({ message: "Error fetching alarming words." });
-      }
-
-      const alarmingWords = rows.map((row) => row.alarmingWord.toLowerCase());
-      const containsAlarmingWords = (text) => {
-        return alarmingWords.some((word) => text.toLowerCase().includes(word));
-      };
-
-      const hasAlarmingWords =
-        containsAlarmingWords(title) || containsAlarmingWords(description);
-
-      const query = `
-        INSERT INTO diary_entries (title, description, userID, visibility, anonimity, diary_image, subjects, containsAlarmingWords, isFlagged)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-      `;
-      const values = [
-        title,
-        description,
-        userID,
-        visibility,
-        anonimity,
-        diary_image,
-        subjects,
-        hasAlarmingWords ? 1 : 0,
-        hasAlarmingWords ? 1 : 0,
-      ];
-
-      db.query(query, values, (err, result) => {
-        if (err) {
-          console.error("Error inserting diary entry:", err);
-          return res
-            .status(500)
-            .send({ message: "Failed to save diary entry. Please try again." });
-        }
-
-        const subjectArray =
-          subjects && subjects.trim() !== ""
-            ? subjects.split(",").map((subject) => subject.trim())
-            : [];
-
-        subjectArray.forEach((subject) => {
-          const updateQuery = `
-            UPDATE filter_subjects
-            SET count = count + 1
-            WHERE subject = ?
-          `;
-          db.query(updateQuery, [subject], (updateError) => {
-            if (updateError) {
-              console.error(
-                `Error updating count for subject '${subject}':`,
-                updateError
-              );
-            }
-          });
-        });
-
-        const userQuery = `
-        SELECT u.firstName, u.lastName, up.profile_image 
-        FROM user_table u
-        JOIN user_profiles up ON u.userID = up.userID
-        WHERE u.userID = ?
-      `;
-        db.query(userQuery, [userID], (userError, userResults) => {
-          if (userError) {
-            console.error(
-              "Error fetching user firstName and profile_image:",
-              userError
-            );
-            return res
-              .status(500)
-              .send({ message: "Failed to fetch user details." });
-          }
-
-          const userFirstName = userResults[0]?.firstName || "User";
-          const userLastName = userResults[0]?.lastName || "User";
-          const userProfileImage =
-            userResults[0]?.profile_image || "/default-profile.png";
-
-          if (hasAlarmingWords) {
-            const notificationMessage = `A diary entry containing alarming words has been posted by ${userFirstName} ${userLastName}`;
-
-            const adminQuery = `SELECT userID FROM user_table WHERE isAdmin = 1`;
-
-            db.query(adminQuery, (adminError, adminResults) => {
-              if (adminError) {
-                console.error("Error fetching admin users:", adminError);
-                return res
-                  .status(500)
-                  .send({ message: "Failed to notify admins." });
-              }
-
-              if (adminResults.length > 0) {
-                adminResults.forEach((admin) => {
-                  const notificationQuery = `
-                  INSERT INTO notifications (userID, actorID, message, entryID, type, profile_image)
-                  VALUES (?, ?, ?, ?, ?, ?)
-                `;
-                  db.query(
-                    notificationQuery,
-                    [
-                      admin.userID,
-                      userID,
-                      notificationMessage,
-                      result.insertId,
-                      "alarming_entry",
-                      userProfileImage, // Include profile image in the notification
-                    ],
-                    (notificationError) => {
-                      if (notificationError) {
-                        console.error(
-                          "Error inserting admin notification:",
-                          notificationError
-                        );
-                        return res.status(500).send({
-                          message: "Failed to save admin notification.",
-                        });
-                      }
-
-                      pusher
-                        .trigger(
-                          `notifications-${admin.userID}`,
-                          "new-notification",
-                          {
-                            actorID: userID,
-                            message: notificationMessage,
-                            entryID: result.insertId,
-                            type: "alarming_entry",
-                            profile_image: userProfileImage, // Include profile image in the notification
-                            timestamp: new Date().toISOString(),
-                          }
-                        )
-                        .then(() => {
-                          console.log(
-                            `Admin ${admin.userID} notified of alarming diary entry.`
-                          );
-                        })
-                        .catch((err) => {
-                          console.error(
-                            "Error sending admin Pusher notification:",
-                            err
-                          );
-                        });
-                    }
-                  );
-                });
-              }
-            });
-          }
-
-          res.status(200).send({
-            message: "Entry added successfully!",
-            containsAlarmingWords: hasAlarmingWords,
-          });
-        });
-      });
-    });
-  }
-);
 
 app.put(
   "/editEntry/:entryID",
@@ -2351,69 +2123,6 @@ app.delete("/deleteComment/:commentID", (req, res) => {
         .json({ message: "Comment and its replies deleted successfully" });
     });
   });
-});
-
-app.post("/uploadProfile", uploadProfilePicture.single("file"), (req, res) => {
-  const { userID } = req.body;
-
-  if (!userID) {
-    console.log("No user ID provided");
-    return res.status(400).json({ message: "No user ID provided." });
-  }
-
-  if (!req.file) {
-    console.log("No file uploaded");
-    return res.status(400).json({ message: "No file uploaded." });
-  }
-
-  const newFilePath = `/uploads/profile_pictures/${req.file.filename}`;
-
-  const getCurrentProfileQuery =
-    "SELECT profile_image FROM user_profiles WHERE userID = ?";
-
-  db.query(getCurrentProfileQuery, [userID], (err, result) => {
-    if (err) {
-      console.error("Error fetching current profile image:", err);
-      return res.status(500).json({ message: "Database error" });
-    }
-
-    const currentProfileImage = result[0]?.profile_image;
-
-    if (currentProfileImage) {
-      const currentImagePath = path.join(__dirname, currentProfileImage);
-
-      fs.unlink(currentImagePath, (err) => {
-        if (err && err.code !== "ENOENT") {
-          console.error("Error deleting current profile image:", err);
-          return res
-            .status(500)
-            .json({ message: "Error deleting current profile image" });
-        }
-
-        updateProfileImage(userID, newFilePath, res);
-      });
-    } else {
-      updateProfileImage(userID, newFilePath, res);
-    }
-  });
-
-  function updateProfileImage(userID, newFilePath, res) {
-    const updateQuery =
-      "UPDATE user_profiles SET profile_image = ? WHERE userID = ?";
-
-    db.query(updateQuery, [newFilePath, userID], (err) => {
-      if (err) {
-        console.error("Database error:", err);
-        return res.status(500).json({ message: "Database error" });
-      }
-
-      console.log("Profile photo uploaded successfully", newFilePath);
-      res.json({
-        message: "Profile photo uploaded successfully",
-        filePath: newFilePath,
-      });
-    });
-  }
 });
 
 app.post("/message", (req, res) => {

@@ -428,9 +428,7 @@ const DiaryEntry = () => {
                       >
                         <img
                           className="DiaryImage rounded"
-                          src={`${
-                            import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
-                          }${entry.diary_image}`}
+                          src={entry.diary_image}
                           alt="Diary"
                           style={{
                             cursor: "pointer",
@@ -448,9 +446,7 @@ const DiaryEntry = () => {
                           <ImageModal
                             showModal={showModal}
                             handleCloseModal={handleCloseModal}
-                            diaryImage={`${
-                              import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
-                            }${entry.diary_image}`}
+                            diaryImage={entry.diary_image}
                           ></ImageModal>
                         </>
                       )}
@@ -546,7 +542,7 @@ const DiaryEntry = () => {
                             flaggedCount={flaggedCount}
                             userID={user.userID}
                             entryID={entry.entryID}
-                            entry={entry.userID}
+                            entry={entry}
                           />
                         )}
                       </div>

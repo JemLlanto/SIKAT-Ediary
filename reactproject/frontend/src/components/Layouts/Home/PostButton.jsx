@@ -13,7 +13,7 @@ import userDefaultProfile from "../../../assets/userDefaultProfile.png";
 import MessageAlert from "../DiaryEntry/messageAlert";
 import MessageModal from "../DiaryEntry/messageModal";
 
-function PostButton({ onEntrySaved }) {
+function PostButton({ setLoad, onEntrySaved }) {
   const [show, setShow] = useState(false);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -194,8 +194,8 @@ function PostButton({ onEntrySaved }) {
         setDescription("");
         setFile(null);
         handleClose();
+        setLoad((prev) => !prev);
         if (onEntrySaved) onEntrySaved();
-        window.location.reload();
       })
       .catch((error) => {
         console.error("Error saving post:", error);
@@ -250,13 +250,7 @@ function PostButton({ onEntrySaved }) {
               <div className="col p-0">
                 <div className="profilePicture" style={{}}>
                   <img
-                    src={
-                      user?.profile_image
-                        ? `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}${
-                            user?.profile_image
-                          }`
-                        : userDefaultProfile
-                    }
+                    src={user?.profile_image}
                     alt="Profile"
                     style={{
                       width: "100%",

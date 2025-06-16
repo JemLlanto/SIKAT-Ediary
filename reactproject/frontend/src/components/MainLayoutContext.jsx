@@ -83,7 +83,7 @@ const MainLayoutContext = ({ children, ActiveTab }) => {
         )}
       </div>
       <div className="mx-2 mx-md-4" style={{ marginTop: "5rem" }}>
-        <Outlet context={{ user }} />
+        <Outlet context={{ user, setUserData }} />
         <div>
           {showMessage && isOffline && (
             <div

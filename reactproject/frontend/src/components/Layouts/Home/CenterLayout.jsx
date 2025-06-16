@@ -14,7 +14,7 @@ import MessageAlert from "../DiaryEntry/messageAlert";
 import NewUserSetUp from "../../pages/PagesUser/NewUserSetUp";
 import FilterButtonAdmin from "./FilterButtonAdmin";
 
-const CenterLayout = ({ user }) => {
+const CenterLayout = ({ setLoad, user }) => {
   const [entries, setEntries] = useState([]);
   const [followedUsers, setFollowedUsers] = useState([]);
   const [expandButtons, setExpandButtons] = useState([]);
@@ -375,9 +375,15 @@ const CenterLayout = ({ user }) => {
         style={{ backgroundColor: "white" }}
       >
         {user.isAdmin ? (
-          <PostButton onEntrySaved={() => fetchEntries(user.userID, filters)} />
+          <PostButton
+            setLoad={setLoad}
+            fetchEntries={fetchEntries}
+            onEntrySaved={() => fetchEntries(user.userID, filters)}
+          />
         ) : (
           <DiaryEntryButton
+            setLoad={setLoad}
+            fetchEntries={fetchEntries}
             onEntrySaved={() => fetchEntries(user.userID, filters)}
           />
         )}

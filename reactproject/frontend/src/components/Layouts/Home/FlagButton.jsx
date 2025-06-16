@@ -86,7 +86,7 @@ function FlagButton({
 
   const handleSubmit = async () => {
     const reportData = {
-      userID: entry,
+      userID: entry.userID,
       entryID,
       reason: selectedReason,
     };
@@ -133,7 +133,7 @@ function FlagButton({
       <button
         className="InteractButton d-flex align-items-center justify-content-center gap-2"
         onClick={handleShow}
-        disabled={fromAdmin || entry === userID}
+        disabled={fromAdmin || entry.userID === userID || entry.isAdmin}
       >
         <i className="bx bx-flag"></i>
         <span>{flaggedCount}</span>

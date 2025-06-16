@@ -230,13 +230,7 @@ const IndexImage = () => {
                       }}
                     >
                       <img
-                        src={
-                          image && image.image_path
-                            ? `${
-                                import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
-                              }${image.image_path}`
-                            : sampleImage
-                        }
+                        src={image.image_path}
                         alt={image.title}
                         className="rounded"
                         style={{

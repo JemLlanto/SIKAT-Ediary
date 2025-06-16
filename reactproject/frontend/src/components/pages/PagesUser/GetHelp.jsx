@@ -396,7 +396,13 @@ const GetHelp = () => {
                 disabled={isLoading}
               >
                 <p className="m-0">
-                  {isLoading ? <>Submiting</> : <>Submit</>}
+                  {isLoading ? (
+                    <>
+                      <i className="bx bx-loader bx-spin"></i> Submiting
+                    </>
+                  ) : (
+                    <>Submit</>
+                  )}
                 </p>
               </button>
             </div>

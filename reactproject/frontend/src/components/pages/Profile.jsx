@@ -17,17 +17,15 @@ import ReportedComments from "../Layouts/Profile/ReportedComments";
 import Followers from "../Layouts/Profile/Followers";
 import { SuspensionModal } from "../Layouts/Profile/SuspensionModal";
 import MessageModal from "../Layouts/DiaryEntry/messageModal";
-import MessageAlert from "../Layouts/DiaryEntry/messageAlert";
 import BackButton from "../Layouts/Home/BackButton";
 import CenterLoader from "../loaders/CenterLoader";
+import Swal from "sweetalert2";
 // import Suspended from "../../components/pages/PagesUser/Suspended";
 
 const Profile = () => {
   const { userID } = useParams();
-  const { user } = useOutletContext();
+  const { user, setUserData } = useOutletContext();
   const [profileOwner, setProfileOwner] = useState({});
-  const [loading, setLoading] = useState(true);
-  const [loadingEntries, setLoadingEntries] = useState(true);
   const [error, setError] = useState(null);
   const [file, setFile] = useState(null);
   const [isHovered, setIsHovered] = useState(false);
@@ -35,7 +33,9 @@ const Profile = () => {
   const [followedUsers, setFollowedUsers] = useState([]);
   const [followers, setFollowers] = useState([]);
   const [expandButtons, setExpandButtons] = useState({});
-  const [isLoading, setIsLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [loadingEntries, setLoadingEntries] = useState(true);
+  const [isUploading, setIsUploading] = useState(false);
 
   const navigate = useNavigate();
 
@@ -72,29 +72,30 @@ const Profile = () => {
     }
   }, [user]);
 
+  const fetchUserData = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch(
+        `${
+          import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+        }/fetchUser/user/${userID}`
+      );
+      if (!response.ok) throw new Error("User not found");
+      const data = await response.json();
+
+      // console.log("User data:", data ? "Has data" : "");
+
+      setProfileOwner(data);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     if (userID) {
       console.log("Fetching profile data...");
-      const fetchUserData = async () => {
-        try {
-          const response = await fetch(
-            `${
-              import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
-            }/fetchUser/user/${userID}`
-          );
-          if (!response.ok) throw new Error("User not found");
-          const data = await response.json();
-
-          // console.log("User data:", data ? "Has data" : "");
-
-          setProfileOwner(data);
-        } catch (err) {
-          setError(err.message);
-        } finally {
-          setLoading(false);
-        }
-      };
-
       fetchUserData();
     }
   }, [userID, navigate]);
@@ -132,54 +133,89 @@ const Profile = () => {
 
   const handleFileChange = (event) => {
     const selectedFile = event.target.files[0];
-    const maxSize = 2 * 1024 * 1024; // 2MB in bytes
+    const maxSize = 5 * 1024 * 1024; // 5MB
 
     if (selectedFile) {
-      if (selectedFile.size > maxSize) {
-        setModal({
-          show: true,
-          message: `File size exceeds the 2MB limit. Please select a smaller file.`,
+      const allowedTypes = ["image/png", "image/jpeg"];
+
+      if (!allowedTypes.includes(selectedFile.type)) {
+        Swal.fire({
+          icon: "error",
+          title: "Invalid File Type",
+          text: "Only PNG and JPEG files are allowed.",
         });
         setFile(null);
-      } else {
-        setFile(selectedFile);
-
-        uploadProfile(selectedFile);
+        return;
       }
+
+      if (selectedFile.size > maxSize) {
+        Swal.fire({
+          icon: "error",
+          title: "File Too Large",
+          text: "File size exceeds the 5MB limit. Please select a smaller file.",
+        });
+        setFile(null);
+        return;
+      }
+
+      setFile(selectedFile);
+      uploadProfile(selectedFile);
     }
   };
 
-  const uploadProfile = (file) => {
+  const uploadProfile = async (file) => {
     const formData = new FormData();
     formData.append("file", file);
     formData.append("userID", profileOwner.userID);
 
-    setConfirmModal({
-      show: true,
-      message: `Are you sure you want to change your profile?`,
-      onConfirm: async () => {
-        axios
-          .post(
-            `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/uploadProfile`,
-            formData
-          )
-          .then((res) => {
-            console.log("Profile uploaded successfully", res.data);
-            setConfirmModal({ show: false, message: "" });
-            setModal({
-              show: true,
-              message: `Profile uploaded successfully.`,
-            });
-            setTimeout(() => {
-              window.location.reload();
-            }, 2000);
-          })
-          .catch((error) => {
-            console.error("Error uploading profile:", error);
-          });
-      },
-      onCancel: () => setConfirmModal({ show: false, message: "" }),
+    const result = await Swal.fire({
+      icon: "question",
+      title: "Change Profile?",
+      text: "Are you sure you want to change your profile picture?",
+      showCancelButton: true,
+      confirmButtonText: "Confirm",
+      cancelButtonText: "Cancel",
     });
+
+    if (result.isConfirmed) {
+      try {
+        setIsUploading(true);
+        const res = await axios.post(
+          `${
+            import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+          }/uploadProfileAPI/uploadProfile`,
+          formData
+        );
+        console.log("Profile uploaded successfully", res.data);
+        await Swal.fire({
+          icon: "success",
+          title: "Uploaded",
+          text: "Profile uploaded successfully.",
+          timer: 2000,
+          showConfirmButton: true,
+        });
+        console.log("New profile URL: ", res.data.filePath);
+        const updatedUser = {
+          ...profileOwner,
+          profile_image: res.data.filePath,
+        };
+        setProfileOwner(updatedUser);
+        // Update localStorage
+        localStorage.setItem("user", JSON.stringify(updatedUser));
+        setUserData(JSON.stringify(updatedUser));
+      } catch (error) {
+        console.error("Error uploading profile:", error);
+        Swal.fire({
+          icon: "error",
+          title: "Upload Failed",
+          text: "There was an error uploading your profile. Please try again.",
+        });
+      } finally {
+        setIsUploading(false);
+      }
+    } else {
+      setIsUploading(false);
+    }
   };
 
   const fetchFollowedUsers = async () => {
@@ -477,22 +513,52 @@ const Profile = () => {
                   borderRadius: "50%",
                 }}
               >
-                <img
-                  src={
-                    profileOwner && profileOwner.profile_image
-                      ? `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}${
-                          profileOwner.profile_image
-                        }`
-                      : DefaultProfile
-                  }
-                  alt="Profile"
-                  style={{
-                    width: "100%",
-                    height: "100%",
-                    objectFit: "cover",
-                    borderRadius: "50%",
-                  }}
-                />
+                {isUploading || loading ? (
+                  <>
+                    <div
+                      className="position-absolute rounded-circle d-flex justify-content-center align-items-center"
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        backgroundColor: "rgba(255, 255, 255, 0.6)",
+                      }}
+                    >
+                      <h2 className="m-0 text-dark ">
+                        <span className="d-flex align-items-center justify-content-center gap-1">
+                          <i className="bx bx-loader bx-spin"></i>
+                        </span>
+                      </h2>
+                    </div>
+                  </>
+                ) : null}
+
+                {loading ? (
+                  <>
+                    <img
+                      src={DefaultProfile}
+                      alt="Profile"
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "cover",
+                        borderRadius: "50%",
+                      }}
+                    />
+                  </>
+                ) : (
+                  <>
+                    <img
+                      src={`${profileOwner.profile_image}`}
+                      alt="Profile"
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "cover",
+                        borderRadius: "50%",
+                      }}
+                    />
+                  </>
+                )}
                 {ownProfile && (
                   <label
                     htmlFor="uploadProfile"
@@ -521,6 +587,7 @@ const Profile = () => {
                       <input
                         type="file"
                         id="uploadProfile"
+                        accept="image/png, image/jpeg"
                         hidden
                         onChange={handleFileChange}
                       />

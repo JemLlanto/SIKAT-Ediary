@@ -8,6 +8,7 @@ const SubjectSelection = ({ onSubjectsChange }) => {
   const [customReason, setCustomReason] = useState(""); // State for custom input
   const [dropdownOpen, setDropdownOpen] = useState(false); // State to manage dropdown open/close
   const [filterSubjects, setFilterSubjects] = useState([]); // State for fetched filter subjects
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchFilterSubjects = async () => {
@@ -23,6 +24,7 @@ const SubjectSelection = ({ onSubjectsChange }) => {
         }, {});
         setSelectedItems(initialState);
         setFilterSubjects(subjects);
+        setIsLoading(false);
       } catch (error) {
         console.error("Error fetching filter subjects:", error);
       }
@@ -102,9 +104,22 @@ const SubjectSelection = ({ onSubjectsChange }) => {
       </Dropdown.Toggle>
 
       <Dropdown.Menu className="px-2" style={{}}>
-        {filterSubjects.length > 0 && (
+        {isLoading ? (
           <>
-            {/* <Form.Check
+            <Form.Check
+              type="checkbox"
+              id="Loading subjects..."
+              label="Loading subjects..."
+              name="Loading subjects..."
+              disabled
+              style={{ width: "clamp(13rem, 10dvw, 18rem)" }}
+            />
+          </>
+        ) : (
+          <>
+            {filterSubjects.length > 0 && (
+              <>
+                {/* <Form.Check
               type="checkbox"
               id="general"
               label="General"
@@ -112,22 +127,24 @@ const SubjectSelection = ({ onSubjectsChange }) => {
               checked="{selectedItems.all}"
               onChange={handleCheckboxChange}
             /> */}
-            {filterSubjects.map((subject) => (
-              <Form.Check
-                key={subject.subjectID}
-                type="checkbox"
-                id={subject.subject}
-                label={subject.subject}
-                name={subject.subject}
-                checked={selectedItems[subject.subject] || false}
-                onChange={handleCheckboxChange}
-                style={{ width: "clamp(13rem, 10dvw, 18rem)" }}
-              />
-            ))}
+                {filterSubjects.map((subject) => (
+                  <Form.Check
+                    key={subject.subjectID}
+                    type="checkbox"
+                    id={subject.subject}
+                    label={subject.subject}
+                    name={subject.subject}
+                    checked={selectedItems[subject.subject] || false}
+                    onChange={handleCheckboxChange}
+                    style={{ width: "clamp(13rem, 10dvw, 18rem)" }}
+                  />
+                ))}
 
-            {/* <button className="orangeButton w-100" onClick={handleSaveFilter}>
+                {/* <button className="orangeButton w-100" onClick={handleSaveFilter}>
               Save Filter
             </button> */}
+              </>
+            )}
           </>
         )}
       </Dropdown.Menu>

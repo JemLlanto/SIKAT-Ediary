@@ -6,7 +6,11 @@ const {
   insertAdminPost,
   fetchingUserEntries,
   fetchSingleEntry,
+  uploadingDiaryImage,
+  uploadingDiary,
 } = require("../controllers/entriesController");
+
+router.post("/entry", uploadingDiaryImage, uploadingDiary);
 
 router.get("/fetchEntries", fetchingEntries);
 

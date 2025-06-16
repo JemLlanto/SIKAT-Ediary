@@ -11,6 +11,7 @@ export default function HomeMainLayout({}) {
   const [loading, setloading] = useState(true);
   const [showModal, setShowModal] = useState(false); // Modal state for inactivity alert
   const navigate = useNavigate();
+  const [load, setLoad] = useState(false);
 
   const { isInactive } = useContext(InactivityContext);
 
@@ -33,19 +34,6 @@ export default function HomeMainLayout({}) {
     window.location.reload(); // Reload the page after inactivity
   };
 
-  if (loading) {
-    return (
-      <nav
-        className="navbar navbar-expand-lg p-0 pt-2 pt-lg-0"
-        style={{
-          position: "fixed",
-          top: "0",
-          minHeight: "4.2rem",
-          width: "100%",
-        }}
-      ></nav>
-    );
-  }
   return (
     <>
       <div className="overflow-x-hidden">
@@ -60,7 +48,7 @@ export default function HomeMainLayout({}) {
               width: "25%",
             }}
           >
-            <LeftSideLayout user={user} />
+            <LeftSideLayout load={load} user={user} />
           </div>
 
           {/* Center Layout */}
@@ -79,11 +67,11 @@ export default function HomeMainLayout({}) {
                     width: "33%",
                   }}
                 >
-                  <LeftSideLayout user={user} />
+                  <LeftSideLayout load={load} user={user} />
                 </div>
               </div>
               <div className="col">
-                <CenterLayout user={user} />
+                <CenterLayout setLoad={setLoad} user={user} />
               </div>
             </div>
           </div>
@@ -99,9 +87,9 @@ export default function HomeMainLayout({}) {
             }}
           >
             {user?.isAdmin ? (
-              <AdminRightSide user={user} />
+              <AdminRightSide load={load} user={user} />
             ) : (
-              <RightSide user={user} />
+              <RightSide load={load} user={user} />
             )}
           </div>
         </div>

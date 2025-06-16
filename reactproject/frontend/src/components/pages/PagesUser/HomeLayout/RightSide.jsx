@@ -128,7 +128,7 @@ const RightSide = ({ user }) => {
   useEffect(() => {
     const userData = localStorage.getItem("user");
     if (userData) {
-      fetchFollowers(user.userID);
+      fetchFollowers(user?.userID);
       fetchLatestAnnouncement(); // Fetch the latest announcement
     } else {
       navigate("/");
@@ -301,9 +301,7 @@ const RightSide = ({ user }) => {
                     </p>
                     {latestAnnouncement.diary_image && (
                       <img
-                        src={`${
-                          import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
-                        }${latestAnnouncement.diary_image}`}
+                        src={latestAnnouncement.diary_image}
                         alt="Announcement"
                         style={{ width: "100%", borderRadius: ".3rem" }}
                       />

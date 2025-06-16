@@ -223,9 +223,7 @@ const DiaryEntryLayout = ({
           <>
             <img
               className="DiaryImage mt-1 rounded"
-              src={`${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}${
-                entry.diary_image
-              }`}
+              src={entry.diary_image}
               alt="Diary"
               style={{ cursor: "pointer" }} // Add pointer cursor
               onClick={() => handleShowModal(entry.entryID)} // Open modal on click
@@ -235,9 +233,7 @@ const DiaryEntryLayout = ({
             <ImageModal
               showModal={showModal}
               handleCloseModal={handleCloseModal}
-              diaryImage={`${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}${
-                entry.diary_image
-              }`}
+              diaryImage={entry.diary_image}
             ></ImageModal>
           </>
         )}

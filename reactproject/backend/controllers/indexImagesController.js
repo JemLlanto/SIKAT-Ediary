@@ -1,26 +1,28 @@
 const db = require("../database");
+const dotenv = require("dotenv");
 const multer = require("multer");
-const path = require("path");
-const fs = require("fs");
+const cloudinary = require("cloudinary").v2;
+const { CloudinaryStorage } = require("multer-storage-cloudinary");
+dotenv.config();
 
-const uploadsDir = path.join(__dirname, "uploads");
+// Configure Cloudinary
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 
-if (!fs.existsSync(uploadsDir)) {
-  fs.mkdirSync(uploadsDir);
-}
-
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, uploadsDir);
-  },
-  filename: (req, file, cb) => {
-    cb(null, Date.now() + path.extname(file.originalname));
+const diaryCloudinaryStorage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: "/sikatEdiaryUploads/indexImages",
+    allowed_formats: ["jpg", "jpeg", "png"],
   },
 });
 
-const upload = multer({
-  storage,
-  limits: { fileSize: 2 * 1024 * 1024 },
+const uploadDiaryCloudinary = multer({
+  storage: diaryCloudinaryStorage,
+  limits: { fileSize: 3 * 1024 * 1024 },
   fileFilter: (req, file, cb) => {
     const allowedTypes = ["image/jpeg", "image/png", "image/gif"];
     if (!allowedTypes.includes(file.mimetype)) {
@@ -43,19 +45,18 @@ const fetchIndexImages = (req, res) => {
   });
 };
 
-const uploadingImage = upload.single("image");
-
 const addingIndexImages = (req, res) => {
   const { title, description } = req.body;
-  const imagePath = req.file ? `/uploads/${req.file.filename}` : null;
 
-  if (!title || !imagePath) {
+  if (!title || !req.file) {
     return res.status(400).json({ error: "Title and image are required" });
   }
 
+  imageUrl = req.file.path;
+
   const sql =
     "INSERT INTO index_images (title, description, image_path) VALUES (?, ?, ?)";
-  db.query(sql, [title, description, imagePath], (err, result) => {
+  db.query(sql, [title, description, imageUrl], (err, result) => {
     if (err) {
       console.error(err);
       return res.status(500).json({ error: "Database error" });
@@ -65,6 +66,8 @@ const addingIndexImages = (req, res) => {
       .json({ message: "Image added successfully", id: result.insertId });
   });
 };
+
+const uploadingImage = uploadDiaryCloudinary.single("image");
 
 const deleteIndexImages = (req, res) => {
   const { index_imagesID } = req.params;

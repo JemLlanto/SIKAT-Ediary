@@ -1,29 +1,28 @@
 const db = require("../database");
+const Pusher = require("pusher");
+const dotenv = require("dotenv");
 const multer = require("multer");
-const path = require("path");
-const fs = require("fs");
+const cloudinary = require("cloudinary").v2;
+const { CloudinaryStorage } = require("multer-storage-cloudinary");
+dotenv.config();
 
-// FUNCTIONS
-//gender based incidents upload
-const genderBasedIncidentsDir = path.join(
-  __dirname,
-  "uploads",
-  "gender_based_incidents"
-);
+// Configure Cloudinary
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 
-if (!fs.existsSync(genderBasedIncidentsDir)) {
-  fs.mkdirSync(genderBasedIncidentsDir, { recursive: true });
-}
+const genderBasedIncidentsCloudinaryStorage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: "/sikatEdiaryUploads/genderBasedIncidents",
+    allowed_formats: ["jpg", "jpeg", "png"],
+  },
+});
 
 const uploadSupportingDocuments = multer({
-  storage: multer.diskStorage({
-    destination: (req, file, cb) => {
-      cb(null, genderBasedIncidentsDir);
-    },
-    filename: (req, file, cb) => {
-      cb(null, Date.now() + path.extname(file.originalname));
-    },
-  }),
+  storage: genderBasedIncidentsCloudinaryStorage,
   limits: { fileSize: 5 * 1024 * 1024 },
   fileFilter: (req, file, cb) => {
     const allowedTypes = [
@@ -42,6 +41,60 @@ const uploadSupportingDocuments = multer({
 });
 
 // ROUTES
+const submitReport = (req, res) => {
+  uploadSupportingDocuments.array("supportingDocuments", 5)(req, res, (err) => {
+    if (err) {
+      return res
+        .status(500)
+        .json({ error: "File upload error: " + err.message });
+    }
+    const { userID } = req.params;
+    const {
+      victimName,
+      perpetratorName,
+      contactInfo,
+      gender,
+      incidentDescription,
+      location,
+      date,
+      subjects,
+      isAddress,
+    } = req.body;
+
+    const supportingDocuments = req.files.map((file) => file.path);
+
+    const query = `
+      INSERT INTO gender_based_crime_reports 
+      (userID, victimName, perpetratorName, contactInfo, gender, incidentDescription, location, date, supportingDocuments, subjects, isAddress) 
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `;
+
+    db.query(
+      query,
+      [
+        userID,
+        victimName,
+        perpetratorName,
+        contactInfo,
+        gender,
+        incidentDescription,
+        location,
+        date,
+        JSON.stringify(supportingDocuments), // Save as JSON string
+        subjects,
+        false,
+      ],
+      (err, result) => {
+        if (err) {
+          console.error("Error inserting report:", err.message);
+          return res.status(500).json({ error: "Error submitting report" });
+        }
+        res.status(200).json({ message: "Report submitted successfully" });
+      }
+    );
+  });
+};
+
 const fetchIncidents = (req, res) => {
   const query = `
   SELECT * FROM gender_based_crime_reports ORDER BY isAddress ASC, created_at DESC
@@ -109,62 +162,6 @@ const fetchReportsByUserID = (req, res) => {
       res.json(results);
     }
   );
-};
-
-const submitReport = (req, res) => {
-  uploadSupportingDocuments.array("supportingDocuments", 5)(req, res, (err) => {
-    if (err) {
-      return res
-        .status(500)
-        .json({ error: "File upload error: " + err.message });
-    }
-    const { userID } = req.params;
-    const {
-      victimName,
-      perpetratorName,
-      contactInfo,
-      gender,
-      incidentDescription,
-      location,
-      date,
-      subjects,
-      isAddress,
-    } = req.body;
-
-    const supportingDocuments = req.files.map(
-      (file) => `/uploads/gender_based_incidents/${file.filename}`
-    );
-
-    const query = `
-      INSERT INTO gender_based_crime_reports 
-      (userID, victimName, perpetratorName, contactInfo, gender, incidentDescription, location, date, supportingDocuments, subjects, isAddress) 
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `;
-
-    db.query(
-      query,
-      [
-        userID,
-        victimName,
-        perpetratorName,
-        contactInfo,
-        gender,
-        incidentDescription,
-        location,
-        date,
-        JSON.stringify(supportingDocuments), // Save as JSON string
-        subjects,
-        false,
-      ],
-      (err, result) => {
-        if (err) {
-          console.error("Error inserting report:", err.message);
-          return res.status(500).json({ error: "Error submitting report" });
-        }
-        res.status(200).json({ message: "Report submitted successfully" });
-      }
-    );
-  });
 };
 
 const addressIncidents = (req, res) => {

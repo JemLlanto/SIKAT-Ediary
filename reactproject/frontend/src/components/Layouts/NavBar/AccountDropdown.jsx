@@ -122,13 +122,7 @@ const AccountDropdown = ({ user }) => {
           >
             <img
               className=" "
-              src={
-                user && user.profile_image
-                  ? `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}${
-                      user.profile_image
-                    }`
-                  : DefaultProfile
-              }
+              src={`${user.profile_image}`}
               alt="User Profile"
               style={{ width: "100%", height: "100%", objectFit: "cover" }}
             />

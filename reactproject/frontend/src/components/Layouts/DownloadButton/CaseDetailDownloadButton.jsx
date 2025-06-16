@@ -198,9 +198,7 @@ const CaseDetailDownloadButton = ({ caseDetails }) => {
               }
 
               const xPos = 15 + col * (imageWidth + marginBetweenImages);
-              const imageUrl = `${
-                import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
-              }${documents[i]}`;
+              const imageUrl = documents[i];
               const base64Image = await loadImage(imageUrl);
 
               doc.addImage(
@@ -244,7 +242,7 @@ const CaseDetailDownloadButton = ({ caseDetails }) => {
       });
 
       // Save the PDF
-      doc.save("case_details.pdf");
+      doc.save(`${caseDetails.victimName}_case_details.pdf`);
     }
   };
   return (

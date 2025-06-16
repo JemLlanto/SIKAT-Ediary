@@ -1,8 +1,17 @@
 const db = require("../database");
 const Pusher = require("pusher");
+const dotenv = require("dotenv");
 const multer = require("multer");
-const path = require("path");
-const fs = require("fs");
+const cloudinary = require("cloudinary").v2;
+const { CloudinaryStorage } = require("multer-storage-cloudinary");
+dotenv.config();
+
+// Configure Cloudinary
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 
 const pusher = new Pusher({
   appId: "1875705",
@@ -13,35 +22,303 @@ const pusher = new Pusher({
 });
 
 // FOR UPLOADING IMAGES
-const diaryImageStorageAdmin = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, diaryImagesDirAdmin);
-  },
-  filename: (req, file, cb) => {
-    cb(null, Date.now() + path.extname(file.originalname));
-  },
-});
-
-const uploadDiaryImageAdmin = multer({
-  storage: diaryImageStorageAdmin,
-  limits: { fileSize: 5 * 1024 * 1024 },
-  fileFilter: (req, file, cb) => {
-    const allowedTypes = ["image/jpeg", "image/png", "image/gif"];
-    if (!allowedTypes.includes(file.mimetype)) {
-      const error = new Error("INVALID_FILE_TYPE");
-      error.code = "INVALID_FILE_TYPE";
-      return cb(error);
-    }
-    cb(null, true);
-  },
-});
 
 //user diary_images upload
-const diaryImagesDirUser = path.join(__dirname, "uploads", "user_diary_images");
+const diaryCloudinaryStorage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: "/sikatEdiaryUploads/diaryUploads",
+    allowed_formats: ["jpg", "jpeg", "png"],
+  },
+});
 
-if (!fs.existsSync(diaryImagesDirUser)) {
-  fs.mkdirSync(diaryImagesDirUser, { recursive: true });
-}
+const uploadDiaryCloudinary = multer({ storage: diaryCloudinaryStorage });
+
+const uploadingDiaryImage = (req, res, next) => {
+  uploadDiaryCloudinary.single("file")(req, res, function (err) {
+    if (err) {
+      if (err.code === "LIMIT_FILE_SIZE") {
+        return res
+          .status(400)
+          .send({ message: "File size is too large. Maximum 5MB allowed." });
+      }
+      if (err.code === "INVALID_FILE_TYPE") {
+        return res
+          .status(400)
+          .send({ message: "Only image files are allowed." });
+      }
+      return res.status(500).send({ message: "File upload error." });
+    }
+    next();
+  });
+};
+
+const uploadingDiary = (req, res) => {
+  const { title, description, userID, visibility, anonimity, subjects } =
+    req.body;
+  const file = req.file;
+
+  // File info from Cloudinary
+  let imageUrl = null;
+
+  if (req.file) {
+    imageUrl = req.file.path; // or req.file.secure_url if using Cloudinary
+  }
+
+  if (!title || !description || !userID) {
+    return res
+      .status(400)
+      .send({ message: "Title, description, and userID are required." });
+  }
+
+  let diary_image = "";
+  if (file) {
+    diary_image = `/uploads/user_diary_images/${file.filename}`;
+  }
+
+  db.query("SELECT alarmingWord FROM alarming_words", (err, rows) => {
+    if (err) {
+      console.error("Error fetching alarming words:", err);
+      return res
+        .status(500)
+        .send({ message: "Error fetching alarming words." });
+    }
+
+    const alarmingWords = rows.map((row) => row.alarmingWord.toLowerCase());
+    const containsAlarmingWords = (text) => {
+      return alarmingWords.some((word) => text.toLowerCase().includes(word));
+    };
+
+    const hasAlarmingWords =
+      containsAlarmingWords(title) || containsAlarmingWords(description);
+
+    const query = `
+        INSERT INTO diary_entries (title, description, userID, visibility, anonimity, diary_image, subjects, containsAlarmingWords, isFlagged)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `;
+    const values = [
+      title,
+      description,
+      userID,
+      visibility,
+      anonimity,
+      imageUrl,
+      subjects,
+      hasAlarmingWords ? 1 : 0,
+      hasAlarmingWords ? 1 : 0,
+    ];
+
+    db.query(query, values, (err, result) => {
+      if (err) {
+        console.error("Error inserting diary entry:", err);
+        return res
+          .status(500)
+          .send({ message: "Failed to save diary entry. Please try again." });
+      }
+
+      const subjectArray =
+        subjects && subjects.trim() !== ""
+          ? subjects.split(",").map((subject) => subject.trim())
+          : [];
+
+      subjectArray.forEach((subject) => {
+        const updateQuery = `
+            UPDATE filter_subjects
+            SET count = count + 1
+            WHERE subject = ?
+          `;
+        db.query(updateQuery, [subject], (updateError) => {
+          if (updateError) {
+            console.error(
+              `Error updating count for subject '${subject}':`,
+              updateError
+            );
+          }
+        });
+      });
+
+      const userQuery = `
+        SELECT u.firstName, u.lastName, up.profile_image 
+        FROM user_table u
+        JOIN user_profiles up ON u.userID = up.userID
+        WHERE u.userID = ?
+      `;
+      db.query(userQuery, [userID], (userError, userResults) => {
+        if (userError) {
+          console.error(
+            "Error fetching user firstName and profile_image:",
+            userError
+          );
+          return res
+            .status(500)
+            .send({ message: "Failed to fetch user details." });
+        }
+
+        const userFirstName = userResults[0]?.firstName || "User";
+        const userLastName = userResults[0]?.lastName || "User";
+        const userProfileImage =
+          userResults[0]?.profile_image || "/default-profile.png";
+
+        if (hasAlarmingWords) {
+          const notificationMessage = `A diary entry containing alarming words has been posted by ${userFirstName} ${userLastName}`;
+
+          const adminQuery = `SELECT userID FROM user_table WHERE isAdmin = 1`;
+
+          db.query(adminQuery, (adminError, adminResults) => {
+            if (adminError) {
+              console.error("Error fetching admin users:", adminError);
+              return res
+                .status(500)
+                .send({ message: "Failed to notify admins." });
+            }
+
+            if (adminResults.length > 0) {
+              adminResults.forEach((admin) => {
+                const notificationQuery = `
+                  INSERT INTO notifications (userID, actorID, message, entryID, type, profile_image)
+                  VALUES (?, ?, ?, ?, ?, ?)
+                `;
+                db.query(
+                  notificationQuery,
+                  [
+                    admin.userID,
+                    userID,
+                    notificationMessage,
+                    result.insertId,
+                    "alarming_entry",
+                    userProfileImage, // Include profile image in the notification
+                  ],
+                  (notificationError) => {
+                    if (notificationError) {
+                      console.error(
+                        "Error inserting admin notification:",
+                        notificationError
+                      );
+                      return res.status(500).send({
+                        message: "Failed to save admin notification.",
+                      });
+                    }
+
+                    pusher
+                      .trigger(
+                        `notifications-${admin.userID}`,
+                        "new-notification",
+                        {
+                          actorID: userID,
+                          message: notificationMessage,
+                          entryID: result.insertId,
+                          type: "alarming_entry",
+                          profile_image: userProfileImage, // Include profile image in the notification
+                          timestamp: new Date().toISOString(),
+                        }
+                      )
+                      .then(() => {
+                        console.log(
+                          `Admin ${admin.userID} notified of alarming diary entry.`
+                        );
+                      })
+                      .catch((err) => {
+                        console.error(
+                          "Error sending admin Pusher notification:",
+                          err
+                        );
+                      });
+                  }
+                );
+              });
+            }
+          });
+        }
+
+        res.status(200).send({
+          message: "Entry added successfully!",
+          containsAlarmingWords: hasAlarmingWords,
+        });
+      });
+    });
+  });
+};
+
+const uploadImageForAdminEntry = (req, res, next) => {
+  uploadDiaryCloudinary.single("file")(req, res, function (err) {
+    if (err) {
+      if (err.code === "LIMIT_FILE_SIZE") {
+        return res
+          .status(400)
+          .send({ message: "File size is too large. Maximum 5MB allowed." });
+      }
+      if (err.code === "INVALID_FILE_TYPE") {
+        return res
+          .status(400)
+          .send({ message: "Only image files are allowed." });
+      }
+      return res.status(500).send({ message: "File upload error." });
+    }
+    next();
+  });
+};
+
+const insertAdminPost = (req, res) => {
+  const {
+    isAnnouncement,
+    title,
+    description,
+    userID,
+    anonimity = "public",
+    scheduledDate,
+  } = req.body;
+  const file = req.file;
+
+  let imageUrl = null;
+
+  if (req.file) {
+    imageUrl = req.file.path; // or req.file.secure_url if using Cloudinary
+  }
+
+  // Validate required fields
+  if (!title || !description || !userID) {
+    return res
+      .status(400)
+      .send({ message: "Title, description, and userID are required." });
+  }
+
+  let diary_image = "";
+  if (file) {
+    diary_image = `/uploads/admin_diary_images/${file.filename}`;
+  }
+
+  const isScheduled = scheduledDate ? 1 : 0;
+
+  const query = `
+      INSERT INTO diary_entries (isAnnouncement, title, description, userID, diary_image, anonimity, scheduledDate, isScheduled)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    `;
+  const values = [
+    isAnnouncement,
+    title,
+    description,
+    userID,
+    imageUrl,
+    anonimity,
+    scheduledDate,
+    isScheduled,
+  ];
+
+  db.query(query, values, (err, result) => {
+    if (err) {
+      console.error("Error inserting diary entry:", err);
+      return res
+        .status(500)
+        .send({ message: "Failed to save diary entry. Please try again." });
+    }
+
+    res.status(200).send({
+      message: isScheduled
+        ? "Entry scheduled successfully!"
+        : "Entry published successfully!",
+    });
+  });
+};
 
 const fetchingEntries = (req, res) => {
   const userID = req.query.userID;
@@ -310,82 +587,9 @@ const fetchSingleEntry = (req, res) => {
   });
 };
 
-const uploadImageForAdminEntry = (req, res, next) => {
-  uploadDiaryImageAdmin.single("file")(req, res, function (err) {
-    if (err) {
-      if (err.code === "LIMIT_FILE_SIZE") {
-        return res
-          .status(400)
-          .send({ message: "File size is too large. Maximum 5MB allowed." });
-      }
-      if (err.code === "INVALID_FILE_TYPE") {
-        return res
-          .status(400)
-          .send({ message: "Only image files are allowed." });
-      }
-      return res.status(500).send({ message: "File upload error." });
-    }
-    next();
-  });
-};
-
-const insertAdminPost = (req, res) => {
-  const {
-    isAnnouncement,
-    title,
-    description,
-    userID,
-    anonimity = "public",
-    scheduledDate,
-  } = req.body;
-  const file = req.file;
-
-  // Validate required fields
-  if (!title || !description || !userID) {
-    return res
-      .status(400)
-      .send({ message: "Title, description, and userID are required." });
-  }
-
-  let diary_image = "";
-  if (file) {
-    diary_image = `/uploads/admin_diary_images/${file.filename}`;
-  }
-
-  const isScheduled = scheduledDate ? 1 : 0;
-
-  const query = `
-      INSERT INTO diary_entries (isAnnouncement, title, description, userID, diary_image, anonimity, scheduledDate, isScheduled)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-    `;
-  const values = [
-    isAnnouncement,
-    title,
-    description,
-    userID,
-    diary_image,
-    anonimity,
-    scheduledDate,
-    isScheduled,
-  ];
-
-  db.query(query, values, (err, result) => {
-    if (err) {
-      console.error("Error inserting diary entry:", err);
-      return res
-        .status(500)
-        .send({ message: "Failed to save diary entry. Please try again." });
-    }
-
-    res.status(200).send({
-      message: isScheduled
-        ? "Entry scheduled successfully!"
-        : "Entry published successfully!",
-    });
-  });
-};
-
 module.exports = {
+  uploadingDiaryImage,
+  uploadingDiary,
   fetchingEntries,
   fetchingUserEntries,
   fetchSingleEntry,

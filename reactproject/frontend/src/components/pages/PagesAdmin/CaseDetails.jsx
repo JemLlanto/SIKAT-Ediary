@@ -191,9 +191,7 @@ const CaseDetails = () => {
                 <div className="px-2 d-flex flex-column gap-2">
                   <div className="row gap-2">
                     <div className="col-md-7">
-                      <h6 className="m-0">
-                        Name {caseDetails.supportingDocuments}
-                      </h6>
+                      <h6 className="m-0">Name</h6>
                       <p className="m-0 ps-2 border-bottom text-secondary">
                         {caseDetails.victimName ? (
                           caseDetails.victimName
@@ -276,17 +274,9 @@ const CaseDetails = () => {
                         <div
                           key={index}
                           onClick={() =>
-                            handleImageClick(
-                              `${
-                                import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
-                              }${document}`
-                            )
+                            handleImageClick(supportDocuments[index])
                           }
                         >
-                          {/* {`${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}${
-                            supportDocuments[index]
-                          }`} */}
-
                           <div
                             className="supportImageContainer overflow-hidden border-0"
                             style={{
@@ -296,9 +286,7 @@ const CaseDetails = () => {
                             }}
                           >
                             <img
-                              src={`${
-                                import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
-                              }${supportDocuments[index]}`} // Displaying the supporting document as an image
+                              src={supportDocuments[index]} // Displaying the supporting document as an image
                               alt={`Supporting Document ${index + 1}`}
                               style={{
                                 width: "100%",

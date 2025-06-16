@@ -24,8 +24,6 @@ import ModeratorManagement from "./components/pages/PagesAdmin/ModeratorManageme
 import GenderBasedIncidents from "./components/pages/PagesAdmin/GenderBasedIncidents";
 import Analytics from "./components/pages/PagesAdmin/Analytics";
 import CaseDetails from "./components/pages/PagesAdmin/CaseDetails";
-// import AdminProfile from "./components/pages/PagesAdmin/AdminProfile";
-import AdminDiaryEntry from "./components/pages/PagesAdmin/DiaryEntry";
 import Dashboard from "./components/pages/PagesAdmin/Dashboard";
 
 import "bootstrap/dist/css/bootstrap.min.css";
@@ -99,11 +97,6 @@ function App() {
               <Route
                 path="/Admin/CaseDetails/:reportID"
                 element={<CaseDetails />}
-              />
-              {/* <Route path="/Admin/Profile/:userID" element={<AdminProfile />} /> */}
-              <Route
-                path="/Admin/DiaryEntry/:entryID"
-                element={<AdminDiaryEntry />}
               />
             </Route>
           </Routes>

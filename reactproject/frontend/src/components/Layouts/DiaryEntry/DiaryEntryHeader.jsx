@@ -43,9 +43,7 @@ const DiaryEntryHeader = ({
           >
             <div className="profilePicture">
               <img
-                src={`${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}${
-                  entry.profile_image
-                }`}
+                src={entry.profile_image}
                 alt="Profile"
                 style={{
                   width: "100%",

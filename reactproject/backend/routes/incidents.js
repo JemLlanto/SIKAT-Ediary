@@ -9,6 +9,8 @@ const {
   fetchReportsByUserID,
 } = require("../controllers/incidentsController");
 
+router.post("/submit-report/:userID", submitReport);
+
 router.get("/reports", fetchIncidents);
 
 router.get("/getAddressReports", fetchAddressedReports);
@@ -16,8 +18,6 @@ router.get("/getAddressReports", fetchAddressedReports);
 router.get("/reports/:reportID", fetchReportsByID);
 
 router.get("/filedCases/:userID", fetchReportsByUserID);
-
-router.post("/submit-report/:userID", submitReport);
 
 router.put("/reports/:id", addressIncidents);
 

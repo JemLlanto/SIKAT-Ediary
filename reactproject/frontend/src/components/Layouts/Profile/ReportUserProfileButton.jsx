@@ -72,7 +72,9 @@ function ReportUserButton({ user, profileOwner }) {
   const handleSubmitReport = async () => {
     try {
       const response = await axios.post(
-        `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/reportingUser`,
+        `${
+          import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+        }/reportingUserAPI/reportingUser`,
         {
           reportedUserID: profileOwner.userID,
           reason: selectedBehavior,

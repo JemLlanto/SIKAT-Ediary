@@ -73,26 +73,14 @@ function NotificationButton() {
           }`
         );
 
-        const fetchedNotifications = response.data.map((notification) => ({
-          ...notification,
-          actorProfileImage: notification.actorProfileImage
-            ? `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}${
-                notification.actorProfileImage
-              }`
-            : DefaultProfile,
-        }));
+        setNotifications(response.data);
 
-        setNotifications(fetchedNotifications);
-
-        const unread = fetchedNotifications.filter(
+        const unread = response.data.filter(
           (notification) => !notification.read
         ).length;
         setUnreadCount(unread);
 
-        localStorage.setItem(
-          "notifications",
-          JSON.stringify(fetchedNotifications)
-        );
+        localStorage.setItem("notifications", JSON.stringify(response.data));
       } catch (error) {
         console.error("Error fetching notifications:", error);
       }
@@ -389,7 +377,7 @@ function NotificationButton() {
                   </div>
                   <div className="col ms-1">
                     <p className="m-0 ">
-                      {notification.actorUsername} {notification.message}
+                      {notification.actorUsername} {notification.message}{" "}
                     </p>
                     <h6 className="text-secondary" style={{ fontSize: "13px" }}>
                       {formatDate(notification.timestamp)}

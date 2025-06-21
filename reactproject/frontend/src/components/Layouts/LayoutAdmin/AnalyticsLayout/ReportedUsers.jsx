@@ -8,13 +8,13 @@ import MessageModal from "../../DiaryEntry/messageModal";
 import MessageAlert from "../../DiaryEntry/messageAlert";
 import ReportedUsersDownloadButton from "../../DownloadButton/ReportedUsersDownloadButton";
 
-const ReportedComment = ({ reportedUsers, isLoadings }) => {
+const ReportedComment = ({ user }) => {
+  const [reportedUsers, setReportedUsers] = useState([]);
   const [filteredUsers, setFilteredUsers] = useState([]);
-  const [option, setOption] = useState([]);
   const [reportUserReasons, setReportUserReasons] = useState([]);
-  const [selectedSubject, setSelectedSubject] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [isLoading, setIsLoading] = useState(true);
   const usersPerPage = 10;
 
   const [modal, setModal] = useState({ show: false, message: "" });
@@ -37,22 +37,49 @@ const ReportedComment = ({ reportedUsers, isLoadings }) => {
     });
   };
 
-  useEffect(() => {
-    const fetchReportComments = async () => {
-      try {
-        const response = await axios.get(
-          `${
-            import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
-          }/reportingUserAPI/reportUsers`
-        );
-        setOption(response.data);
-      } catch (error) {
-        console.error("Error fetching alarming words:", error);
-      }
-    };
+  // FETCHING REPORTED USERS
+  const fetchReportedUsers = async () => {
+    try {
+      setIsLoading(true);
 
-    fetchReportComments();
-  }, []);
+      const response = await fetch(
+        `${
+          import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+        }/analytics/getReportedUsers`
+      );
+
+      if (!response.ok) {
+        throw new Error(
+          `Failed to fetch reported users: ${response.statusText}`
+        );
+      }
+
+      const data = await response.json();
+      console.log("Fetching data for user role:", user.isAdmin);
+
+      let filteredData = data;
+
+      if (user.isAdmin === 2) {
+        filteredData = data.filter(
+          (userItem) => userItem.departmentID === user.departmentID
+        );
+      }
+      console.log("Fetched reported users:", filteredData);
+
+      setReportedUsers(filteredData);
+    } catch (error) {
+      console.error("Error fetching reported users:", error);
+      // Optionally: show an error toast or message to user
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (!user) return;
+
+    fetchReportedUsers();
+  }, [user]);
 
   useEffect(() => {
     const fetchReportUserReasons = async () => {
@@ -67,21 +94,12 @@ const ReportedComment = ({ reportedUsers, isLoadings }) => {
         console.error("Error fetching alarming words:", error);
       }
     };
-
     fetchReportUserReasons();
   }, []);
 
   useEffect(() => {
     const applyFilter = () => {
       let filtered = reportedUsers;
-
-      if (selectedSubject !== "All") {
-        filtered = filtered.filter((reportedUser) =>
-          reportedUser.reason
-            .toLowerCase()
-            .includes(selectedSubject.toLowerCase())
-        );
-      }
 
       if (searchQuery.trim() !== "") {
         filtered = filtered.filter(
@@ -95,13 +113,13 @@ const ReportedComment = ({ reportedUsers, isLoadings }) => {
             reportedUser.studentNumber.toString().includes(searchQuery)
         );
       }
-
+      console.log("Filtered users: ", filtered);
       setFilteredUsers(filtered);
       setCurrentPage(1);
     };
 
     applyFilter();
-  }, [reportedUsers, selectedSubject, searchQuery]);
+  }, [reportedUsers, searchQuery]);
 
   // Calculate pagination
   const indexOfLastUser = currentPage * usersPerPage;
@@ -120,8 +138,6 @@ const ReportedComment = ({ reportedUsers, isLoadings }) => {
   const handleNextClick = () => {
     if (currentPage < totalPages) setCurrentPage(currentPage + 1);
   };
-
-  const [isLoading, setIsLoading] = useState(false);
 
   const handleAddressed = async (userID) => {
     setConfirmModal({
@@ -235,7 +251,7 @@ const ReportedComment = ({ reportedUsers, isLoadings }) => {
               </tr>
             </thead>
             <tbody>
-              {isLoadings ? (
+              {isLoading ? (
                 <>
                   <tr>
                     <td
@@ -329,7 +345,7 @@ const ReportedComment = ({ reportedUsers, isLoadings }) => {
                   ) : (
                     <tr>
                       <td colSpan="7" className="text-center">
-                        No reported comments available.
+                        No reported users available.
                       </td>
                     </tr>
                   )}

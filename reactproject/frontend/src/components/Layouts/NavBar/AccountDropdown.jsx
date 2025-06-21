@@ -19,28 +19,30 @@ const AccountDropdown = ({ user }) => {
     }
   }, [user]);
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     const userData = localStorage.getItem("user");
 
     if (userData) {
       const parsedUser = JSON.parse(userData);
 
-      axios
-        .post(`${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/logout`, {
-          userID: parsedUser.userID,
-        })
-        .then((response) => {
-          if (response.status === 200) {
-            localStorage.removeItem("user");
-            navigate("/");
+      try {
+        const response = await axios.post(
+          `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/logout`,
+          {
+            userID: parsedUser.userID,
           }
-        })
-        .catch((error) => {
-          console.error(
-            "Error logging out:",
-            error.response ? error.response.data.message : error.message
-          );
-        });
+        );
+
+        if (response.status === 200) {
+          localStorage.removeItem("user");
+          navigate("/");
+        }
+      } catch (error) {
+        console.error(
+          "Error logging out:",
+          error.response ? error.response.data.message : error.message
+        );
+      }
     }
   };
 
@@ -122,7 +124,7 @@ const AccountDropdown = ({ user }) => {
           >
             <img
               className=" "
-              src={`${user.profile_image}`}
+              src={user.profile_image}
               alt="User Profile"
               style={{ width: "100%", height: "100%", objectFit: "cover" }}
             />

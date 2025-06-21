@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useOutletContext } from "react-router-dom";
 import axios from "axios";
 import Col from "react-bootstrap/Col";
 import Nav from "react-bootstrap/Nav";
@@ -12,15 +12,14 @@ import ReportedUsers from "../../Layouts/LayoutAdmin/AnalyticsLayout/ReportedUse
 import MessageModal from "../../Layouts/DiaryEntry/messageModal";
 
 const Analytics = () => {
-  const [users, setUsers] = useState([]);
   const [userDeptCourse, setUserDeptCourse] = useState(null);
   const [error, setError] = useState(null);
   const [flags, setFlags] = useState([]);
+  const [users, setUsers] = useState([]);
   const [reportedComments, setReportedComments] = useState([]);
-  const [reportedUsers, setreportedUsers] = useState([]);
   const { activeTab } = useParams();
   const navigate = useNavigate();
-  const [user, setUser] = useState(null);
+  const { user } = useOutletContext();
   const [isLoading, setIsLoading] = useState(true);
   const [modal, setModal] = useState({ show: false, message: "" });
   const closeModal = () => {
@@ -35,9 +34,6 @@ const Analytics = () => {
 
     if (userData) {
       const parsedUser = JSON.parse(userData);
-      setUser(parsedUser);
-      console.log("Parsed User Data:", parsedUser);
-
       if (!parsedUser.isAdmin) {
         setModal({
           show: true,
@@ -80,76 +76,6 @@ const Analytics = () => {
   const handleTabChange = (tab) => {
     navigate(`/Admin/Analytics/${tab}`);
   };
-
-  useEffect(() => {
-    const fetchAnalyticsData = async () => {
-      try {
-        setIsLoading(true);
-        if (!user) {
-          throw new Error("Department ID is required");
-        }
-
-        // Fetching users
-        const usersEndpoint =
-          user.isAdmin === 2 && user.departmentID
-            ? `${
-                import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
-              }/analytics/userAnalytics?departmentID=${user.departmentID}`
-            : `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/users`;
-        const usersResponse = await axios.get(usersEndpoint);
-        setUsers(usersResponse.data);
-
-        // Fetching flagged diaries
-        const flagsEndpoint =
-          user.isAdmin === 2
-            ? `${
-                import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
-              }/analytics/flaggedAnalytics?departmentID=${user.departmentID}`
-            : `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/flagged`;
-        const flagsResponse = await axios.get(flagsEndpoint);
-        setFlags(flagsResponse.data);
-
-        // Fetching reported comments
-        const reportedCommentsEndpoint =
-          user.isAdmin === 2
-            ? `${
-                import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
-              }/analytics/getReportedCommentsAnalytics?departmentID=${
-                user.departmentID
-              }`
-            : `${
-                import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
-              }/getReportedComments`;
-        const reportedCommentsResponse = await axios.get(
-          reportedCommentsEndpoint
-        );
-        setReportedComments(reportedCommentsResponse.data);
-
-        // Fetching reported users
-        const reportedUsersEndpoint =
-          user.isAdmin === 2
-            ? `${
-                import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
-              }/analytics//getReportedUsersAnalytics?departmentID=${
-                user.departmentID
-              }`
-            : `${
-                import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
-              }/getReportedUsers`;
-        const reportedUsersResponse = await fetch(reportedUsersEndpoint);
-        const reportedUsersData = await reportedUsersResponse.json();
-        setreportedUsers(reportedUsersData);
-      } catch (error) {
-        console.error("Error fetching analytics data:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    if (user) {
-      fetchAnalyticsData();
-    }
-  }, [user]);
 
   return (
     <div className="pt-4 pt-lg-0">
@@ -233,22 +159,16 @@ const Analytics = () => {
             <div>
               <Tab.Content>
                 <Tab.Pane eventKey="RegisteredUser">
-                  <RegisteredUsers users={users} isLoading={isLoading} />
+                  <RegisteredUsers user={user} />
                 </Tab.Pane>
                 <Tab.Pane eventKey="FlaggedDiaries">
-                  <FlaggedDiaries flags={flags} isLoading={isLoading} />
+                  <FlaggedDiaries user={user} />
                 </Tab.Pane>
                 <Tab.Pane eventKey="ReportedComments">
-                  <ReportedComment
-                    reportedComments={reportedComments}
-                    isLoadings={isLoading}
-                  />
+                  <ReportedComment user={user} />
                 </Tab.Pane>
                 <Tab.Pane eventKey="ReportedUsers">
-                  <ReportedUsers
-                    reportedUsers={reportedUsers}
-                    isLoadings={isLoading}
-                  />
+                  <ReportedUsers user={user} />
                 </Tab.Pane>
               </Tab.Content>
             </div>

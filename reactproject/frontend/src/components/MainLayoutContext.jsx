@@ -4,18 +4,56 @@ import Background from "./Layouts/Background"; // Import the background componen
 import { Outlet } from "react-router-dom";
 import ChatButton from "./Layouts/LayoutUser/ChatButton";
 import AdminChatButton from "./Layouts/LayoutAdmin/ChatButton";
+import Cookies from "js-cookie";
+import CryptoJS from "crypto-js";
 
 const MainLayoutContext = ({ children, ActiveTab }) => {
   const [isOffline, setIsOffline] = useState(!navigator.onLine);
   const [showMessage, setShowMessage] = useState(false);
   // State to store user data fetched from localStorage
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState([]);
   const [loading, setLoading] = useState();
 
   const setUserData = (userData) => {
     const parsedUser = JSON.parse(userData); // Parse the user data
     setUser(parsedUser); // Set the user data in the state
     setLoading(false);
+  };
+
+  const fetchUserData = async () => {
+    try {
+      setLoading(true);
+
+      // 🔐 Get encrypted userID from cookies
+      const encryptedUserID = Cookies.get("userID");
+
+      if (!encryptedUserID) throw new Error("User ID not found in cookies");
+
+      // 🔓 Decrypt userID
+      const bytes = CryptoJS.AES.decrypt(
+        encryptedUserID,
+        import.meta.env.VITE_REACT_APP_ENCRYPT_SECRET
+      );
+      const decryptedUserID = bytes.toString(CryptoJS.enc.Utf8);
+      // console.log("Decrypted userID: ", decryptedUserID);
+
+      if (!decryptedUserID) throw new Error("Failed to decrypt user ID");
+
+      const response = await fetch(
+        `${
+          import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+        }/fetchUser/user/${decryptedUserID}`
+      );
+      if (!response.ok) throw new Error("User not found");
+      const data = await response.json();
+
+      // console.log("User data:", data);
+      setUser(data);
+    } catch (err) {
+      console.log("Unexpected error occured: ", err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   // useEffect hook to run logic when the component first mounts
@@ -25,7 +63,7 @@ const MainLayoutContext = ({ children, ActiveTab }) => {
 
     // If user data is found
     if (userData) {
-      setUserData(userData);
+      fetchUserData();
     } else {
       // If no user data is found, redirect to the homepage
       window.location.href = "/";
@@ -67,6 +105,8 @@ const MainLayoutContext = ({ children, ActiveTab }) => {
       ></nav>
     );
   }
+  // console.log("User data:", user);
+
   return (
     <div className="position-relative overflow-x-hidden" style={{ width: "" }}>
       <NavBar

@@ -4,16 +4,22 @@ const {
   fetchingFlaggedUsers,
   fetchingReportedComments,
   fetchingReportedUsers,
+  adminFetchingReportedUsers,
 } = require("../controllers/analyticsController");
 
 const router = express.Router();
 
-router.get("/userAnalytics", fetchingAllUsers);
+router.get("/userAnalytics/:departmentID", fetchingAllUsers);
 
-router.get("/flaggedAnalytics", fetchingFlaggedUsers);
+router.get("/flaggedAnalytics/:departmentID", fetchingFlaggedUsers);
 
-router.get("/getReportedCommentsAnalytics", fetchingReportedComments);
+router.get(
+  "/getReportedCommentsAnalytics/:departmentID",
+  fetchingReportedComments
+);
 
-router.get("/getReportedUsersAnalytics", fetchingReportedUsers);
+router.get("/getReportedUsersAnalytics/:departmentID", fetchingReportedUsers);
+
+router.get("/getReportedUsers", adminFetchingReportedUsers);
 
 module.exports = router;

@@ -1494,6 +1494,7 @@ app.get("/fetchUserDept&Course/user/:id", (req, res) => {
 
 app.get("/fetchUser/user/:id", (req, res) => {
   const userID = req.params.id;
+  // console.log("userID: ", userID);
 
   const userValues = `
     SELECT 
@@ -1515,6 +1516,7 @@ app.get("/fetchUser/user/:id", (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
+    // console.log("Result: ", result[0]);
     res.json(result[0]); // Merged result since the JOIN already includes profile data
   });
 });
@@ -1837,72 +1839,6 @@ app.post("/comments", (req, res) => {
   );
 });
 
-app.post("/reportingUser", (req, res) => {
-  const { reportedUserID, reason } = req.body;
-
-  if (!reportedUserID || !reason) {
-    return res.status(400).json({ message: "Missing required fields" });
-  }
-
-  // Insert the report into the comment_reports table
-  db.query(
-    "INSERT INTO reported_users (UserID, reason) VALUES (?,?)",
-    [reportedUserID, reason],
-    (error, results) => {
-      if (error) {
-        console.error("Error saving report:", error);
-        return res
-          .status(500)
-          .json({ message: "Error submitting report", error: error.message });
-      }
-
-      const reasonArray = reason.split(", ").map((r) => r.trim());
-
-      db.query(
-        `UPDATE user_table 
-        SET reportCount = reportCount + 1,
-        isReported =  1 
-        WHERE userID = ?`,
-        [reportedUserID],
-        (updateError) => {
-          if (updateError) {
-            console.error(
-              `Error updating count for reason: ${reasonItem}`,
-              updateError
-            );
-          }
-        }
-      );
-
-      // Send response once the main report is saved
-      res
-        .status(200)
-        .json({ message: "Report submitted and counts updated successfully" });
-    }
-  );
-});
-
-app.get("/getReportedUsers", (req, res) => {
-  const query = `
-    SELECT
-      user_table.*,
-      user_profiles.profile_image
-    FROM 
-      user_table
-    JOIN user_profiles ON user_table.userID = user_profiles.userID
-    WHERE user_table.isReported = 1 AND user_table.isReviewed = 0
-    ORDER BY user_table.isReviewed, user_table.reportCount DESC;
-  `;
-
-  db.query(query, (err, results) => {
-    if (err) {
-      console.error("Error fetching reported users:", err.message);
-      return res.status(500).json({ error: "Error fetching reported users" });
-    }
-    res.status(200).json(results);
-  });
-});
-
 app.get("/fetchReportedUserReasons", (req, res) => {
   db.query("SELECT * FROM reported_users ", (err, results) => {
     if (err) {
@@ -1911,36 +1847,6 @@ app.get("/fetchReportedUserReasons", (req, res) => {
     } else {
       res.json(results);
     }
-  });
-});
-
-app.get("/getReportedUser/:userID", (req, res) => {
-  const userID = req.params.userID;
-  const query = `
-    SELECT
-      reported_users.*,
-      user_table.firstName,
-      user_table.lastName,
-      user_table.studentNumber,
-      user_profiles.profile_image
-    FROM 
-      reported_users
-    JOIN user_table ON reported_users.reportedUserID = user_table.userID
-    JOIN user_profiles ON reported_users.userID = user_profiles.userID
-    WHERE reported_users.reportedUserID = ?
-  `;
-
-  db.query(query, [userID], (err, results) => {
-    if (err) {
-      console.error("Error fetching reported user:", err.message);
-      return res.status(500).json({ error: "Error fetching reported user" });
-    }
-
-    if (results.length === 0) {
-      return res.status(404).json({ message: "Reported user not found" });
-    }
-
-    res.status(200).json(results[0]);
   });
 });
 
@@ -2560,7 +2466,7 @@ app.get("/getnotifications/:userID", (req, res) => {
     WHERE
       notifications.userID = ?
     ORDER BY
-      notifications.timestamp DESC
+      notifications.timestamp
   `;
 
   db.query(fetchNotificationsQuery, [userID], (error, results) => {

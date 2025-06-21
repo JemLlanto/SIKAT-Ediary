@@ -9,13 +9,15 @@ import MessageModal from "../../DiaryEntry/messageModal";
 import MessageAlert from "../../DiaryEntry/messageAlert";
 import FlaggedDiariesDownloadButton from "../../DownloadButton/FlaggedDiariesDownloadButton";
 
-const FlaggedDiaries = ({ flags, isLoading }) => {
+const FlaggedDiaries = ({ user }) => {
+  const [flags, setFlags] = useState([]);
   const [filteredUsers, setFilteredUsers] = useState([]);
   const [flaggedDiaryReasons, setFlaggedDiaryReasons] = useState([]);
   const [alarmingWords, setAlarmingWords] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedSubject, setSelectedSubject] = useState("All");
   const [searchTerm, setSearchTerm] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
   const usersPerPage = 10;
 
   const [modal, setModal] = useState({ show: false, message: "" });
@@ -38,6 +40,48 @@ const FlaggedDiaries = ({ flags, isLoading }) => {
     });
   };
 
+  // FETCHING REPORTED USERS
+  const fetchFlaggedDiaries = async () => {
+    try {
+      setIsLoading(true);
+
+      const response = await fetch(
+        `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/flagged`
+      );
+
+      if (!response.ok) {
+        throw new Error(
+          `Failed to fetch flagged diaries: ${response.statusText}`
+        );
+      }
+
+      const data = await response.json();
+      console.log("Fetching data for user role:", user.isAdmin);
+
+      let filteredData = data;
+
+      if (user.isAdmin === 2) {
+        filteredData = data.filter(
+          (userItem) => userItem.departmentID === user.departmentID
+        );
+      }
+      console.log("Fetched flagged diaries:", filteredData);
+
+      setFlags(filteredData);
+    } catch (error) {
+      console.error("Error fetching flagged diaries:", error);
+      // Optionally: show an error toast or message to user
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (!user) return;
+
+    fetchFlaggedDiaries();
+  }, [user]);
+
   useEffect(() => {
     const fetchFlaggedReasons = async () => {
       try {
@@ -46,7 +90,7 @@ const FlaggedDiaries = ({ flags, isLoading }) => {
             import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
           }/fetchFlaggedDiaryReasons`
         );
-        console.log("API Response:", response.data);
+        // console.log("API Response:", response.data);
         setFlaggedDiaryReasons(response.data);
       } catch (error) {
         console.error("Error fetching alarming words:", error);

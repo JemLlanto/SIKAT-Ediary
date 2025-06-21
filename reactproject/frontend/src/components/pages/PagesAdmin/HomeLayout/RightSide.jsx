@@ -3,8 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import DefaultProfile from "../../../../../src/assets/anonymous.png";
 
-const RightSide = () => {
-    const [user, setUser] = useState(null);
+const RightSide = ({ user }) => {
     const [reports, setReports] = useState([]);
     const [reportedUsers, setReportedUsers] = useState([]);
     const [flaggedUsers, setFlaggedUsers] = useState([]);
@@ -13,8 +12,6 @@ const RightSide = () => {
     useEffect(() => {
         const userData = localStorage.getItem("user");
         if (userData) {
-            const parsedUser = JSON.parse(userData);
-            setUser(parsedUser);
             fetchFlagged();
             fetchReports();
             fetchReportedUsers();
@@ -30,6 +27,7 @@ const RightSide = () => {
                     import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
                 }/incidents/reports`
             );
+            console.log("Reported students: ", response.data);
             setReports(response.data);
         } catch (error) {
             console.error("Error fetching users:", error);
@@ -41,7 +39,7 @@ const RightSide = () => {
             const response = await axios.get(
                 `${
                     import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
-                }/getReportedUsers`
+                }/analytics/getReportedUsers`
             );
 
             if (response.data.length > 0) {
@@ -114,7 +112,7 @@ const RightSide = () => {
                 <div className="py-2 d-flex justify-content-between align-items-center gap-2 border-bottom border-secondary-subtle text-secondary">
                     <div className="d-flex justify-content-start align-items-center gap-2">
                         <i className="bx bx-user-voice bx-sm"></i>
-                        <h5 className=" m-0">Reported User/s</h5>
+                        <h5 className=" m-0 text-start">Reported User/s</h5>
                     </div>
                     <Link
                         className="linkText rounded"
@@ -150,15 +148,8 @@ const RightSide = () => {
                                                     <div className="profilePicture">
                                                         <img
                                                             src={
-                                                                reportedUser.profile_image
-                                                                    ? `${
-                                                                          import.meta
-                                                                              .env
-                                                                              .VITE_REACT_APP_BACKEND_BASEURL
-                                                                      }${
-                                                                          reportedUser.profile_image
-                                                                      }`
-                                                                    : DefaultProfile
+                                                                reportedUser.profile_image ||
+                                                                DefaultProfile
                                                             }
                                                             alt="Profile"
                                                             style={{
@@ -203,7 +194,7 @@ const RightSide = () => {
                 <div className="py-2 d-flex justify-content-between align-items-center gap-2 border-bottom border-secondary-subtle text-secondary">
                     <div className="d-flex justify-content-start align-items-center gap-2">
                         <i className="bx bx-comment-error bx-sm"></i>
-                        <h5 className="m-0">Flagged Diaries</h5>
+                        <h5 className="m-0 text-start">Flagged Diaries</h5>
                     </div>
                     <Link
                         className="linkText rounded"
@@ -239,13 +230,7 @@ const RightSide = () => {
                                                         <img
                                                             src={
                                                                 flaggedUser.profile_image
-                                                                    ? `${
-                                                                          import.meta
-                                                                              .env
-                                                                              .VITE_REACT_APP_BACKEND_BASEURL
-                                                                      }${
-                                                                          flaggedUser.profile_image
-                                                                      }`
+                                                                    ? flaggedUser.profile_image
                                                                     : DefaultProfile
                                                             }
                                                             alt="Profile"

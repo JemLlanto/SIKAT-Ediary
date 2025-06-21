@@ -4,7 +4,8 @@ import axios from "axios";
 import LoginValidation from "./LoginValidation";
 import logo from "../../assets/TransparentLogo.png";
 import ForgotPassword from "./ForgotPassword";
-import { Modal } from "react-bootstrap";
+import Cookies from "js-cookie";
+import CryptoJS from "crypto-js";
 
 export default function Login() {
   const [values, setValues] = useState({
@@ -42,7 +43,25 @@ export default function Login() {
           values
         )
         .then((res) => {
+          console.log("UserData: ", res.data);
           localStorage.setItem("user", JSON.stringify(res.data));
+
+          // Encrypt userID
+          const encryptedUserID = CryptoJS.AES.encrypt(
+            res.data.userID.toString(),
+            import.meta.env.VITE_REACT_APP_ENCRYPT_SECRET
+          ).toString();
+
+          console.log(
+            "UserID: ",
+            res.data.userID.toString(),
+            "converted to, ",
+            encryptedUserID
+          );
+
+          // Store encrypted userID in cookie
+          Cookies.set("userID", encryptedUserID, { expires: 7 }); // expires in 7 days
+
           if (res.data.isAdmin) {
             navigate("/Admin/Home");
           } else {

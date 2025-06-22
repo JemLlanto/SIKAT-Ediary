@@ -27,36 +27,18 @@ const CommentSection = ({
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState("");
   const [replyTo, setReplyTo] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [openAccordions, setOpenAccordions] = useState([]);
 
   const [editComment, setEditComment] = useState(null);
   const [editCommentText, setEditCommentText] = useState("");
+  const [isSendingComment, setIsSendingComment] = useState(false);
+  const [isSendingReply, setIsSendingReply] = useState(false);
 
   const replyTextsRef = useRef({});
   const newCommentRef = useRef(null);
   const newReplyRef = useRef(null);
-
-  const [modal, setModal] = useState({ show: false, message: "" });
-  const [confirmModal, setConfirmModal] = useState({
-    show: false,
-    message: "",
-    onConfirm: () => {},
-    onCancel: () => {},
-  });
-
-  const closeModal = () => {
-    setModal({ show: false, message: "" });
-  };
-  const closeConfirmModal = () => {
-    setConfirmModal({
-      show: false,
-      message: "",
-      onConfirm: () => {},
-      onCancel: () => {},
-    });
-  };
 
   useEffect(() => {
     const userData = localStorage.getItem("user");
@@ -69,7 +51,7 @@ const CommentSection = ({
   }, []);
 
   const fetchComments = useCallback(async () => {
-    setLoading(true);
+    // setLoading(true);
     try {
       const response = await axios.get(
         `${
@@ -125,7 +107,7 @@ const CommentSection = ({
       text: newComment,
     };
 
-    setLoading(true);
+    setIsSendingComment(true);
     try {
       await axios.post(
         `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/comments`,
@@ -141,7 +123,7 @@ const CommentSection = ({
       console.error("Error posting comment:", error);
       setError("Failed to post comment. Please try again.");
     } finally {
-      setLoading(false);
+      setIsSendingComment(false);
     }
 
     if (userID !== entry) {
@@ -168,10 +150,13 @@ const CommentSection = ({
 
   const handleReplyTextChange = (commentID, value) => {
     replyTextsRef.current[commentID] = value;
+    // console.log("reply content: ", replyTextsRef.current[commentID]);
   };
 
   const handleSendReply = async (parentID, repliedUserID) => {
     const replyText = replyTextsRef.current[parentID] || "";
+    console.log("reply content: ", replyText);
+
     if (replyText.trim() === "") return;
 
     const newReplyObj = {
@@ -182,7 +167,7 @@ const CommentSection = ({
       repliedUserID,
     };
 
-    setLoading(true);
+    setIsSendingReply(true);
     try {
       await axios.post(
         `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/comments`,
@@ -217,7 +202,7 @@ const CommentSection = ({
       console.error("Error posting reply:", error);
       setError("Failed to post reply. Please try again.");
     } finally {
-      setLoading(false);
+      setIsSendingReply(false);
     }
   };
 
@@ -333,18 +318,22 @@ const CommentSection = ({
     return (
       <div
         className="position-relative"
-        style={{ marginLeft: depth * 1, marginTop: "10px" }}
+        style={{ marginLeft: "1rem", marginTop: "10px" }}
         ref={comment.commentID === replyTo ? newReplyRef : null}
       >
-        <div
-          className="position-absolute border-start rounded-5 border-2 mt-2"
-          style={{ height: "85%", width: "5%", left: "28px", zIndex: "1" }}
-        ></div>
+        {comment.replies.length > 0 ? (
+          <>
+            <div
+              className="position-absolute border-start border-2 mt-2"
+              style={{ height: "69%", width: "5%", left: "20px", zIndex: "1" }}
+            ></div>
+          </>
+        ) : null}
 
         {/* Profile */}
         <div className="d-flex align-items-start flex-column gap-2 pb-2">
           <div className="w-100 d-flex align-items-center justify-content-between pe-3">
-            {isAnon && ownComment ? (
+            {isAnon === "private" && ownComment ? (
               <div className="d-flex align-items-center gap-2">
                 <div
                   className="profilePicture d-flex align-items-center justify-content-center"
@@ -377,9 +366,7 @@ const CommentSection = ({
                     <img
                       src={
                         comment.profile_image
-                          ? `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}${
-                              comment.profile_image
-                            }`
+                          ? comment.profile_image
                           : AnonymousIcon
                       }
                       alt="Profile"
@@ -460,7 +447,7 @@ const CommentSection = ({
           </div>
         </div>
 
-        <div>
+        <div style={{ zIndex: "10" }}>
           <div className="ps-5 ms-2 d-flex align-items-center gap-2">
             <p
               className="m-0 p-2 rounded border-2 text-secondary"
@@ -490,10 +477,10 @@ const CommentSection = ({
           <div className="ps-5 d-flex align-items-center gap-2">
             {/* <button className="btn btn-light btn-sm ">Gadify</button> */}
             <button
-              className="btn btn-light btn-sm"
+              className="btn btn-sm"
               onClick={() => setReplyTo(comment.commentID)}
             >
-              Reply
+              <p className="m-0">Reply</p>
             </button>
           </div>
 
@@ -532,17 +519,19 @@ const CommentSection = ({
                   className="py-2 d-flex align-items-center justify-content-center border-0"
                   onClick={() => setReplyTo(null)}
                   style={{
-                    height: "40px",
-                    width: "40px",
+                    height: "30px",
+                    width: "30px",
                     borderRadius: "50%",
                     backgroundColor: "#ffff",
                     right: "10px",
                     bottom: "10px",
                     color: "red",
-                    fontSize: "clamp(1.2rem, 5dvw, 2rem)",
+                    // fontSize: "clamp(1.2rem, 5dvw, 2rem)",
                   }}
                 >
-                  <i className="bx bx-x"></i>
+                  <h3 className="m-0 d-flex align-items-center justify-content-center">
+                    <i className="bx bx-x"></i>
+                  </h3>
                 </button>
                 <button
                   onClick={() =>
@@ -550,14 +539,24 @@ const CommentSection = ({
                   }
                   className="py-2 d-flex align-items-center justify-content-center border-0"
                   style={{
-                    height: "40px",
-                    width: "40px",
+                    height: "30px",
+                    width: "30px",
                     borderRadius: "50%",
                     backgroundColor: "#ffff",
                     color: "var(--primary)",
                   }}
                 >
-                  <i className="bx bxs-send bx-sm"></i>
+                  <h4 className="m-0 d-flex align-items-center justify-content-center">
+                    {isSendingReply ? (
+                      <>
+                        <i className="bx bx-spin bx-loader-circle"></i>
+                      </>
+                    ) : (
+                      <>
+                        <i className="bx bxs-send"></i>
+                      </>
+                    )}
+                  </h4>
                 </button>
               </div>
             </FloatingLabel>
@@ -571,16 +570,195 @@ const CommentSection = ({
             onSelect={() => toggleAccordion(comment.commentID)}
           >
             <Accordion.Item eventKey={`reply-${comment.commentID}`}>
-              <Accordion.Header>
-                <p className="m-0">View Replies ({comment.replies.length})</p>
+              <Accordion.Header className="position-relative">
+                {isAccordionOpen ? null : (
+                  <div
+                    className="position-absolute border-bottom border-start rounded-bottom-3 border-2 mt-2 "
+                    style={{
+                      height: "4rem",
+                      width: "5rem",
+                      top: "-45px",
+                      left: "-4px",
+                      zIndex: "0",
+                    }}
+                  ></div>
+                )}
+
+                <p className="m-0 bg-white" style={{ zIndex: "1" }}>
+                  View Replies ({comment.replies.length})
+                </p>
               </Accordion.Header>
               <Accordion.Body className="pt-0">
+                {/* REPLIES */}
                 {comment.replies.map((reply) => (
-                  <Comment
-                    key={reply.commentID}
-                    comment={reply}
-                    depth={depth + 1}
-                  />
+                  <>
+                    <div className="d-flex align-items-start flex-column gap-2 mt-2 position-relative">
+                      <div
+                        className="position-absolute border-bottom border-start rounded-bottom-3 border-2 mt-2"
+                        style={{
+                          height: "6.6rem",
+                          width: "3rem",
+                          top: "-85px",
+                          left: "-24px",
+                          zIndex: "1",
+                        }}
+                      ></div>
+                      <div className="w-100 d-flex align-items-center justify-content-between pe-3">
+                        {isAnon === "private" && ownComment ? (
+                          <div className="d-flex align-items-center gap-2">
+                            <div
+                              className="profilePicture d-flex align-items-center justify-content-center"
+                              style={{ zIndex: "2" }}
+                            >
+                              <img
+                                src={AnonymousIcon}
+                                alt="Profile"
+                                style={{
+                                  width: "100%",
+                                  height: "100%",
+                                  objectFit: "cover",
+                                }}
+                              />
+                            </div>
+                            <div className="d-flex justify-content-start flex-column">
+                              <p className="m-0 text-start">{alias}</p>
+                            </div>
+                          </div>
+                        ) : (
+                          <Link
+                            to={`/Profile/${reply.userID}`}
+                            className="linkText rounded"
+                          >
+                            <div className="d-flex align-items-center gap-2">
+                              <div
+                                className="profilePicture d-flex align-items-center justify-content-center"
+                                style={{ zIndex: "2" }}
+                              >
+                                <img
+                                  src={
+                                    reply.profile_image
+                                      ? reply.profile_image
+                                      : AnonymousIcon
+                                  }
+                                  alt="Profile"
+                                  style={{
+                                    width: "100%",
+                                    height: "100%",
+                                    objectFit: "cover",
+                                  }}
+                                />
+                              </div>
+                              <div className="d-flex justify-content-start flex-column">
+                                <p className="m-0 text-start">
+                                  {reply.firstName} {reply.lastName}{" "}
+                                  {user.isAdmin ? (
+                                    <>({reply.DepartmentName})</>
+                                  ) : null}
+                                </p>
+                              </div>
+                            </div>
+                          </Link>
+                        )}
+                        {/* FOR COMMENT OPTIONS */}
+                        <div>
+                          <Dropdown>
+                            <Dropdown.Toggle
+                              className="btn-light d-flex align-items-center pt-0 pb-2"
+                              id="dropdown-basic"
+                              bsPrefix="custom-toggle"
+                              disabled={reply.isAdmin}
+                            >
+                              <h5 className="m-0">...</h5>
+                            </Dropdown.Toggle>
+
+                            <Dropdown.Menu className="p-2 ">
+                              {!canManage &&
+                                (user.isAdmin ? (
+                                  <>
+                                    <Suspend profileOwner={reply} />
+                                    {/* <Hide type={"comment"} entry={entry} /> */}
+                                  </>
+                                ) : (
+                                  <Dropdown.Item className="p-0 btn btn-light">
+                                    <ReportButton
+                                      ownComment={ownComment}
+                                      isAnon={isAnon}
+                                      alias={alias}
+                                      commentID={reply.commentID}
+                                      userID={reply.userID}
+                                      firstName={reply.firstName}
+                                      entryID={entryID}
+                                    />
+                                  </Dropdown.Item>
+                                ))}
+
+                              {canManage && (
+                                <>
+                                  <Dropdown.Item className="p-0 btn btn-light ">
+                                    <button
+                                      className="btn btn-light w-100 d-flex align-items-center justify-content-center"
+                                      onClick={() => handleEditComment(reply)}
+                                    >
+                                      <p className="m-0">Edit</p>
+                                      <i className="bx bxs-edit m-0 ms-1"></i>
+                                    </button>
+                                  </Dropdown.Item>
+                                  <Dropdown.Item className="p-0 btn btn-light ">
+                                    <button
+                                      className="btn btn-light w-100 d-flex align-items-center justify-content-center"
+                                      onClick={() =>
+                                        handleDeleteComment(reply.commentID)
+                                      }
+                                    >
+                                      <p className="m-0">Delete</p>
+                                      <i className="bx bx-message-square-x m-0 ms-1"></i>
+                                    </button>
+                                  </Dropdown.Item>
+                                </>
+                              )}
+                            </Dropdown.Menu>
+                          </Dropdown>
+                        </div>
+                      </div>
+                    </div>
+                    <div>
+                      <div className="ps-5 ms-2 d-flex align-items-center gap-2">
+                        <p
+                          className="m-0 p-2 rounded border-2 text-secondary"
+                          style={{
+                            whiteSpace: "pre-wrap",
+                            maxWidth: "500px",
+                            width: "fit-content",
+                            wordWrap: "break-word",
+                            backgroundColor: "var(--background_light)",
+                          }}
+                          ref={
+                            reply.commentID ===
+                            reply[reply.length - 1]?.commentID
+                              ? newCommentRef
+                              : null
+                          }
+                        >
+                          {reply.text}
+                        </p>
+                        <h6
+                          className="m-0"
+                          style={{
+                            fontSize: "clamp(.5rem, 9dvw, .7rem)",
+                            color: "gray",
+                          }}
+                        >
+                          {formatDate(reply.created_at)}
+                        </h6>
+                      </div>
+
+                      {editComment === reply.commentID ? (
+                        <div className="mb-2 w-100"></div>
+                      ) : (
+                        <div></div>
+                      )}
+                    </div>
+                  </>
                 ))}
               </Accordion.Body>
             </Accordion.Item>
@@ -601,20 +779,6 @@ const CommentSection = ({
         <p className="m-0 d-none d-md-block">Comments</p>
       </button>
 
-      <MessageAlert
-        showModal={modal}
-        closeModal={closeModal}
-        title={"Notice"}
-        message={modal.message}
-      ></MessageAlert>
-      <MessageModal
-        showModal={confirmModal}
-        closeModal={closeConfirmModal}
-        title={"Confirmation"}
-        message={confirmModal.message}
-        confirm={confirmModal.onConfirm}
-        needConfirm={1}
-      ></MessageModal>
       <Modal
         show={show}
         onHide={handleClose}
@@ -630,23 +794,48 @@ const CommentSection = ({
           </Modal.Title>
         </Modal.Header>
         <Modal.Body
-          className="d-flex flex-column justify-content-between"
-          style={{ height: "clamp(32rem ,40dvw ,35rem)" }}
+          className="d-flex flex-column justify-content-between p-1 p-sm-3"
+          style={{ height: "clamp(30rem ,40dvw ,35rem)" }}
         >
           <div
             className="pe-2 custom-scrollbar"
             style={{ overflowY: "scroll", height: "100%" }}
           >
-            {loading && <p className="text-center">Loading comments...</p>}
-            {error && <p className="text-danger">{error}</p>}
-            {!loading && comments.length === 0 && (
-              <p className="text-center text-secondary">
-                No comments yet. Be the first to share your thoughts.
-              </p>
+            {loading ? (
+              <>
+                <div
+                  className="d-flex flex-column justify-content-center align-items-center"
+                  style={{ height: "90%" }}
+                >
+                  <h4 className="m-0">
+                    <i className="bx bx-loader bx-spin"></i>
+                  </h4>
+                  <p className="text-center">Loading comments</p>
+                </div>
+              </>
+            ) : (
+              <>
+                {comments.length === 0 ? (
+                  <>
+                    <div
+                      className="d-flex justify-content-center align-items-center"
+                      style={{ height: "90%" }}
+                    >
+                      <p className="text-center text-secondary">
+                        No comments yet. Be the first to share your thoughts.
+                      </p>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    {comments.map((comment) => (
+                      <Comment key={comment.commentID} comment={comment} />
+                    ))}
+                  </>
+                )}
+              </>
             )}
-            {comments.map((comment) => (
-              <Comment key={comment.commentID} comment={comment} />
-            ))}
+            {/* {error && <p className="text-danger">{error}</p>} */}
           </div>
           <FloatingLabel
             controlId="newCommentTextarea"
@@ -684,8 +873,8 @@ const CommentSection = ({
                   className="py-2 d-flex align-items-center justify-content-center border-0"
                   onClick={() => setEditComment(null)}
                   style={{
-                    height: "40px",
-                    width: "40px",
+                    height: "30px",
+                    width: "30px",
                     borderRadius: "50%",
                     backgroundColor: "#ffff",
                     right: "10px",
@@ -694,7 +883,9 @@ const CommentSection = ({
                     fontSize: "clamp(1.2rem, 5dvw, 2rem)",
                   }}
                 >
-                  <i className="bx bx-x"></i>
+                  <h3 className="m-0 d-flex align-items-center justify-content-center">
+                    <i className="bx bx-x"></i>
+                  </h3>
                 </button>
               ) : (
                 ""
@@ -706,15 +897,25 @@ const CommentSection = ({
                 }
                 className="py-2 d-flex align-items-center justify-content-center border-0"
                 style={{
-                  height: "40px",
-                  width: "40px",
+                  height: "30px",
+                  width: "30px",
                   borderRadius: "50%",
                   backgroundColor: "#ffff",
                   color: "var(--primary)",
                   fontSize: "clamp(1.2rem, 5dvw, 1.5rem)",
                 }}
               >
-                <i className="bx bxs-send"></i>
+                <h4 className="m-0 d-flex align-items-center justify-content-center">
+                  {isSendingComment ? (
+                    <>
+                      <i className="bx bx-spin bx-loader-circle"></i>
+                    </>
+                  ) : (
+                    <>
+                      <i className="bx bxs-send"></i>
+                    </>
+                  )}
+                </h4>
               </button>
             </div>
           </FloatingLabel>

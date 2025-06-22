@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-
+import Swal from "sweetalert2";
 import { Link } from "react-router-dom";
 import Pagination from "react-bootstrap/Pagination";
 import Form from "react-bootstrap/Form";
@@ -175,33 +175,46 @@ const FlaggedDiaries = ({ user }) => {
     if (currentPage < totalPages) setCurrentPage(currentPage + 1);
   };
 
-  const handleAddressed = (entryID) => {
-    setConfirmModal({
-      show: true,
-      message: `Are you sure you want to mark this as Reviewed?`,
-      onConfirm: async () => {
-        axios
-          .put(
-            `${
-              import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
-            }/flaggedAddress/${entryID}`
-          )
-          .then(() => {
-            closeConfirmModal();
-            setModal({
-              show: true,
-              message: `Flagged diary has been addressed.`,
-            });
-            setTimeout(() => {
-              window.location.reload();
-            }, 1500);
-          })
-          .catch((err) => {
-            setError(err.response?.data?.error || "Failed to update flagged");
-          });
-      },
-      onCancel: () => setConfirmModal({ show: false, message: "" }),
+  const handleAddressed = async (entryID) => {
+    const result = await Swal.fire({
+      title: "Are you sure?",
+      text: "Do you want to mark this flagged diary as reviewed?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Yes, mark as reviewed!",
+      cancelButtonText: "Cancel",
     });
+
+    if (result.isConfirmed) {
+      try {
+        Swal.showLoading();
+
+        await axios.put(
+          `${
+            import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+          }/flaggedAddress/${entryID}`
+        );
+
+        await Swal.fire({
+          icon: "success",
+          title: "Reviewed!",
+          text: "Flagged diary has been addressed.",
+          timer: 1500,
+          showConfirmButton: false,
+        });
+
+        fetchFlaggedDiaries();
+      } catch (err) {
+        console.error("Error updating flagged diary:", err);
+        Swal.fire({
+          icon: "error",
+          title: "Update Failed",
+          text:
+            err.response?.data?.error ||
+            "Failed to update flagged diary. Please try again.",
+        });
+      }
+    }
   };
 
   const getFlaggedReasonsText = (flaggedDiaryReasons, flag) => {

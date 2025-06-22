@@ -7,6 +7,7 @@ import { Link } from "react-router-dom";
 import MessageModal from "../../DiaryEntry/messageModal";
 import MessageAlert from "../../DiaryEntry/messageAlert";
 import ReportedUsersDownloadButton from "../../DownloadButton/ReportedUsersDownloadButton";
+import Swal from "sweetalert2";
 
 const ReportedComment = ({ user }) => {
   const [reportedUsers, setReportedUsers] = useState([]);
@@ -140,37 +141,43 @@ const ReportedComment = ({ user }) => {
   };
 
   const handleAddressed = async (userID) => {
-    setConfirmModal({
-      show: true,
-      message: `Are you sure you want to mark this user as reviewed?`,
-      onConfirm: async () => {
-        setIsLoading(true);
-        try {
-          await axios.put(
-            `${
-              import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
-            }/reportingUsersAddress/${userID}`
-          );
-          closeConfirmModal();
-          setModal({
-            show: true,
-            message: `The user has been reviewed.`,
-          });
-          setTimeout(() => {
-            window.location.reload();
-          }, 1500);
-        } catch (error) {
-          console.error("Failed to update user:", error);
-          setModal({
-            show: true,
-            message: `Failed to update the user. Please try again.`,
-          });
-        } finally {
-          setIsLoading(false);
-        }
-      },
-      onCancel: () => setConfirmModal({ show: false, message: "" }),
+    const result = await Swal.fire({
+      title: "Are you sure?",
+      text: "Do you want to mark this user as reviewed?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Yes, mark as reviewed!",
+      cancelButtonText: "Cancel",
     });
+
+    if (result.isConfirmed) {
+      try {
+        Swal.showLoading();
+
+        await axios.put(
+          `${
+            import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+          }/reportingUsersAddress/${userID}`
+        );
+
+        await Swal.fire({
+          icon: "success",
+          title: "Reviewed!",
+          text: "The user has been reviewed.",
+          timer: 1500,
+          showConfirmButton: false,
+        });
+
+        fetchReportedUsers();
+      } catch (error) {
+        console.error("Failed to update user:", error);
+        Swal.fire({
+          icon: "error",
+          title: "Error",
+          text: "Failed to update the user. Please try again.",
+        });
+      }
+    }
   };
 
   return (

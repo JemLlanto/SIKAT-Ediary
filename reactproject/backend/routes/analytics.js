@@ -4,7 +4,6 @@ const {
   fetchingFlaggedUsers,
   fetchingReportedComments,
   fetchingReportedUsers,
-  adminFetchingReportedUsers,
 } = require("../controllers/analyticsController");
 
 const router = express.Router();
@@ -13,13 +12,10 @@ router.get("/userAnalytics/:departmentID", fetchingAllUsers);
 
 router.get("/flaggedAnalytics/:departmentID", fetchingFlaggedUsers);
 
-router.get(
-  "/getReportedCommentsAnalytics/:departmentID",
-  fetchingReportedComments
-);
+router.get("/getReportedComments", fetchingReportedComments);
 
 router.get("/getReportedUsersAnalytics/:departmentID", fetchingReportedUsers);
 
-router.get("/getReportedUsers", adminFetchingReportedUsers);
+router.get("/getReportedUsers", fetchingReportedUsers);
 
 module.exports = router;

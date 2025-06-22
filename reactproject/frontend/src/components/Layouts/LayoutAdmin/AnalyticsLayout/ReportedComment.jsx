@@ -7,6 +7,7 @@ import { Link } from "react-router-dom";
 import MessageModal from "../../DiaryEntry/messageModal";
 import MessageAlert from "../../DiaryEntry/messageAlert";
 import ReportedCommentDownloadButton from "../../DownloadButton/ReportedCommentDownloadButton";
+import Swal from "sweetalert2";
 
 const ReportedComment = ({ user }) => {
   const [reportedComments, setReportedComments] = useState([]);
@@ -46,7 +47,9 @@ const ReportedComment = ({ user }) => {
       setIsLoading(true);
 
       const response = await fetch(
-        `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/getReportedComments`
+        `${
+          import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+        }/analytics/getReportedComments`
       );
 
       if (!response.ok) {
@@ -171,34 +174,43 @@ const ReportedComment = ({ user }) => {
   };
 
   const handleAddressed = async (commentID) => {
-    setConfirmModal({
-      show: true,
-      message: `Are you sure you want to mark this comment as reviewed?`,
-      onConfirm: async () => {
-        setIsLoading(true);
-        try {
-          await axios.put(
-            `${
-              import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
-            }/commentAddress/${commentID}`
-          );
-          closeConfirmModal();
-          setModal({
-            show: true,
-            message: `The comment has been reviewed.`,
-          });
-          setTimeout(() => {
-            window.location.reload();
-          }, 1500);
-        } catch (error) {
-          console.error("Failed to update comment:", error);
-          alert("Failed to update the comment. Please try again.");
-        } finally {
-          setIsLoading(false);
-        }
-      },
-      onCancel: () => setConfirmModal({ show: false, message: "" }),
+    const result = await Swal.fire({
+      title: "Are you sure?",
+      text: "Do you want to mark this comment as reviewed?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Yes, mark as reviewed!",
+      cancelButtonText: "Cancel",
     });
+
+    if (result.isConfirmed) {
+      try {
+        Swal.showLoading();
+
+        await axios.put(
+          `${
+            import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+          }/commentAddress/${commentID}`
+        );
+
+        await Swal.fire({
+          icon: "success",
+          title: "Reviewed!",
+          text: "The comment has been reviewed.",
+          timer: 1500,
+          showConfirmButton: false,
+        });
+
+        fetchReportedComment();
+      } catch (error) {
+        console.error("Failed to update comment:", error);
+        Swal.fire({
+          icon: "error",
+          title: "Error",
+          text: "Failed to update the comment. Please try again.",
+        });
+      }
+    }
   };
 
   return (

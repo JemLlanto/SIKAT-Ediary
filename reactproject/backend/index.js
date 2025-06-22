@@ -1926,30 +1926,6 @@ app.get("/fetchReportedCommentReasons", (req, res) => {
   });
 });
 
-app.get("/getReportedComments", (req, res) => {
-  const query = `
-  SELECT 
-  comments.*,
-  user_table.firstName,
-  user_table.lastName,
-  user_table.studentNumber
-  FROM comments
-  JOIN user_table ON comments.userID = user_table.userID
-  WHERE comments.isReported = 1
-  ORDER BY comments.isReviewed, comments.reportCount DESC ;
-  `;
-
-  db.query(query, (err, results) => {
-    if (err) {
-      console.error("Error fetching reported comments:", err.message);
-      return res
-        .status(500)
-        .json({ error: "Error fetching reported comments" });
-    }
-    res.status(200).json(results);
-  });
-});
-
 // app.get("/getReportedComments/:userID", (req, res) => {
 //   const { userID } = req.params;
 
@@ -2245,7 +2221,7 @@ app.get("/flagged", (req, res) => {
   LEFT JOIN user_table ON diary_entries.userID = user_table.userID
   LEFT JOIN user_profiles ON diary_entries.userID = user_profiles.userID
   LEFT JOIN flagged_reports ON diary_entries.entryID = flagged_reports.entryID
-  WHERE diary_entries.isFlagged = 1
+  WHERE diary_entries.isFlagged = 1 AND diary_entries.isAddress = 0
   ORDER BY diary_entries.isAddress, diary_entries.flagCount DESC ;
 `;
 

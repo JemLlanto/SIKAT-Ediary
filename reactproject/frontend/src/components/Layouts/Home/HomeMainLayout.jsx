@@ -7,7 +7,7 @@ import LeftSideLayout from "./LeftSideLayout";
 import { InactivityContext } from "../../../components/InactivityContext";
 
 export default function HomeMainLayout({}) {
-  const { user } = useOutletContext();
+  const { user, fetchUserData } = useOutletContext();
   const [loading, setloading] = useState(true);
   const [showModal, setShowModal] = useState(false); // Modal state for inactivity alert
   const navigate = useNavigate();
@@ -71,7 +71,11 @@ export default function HomeMainLayout({}) {
                 </div>
               </div>
               <div className="col">
-                <CenterLayout setLoad={setLoad} user={user} />
+                <CenterLayout
+                  setLoad={setLoad}
+                  user={user}
+                  fetchUserData={fetchUserData}
+                />
               </div>
             </div>
           </div>

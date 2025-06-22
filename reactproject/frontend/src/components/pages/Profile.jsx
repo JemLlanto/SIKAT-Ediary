@@ -24,7 +24,7 @@ import Swal from "sweetalert2";
 
 const Profile = () => {
   const { userID } = useParams();
-  const { user, setUserData } = useOutletContext();
+  const { user, setUserData, fetchUserData } = useOutletContext();
   const [profileOwner, setProfileOwner] = useState({});
   const [error, setError] = useState(null);
   const [file, setFile] = useState(null);
@@ -89,9 +89,10 @@ const Profile = () => {
     }
   }, [user]);
 
-  const fetchUserData = async () => {
+  const fetchProfileData = async () => {
     try {
       setLoading(true);
+      fetchUserData();
       const response = await fetch(
         `${
           import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
@@ -113,7 +114,7 @@ const Profile = () => {
   useEffect(() => {
     if (userID) {
       console.log("Fetching profile data...");
-      fetchUserData();
+      fetchProfileData();
     }
   }, [userID, navigate]);
 
@@ -822,7 +823,7 @@ const Profile = () => {
                         <>
                           {!ownProfile &&
                           entry.visibility === "private" ? null : (
-                            <div className="w-100 ">
+                            <div className="w-100 " key={entry.entryID}>
                               <DiaryEntryLayout
                                 flaggingOptions={flaggingOptions}
                                 // key={entry.entryID}

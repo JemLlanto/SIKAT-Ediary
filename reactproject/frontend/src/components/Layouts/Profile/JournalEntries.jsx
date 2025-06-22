@@ -70,7 +70,7 @@ const RecentJournalEntries = ({
                           const dateToBePosted = new Date();
                           return scheduledDate < dateToBePosted;
                         })
-                        .map((entry) => {
+                        .map((entry, index) => {
                           if (
                             !isAdmin &&
                             !ownProfile &&
@@ -83,7 +83,7 @@ const RecentJournalEntries = ({
                               {!ownProfile &&
                               entry.visibility === "private" ? null : (
                                 <Link
-                                  key={entry.entryID}
+                                  key={index}
                                   to={`/DiaryEntry/${entry.entryID}`}
                                   className="rounded text-decoration-none"
                                 >
@@ -193,7 +193,7 @@ const RecentJournalEntries = ({
                     const dateToBePosted = new Date();
                     return scheduledDate < dateToBePosted;
                   })
-                  .map((entry) => {
+                  .map((entry, index) => {
                     if (
                       !isAdmin &&
                       !ownProfile &&
@@ -206,7 +206,7 @@ const RecentJournalEntries = ({
                         {!ownProfile &&
                         entry.visibility === "private" ? null : (
                           <Link
-                            key={entry.entryID}
+                            key={index}
                             to={`/DiaryEntry/${entry.entryID}`}
                             className="rounded text-decoration-none"
                           >

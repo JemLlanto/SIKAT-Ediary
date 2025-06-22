@@ -6,13 +6,14 @@ import ChatButton from "./Layouts/LayoutUser/ChatButton";
 import AdminChatButton from "./Layouts/LayoutAdmin/ChatButton";
 import Cookies from "js-cookie";
 import CryptoJS from "crypto-js";
+import Swal from "sweetalert2";
 
 const MainLayoutContext = ({ children, ActiveTab }) => {
   const [isOffline, setIsOffline] = useState(!navigator.onLine);
   const [showMessage, setShowMessage] = useState(false);
   // State to store user data fetched from localStorage
   const [user, setUser] = useState([]);
-  const [loading, setLoading] = useState();
+  const [loading, setLoading] = useState(true);
 
   const setUserData = (userData) => {
     const parsedUser = JSON.parse(userData); // Parse the user data
@@ -22,12 +23,24 @@ const MainLayoutContext = ({ children, ActiveTab }) => {
 
   const fetchUserData = async () => {
     try {
-      setLoading(true);
-
+      // setLoading(true);
+      // console.log("veifying user");
       // 🔐 Get encrypted userID from cookies
       const encryptedUserID = Cookies.get("userID");
 
-      if (!encryptedUserID) throw new Error("User ID not found in cookies");
+      if (!encryptedUserID) {
+        // ⚠️ Show alert and redirect after confirmation
+        await Swal.fire({
+          icon: "warning",
+          title: "Session expired",
+          text: "Please log in again.",
+          confirmButtonText: "OK",
+        });
+
+        localStorage.removeItem("user");
+        window.location.href = "/";
+        return;
+      }
 
       // 🔓 Decrypt userID
       const bytes = CryptoJS.AES.decrypt(
@@ -123,7 +136,7 @@ const MainLayoutContext = ({ children, ActiveTab }) => {
         )}
       </div> */}
       <div className="mx-2 mx-md-4" style={{ marginTop: "5rem" }}>
-        <Outlet context={{ user, setUserData }} />
+        <Outlet context={{ user, setUserData, fetchUserData }} />
         <div>
           {showMessage && isOffline && (
             <div

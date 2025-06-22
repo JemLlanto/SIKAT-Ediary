@@ -14,7 +14,7 @@ import MessageAlert from "../DiaryEntry/messageAlert";
 import NewUserSetUp from "../../pages/PagesUser/NewUserSetUp";
 import FilterButtonAdmin from "./FilterButtonAdmin";
 
-const CenterLayout = ({ setLoad, user }) => {
+const CenterLayout = ({ setLoad, user, fetchUserData }) => {
   const [entries, setEntries] = useState([]);
   const [followedUsers, setFollowedUsers] = useState([]);
   const [flaggingOptions, setFlaggingOptions] = useState([]);
@@ -95,6 +95,7 @@ const CenterLayout = ({ setLoad, user }) => {
       // console.log("Fetching entries for user:", userID);
       // console.log("Applied filters:", filters);
       setIsLoading(true);
+      fetchUserData();
       // console.log("Fetching entries with filters:", filters);
       const response = await axios.get(
         `${

@@ -4,6 +4,7 @@ import DropDownButton from "../../../assets/DropDown.png";
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
+import Swal from "sweetalert2";
 
 const AccountDropdown = ({ user }) => {
   const [loading, setLoading] = useState(true);
@@ -25,6 +26,15 @@ const AccountDropdown = ({ user }) => {
     if (userData) {
       const parsedUser = JSON.parse(userData);
 
+      // Show loading indicator
+      Swal.fire({
+        title: "Logging out...",
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading();
+        },
+      });
+
       try {
         const response = await axios.post(
           `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/logout`,
@@ -35,9 +45,28 @@ const AccountDropdown = ({ user }) => {
 
         if (response.status === 200) {
           localStorage.removeItem("user");
+
+          Swal.fire({
+            icon: "success",
+            title: "Logged out successfully",
+            showConfirmButton: false,
+            timer: 1500,
+          });
+
           navigate("/");
         }
       } catch (error) {
+        Swal.close(); // Close loading modal in case of error
+
+        Swal.fire({
+          icon: "error",
+          title: "Logout Failed",
+          text:
+            error.response?.data?.message ||
+            error.message ||
+            "Something went wrong.",
+        });
+
         console.error(
           "Error logging out:",
           error.response ? error.response.data.message : error.message

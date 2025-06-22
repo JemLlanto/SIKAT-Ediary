@@ -15,22 +15,21 @@ import DiaryEntryHeader from "../DiaryEntry/DiaryEntryHeader";
 import FollowButton from "../DiaryEntry/FollowButton";
 import DiaryDetails from "../DiaryEntry/DiaryDetails";
 import DiaryLoader from "../../loaders/DiaryLoader";
+import GadifyButton from "./GadifyButton";
 
 const DiaryEntryLayout = ({
   entry,
   user,
   followedUsers,
   handleFollowToggle,
-  handleClick,
-  expandButtons,
   formatDate,
-  suspended,
+  flaggingOptions,
 }) => {
+  const [entryData, setEntryData] = useState(entry);
   const [entries, setEntries] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [comments, setComments] = useState([]); // New state for comments
-  const [flaggedCount, setFlaggedCount] = useState(null);
   const [filters, setFilters] = useState({});
   const [currentUser, setCurrentUser] = useState(null);
   const navigate = useNavigate();
@@ -50,20 +49,20 @@ const DiaryEntryLayout = ({
     setCurrentUser(storedUser);
   }, [navigate]);
 
-  useEffect(() => {
-    if (user) {
-      fetchEntries(user.userID, filters);
-    }
-  }, [user, filters]);
+  // useEffect(() => {
+  //   if (user) {
+  //     fetchEntries(user.userID, filters);
+  //   }
+  // }, [user, filters]);
 
   useEffect(() => {
-    if (entry.entryID) {
+    if (entryData.entryID) {
       const fetchComments = async () => {
         try {
           const response = await axios.get(
-            `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/fetchComments/${
-              entry.entryID
-            }`
+            `  ${
+              import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+            }/fetchComments/${entryData.entryID}`
           );
           setComments(response.data);
         } catch (error) {
@@ -72,37 +71,16 @@ const DiaryEntryLayout = ({
       };
       fetchComments();
     }
-  }, [entry.entryID]);
-
-  const commentCount = comments.length;
+  }, [entryData.entryID]);
 
   useEffect(() => {
-    if (entry.entryID) {
-      const fetchFlaggedCount = async () => {
-        try {
-          const response = await axios.get(
-            `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/flaggedCount/${
-              entry.entryID
-            }`
-          );
-          const count = response.data.flaggedCount;
-          setFlaggedCount(count);
-        } catch (error) {
-          console.error("Error fetching flagged count:", error);
-        }
-      };
-      fetchFlaggedCount();
-    }
-  }, [entry.entryID]);
-
-  useEffect(() => {
-    if (entry.entryID) {
+    if (entryData.entryID) {
       const fetchComments = async () => {
         try {
           const response = await axios.get(
-            `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/fetchComments/${
-              entry.entryID
-            }`
+            `  ${
+              import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+            }/fetchComments/${entryData.entryID}`
           );
           setComments(response.data);
         } catch (error) {
@@ -111,64 +89,64 @@ const DiaryEntryLayout = ({
       };
       fetchComments();
     }
-  }, [entry.entryID]);
+  }, [entryData.entryID]);
 
-  const fetchEntries = async (userID, filters) => {
-    try {
-      // console.log("Fetching single entry...");
-      // setLoading(true);
-      const response = await axios.get(
-        `${
-          import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
-        }/entries/fetchEntries`,
-        {
-          params: { userID, filters },
-        }
-      );
+  // const fetchEntries = async (userID, filters) => {
+  //   try {
+  //     // console.log("Fetching single entry...");
+  //     setLoading(true);
+  //     const response = await axios.get(
+  //       `${
+  //         import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+  //       }/entries/fetchEntries`,
+  //       {
+  //         params: { userID, filters },
+  //       }
+  //     );
 
-      const gadifyStatusResponse = await axios.get(
-        `${
-          import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
-        }/gadifyStatus/${userID}`
-      );
+  //     const gadifyStatusResponse = await axios.get(
+  //       `${
+  //         import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+  //       }/gadifyStatus/${userID}`
+  //     );
 
-      const updatedEntries = response.data.map((entry) => {
-        const isGadified = gadifyStatusResponse.data.some(
-          (g) => g.entryID === entry.entryID
-        );
-        return { ...entry, isGadified };
-      });
+  //     const updatedEntries = response.data.map((entry) => {
+  //       const isGadified = gadifyStatusResponse.data.some(
+  //         (g) => g.entryID === entryData.entryID
+  //       );
+  //       return { ...entry, isGadified };
+  //     });
+  //     console.log("ENTRY FETCHED IN DIARY LAYOUT: ", updatedEntries);
+  //     setEntries(updatedEntries);
+  //   } catch (error) {
+  //     console.error("Error fetching diary entries:", error);
+  //   } finally {
+  //     // console.log("Entry fetched");
+  //     setLoading(false);
+  //   }
+  // };
 
-      setEntries(updatedEntries);
-    } catch (error) {
-      console.error("Error fetching diary entries:", error);
-    } finally {
-      // console.log("Entry fetched");
-      // setLoading(false);
-    }
-  };
-
-  const handleDeleteEntry = async (entryID) => {
-    const confirmed = window.confirm(
-      "Are you sure you want to delete this entry?"
-    );
-    if (confirmed) {
-      try {
-        await axios.delete(
-          `${
-            import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
-          }/deleteEntry/${entryID}`
-        );
-        alert("Diary entry deleted successfully.");
-        setEntries((prevEntries) =>
-          prevEntries.filter((entry) => entry.entryID !== entryID)
-        );
-      } catch (error) {
-        console.error("Error deleting diary entry:", error);
-        alert("Failed to delete the entry.");
-      }
-    }
-  };
+  // const handleDeleteEntry = async (entryID) => {
+  //   const confirmed = window.confirm(
+  //     "Are you sure you want to delete this entry?"
+  //   );
+  //   if (confirmed) {
+  //     try {
+  //       await axios.delete(
+  //         `${
+  //           import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+  //         }/deleteEntry/${entryID}`
+  //       );
+  //       alert("Diary entry deleted successfully.");
+  //       setEntries((prevEntries) =>
+  //         prevEntries.filter((entry) => entryData.entryID !== entryID)
+  //       );
+  //     } catch (error) {
+  //       console.error("Error deleting diary entry:", error);
+  //       alert("Failed to delete the entry.");
+  //     }
+  //   }
+  // };
 
   const updateEngagement = async (entryID) => {
     try {
@@ -191,7 +169,7 @@ const DiaryEntryLayout = ({
 
   return (
     <div
-      key={entry.entryID}
+      key={entryData.entryID}
       className="position-relative rounded shadow-sm p-3 mb-2"
       style={{ backgroundColor: "white", width: "100%" }}
     >
@@ -210,7 +188,7 @@ const DiaryEntryLayout = ({
         user={user}
         entry={entry}
         entryImage={`${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}${
-          entry.diary_image
+          entryData.diary_image
         }`}
       />
 
@@ -219,41 +197,33 @@ const DiaryEntryLayout = ({
         style={{ minHeight: "" }}
       >
         {/* Clickable Image */}
-        {entry.diary_image && (
+        {entryData.diary_image && (
           <>
             <img
               className="DiaryImage mt-1 rounded"
-              src={entry.diary_image}
+              src={entryData.diary_image}
               alt="Diary"
               style={{ cursor: "pointer" }} // Add pointer cursor
-              onClick={() => handleShowModal(entry.entryID)} // Open modal on click
+              onClick={() => handleShowModal(entryData.entryID)} // Open modal on click
             />
 
             {/* Modal */}
             <ImageModal
               showModal={showModal}
               handleCloseModal={handleCloseModal}
-              diaryImage={entry.diary_image}
+              diaryImage={entryData.diary_image}
             ></ImageModal>
           </>
         )}
       </div>
       <div className="row px-2 pt-2 gap-1">
         <div className="col p-0">
-          <button
-            className={`InteractButton d-flex align-items-center justify-content-center gap-1 ${
-              entry.isGadified ? "active" : ""
-            } ${expandButtons[entry.entryID] ? "expand" : ""}`}
-            onClick={() => handleClick(entry.entryID)}
-          >
-            {entry.isGadified ? (
-              <i className="bx bxs-heart"></i>
-            ) : (
-              <i className="bx bx-heart"></i>
-            )}
-            <span>{entry.gadifyCount}</span>
-            <p className="m-0 d-none d-md-block">Gadify</p>
-          </button>
+          <GadifyButton
+            entry={entryData}
+            user={user}
+            entries={entries}
+            setEntryData={setEntryData}
+          />
         </div>
 
         {/* <div className="row pt-2">
@@ -264,13 +234,13 @@ const DiaryEntryLayout = ({
 
         <div className="col p-0">
           <CommentSection
-            commentCount={commentCount}
+            commentCount={comments.length}
             userID={currentUser?.userID}
-            entryID={entry.entryID}
-            entry={entry.userID}
-            firstName={entry.firstName}
-            isAnon={entry.anonimity}
-            alias={entry.alias}
+            entryID={entryData.entryID}
+            entry={entryData.userID}
+            firstName={entryData.firstName}
+            isAnon={entryData.anonimity}
+            alias={entryData.alias}
           />
           {/* {entry.isFlagged} */}
         </div>
@@ -280,18 +250,19 @@ const DiaryEntryLayout = ({
             <ChatButton
               user={user}
               entry={entry}
-              userToChat={entry.userID}
+              userToChat={entryData.userID}
             ></ChatButton>
           ) : (
             <FlagButton
-              firstName={entry.firstName}
-              isAnon={entry.anonimity}
-              alias={entry.alias}
-              flaggedCount={flaggedCount}
+              flaggingOptions={flaggingOptions}
+              firstName={entryData.firstName}
+              isAnon={entryData.anonimity}
+              alias={entryData.alias}
+              flaggedCount={entryData.flagCount}
               userID={user.userID}
-              entryID={entry.entryID}
-              entry={entry.userID}
-              fromAdmin={entry.isAdmin}
+              entryID={entryData.entryID}
+              entry={entryData.userID}
+              fromAdmin={entryData.isAdmin}
             />
           )}
         </div>

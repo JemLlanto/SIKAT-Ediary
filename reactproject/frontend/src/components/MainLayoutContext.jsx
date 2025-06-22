@@ -115,13 +115,13 @@ const MainLayoutContext = ({ children, ActiveTab }) => {
         loading={loading}
         style={{ position: "sticky", top: "0" }}
       />
-      <div>
+      {/* <div>
         {user?.isAdmin == 1 ? (
           <AdminChatButton user={user} />
         ) : (
           <ChatButton user={user} />
         )}
-      </div>
+      </div> */}
       <div className="mx-2 mx-md-4" style={{ marginTop: "5rem" }}>
         <Outlet context={{ user, setUserData }} />
         <div>

@@ -1,10 +1,11 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
 import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
-import MessageModal from "../DiaryEntry/messageModal";
+import Swal from "sweetalert2";
 
 function FlagButton({
+  flaggingOptions,
   userID,
   firstName,
   alias,
@@ -16,50 +17,11 @@ function FlagButton({
 }) {
   const [show, setShow] = useState(false);
   const [selectedReason, setSelectedReason] = useState([]);
-  const [otherText, setOtherText] = useState("");
-  const [isOtherSelected, setIsOtherSelected] = useState(false);
-  const [flaggingOptions, setFlaggingOptions] = useState([]);
-  const otherInputRef = useRef(null);
-
-  const [modal, setModal] = useState({ show: false, message: "" });
-  const [confirmModal, setConfirmModal] = useState({
-    show: false,
-    message: "",
-    onConfirm: () => {},
-    onCancel: () => {},
-  });
-
-  const closeModal = () => {
-    setModal({ show: false, message: "" });
-  };
-  const closeConfirmModal = () => {
-    setConfirmModal({
-      show: false,
-      message: "",
-      onConfirm: () => {},
-      onCancel: () => {},
-    });
-  };
-
-  useEffect(() => {
-    const fetchFlaggingOptions = async () => {
-      try {
-        const response = await axios.get(
-          `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/flaggingOptions`
-        );
-        setFlaggingOptions(response.data);
-      } catch (error) {
-        console.error("Error fetching flagging options:", error);
-      }
-    };
-    fetchFlaggingOptions();
-  }, []);
+  const [flagCount, setFlagCount] = useState(flaggedCount);
 
   const handleClose = () => {
     setShow(false);
     setSelectedReason([]);
-    setOtherText("");
-    setIsOtherSelected(false);
   };
 
   const handleShow = () => setShow(true);
@@ -67,26 +29,12 @@ function FlagButton({
   const handleCheckboxChange = (event) => {
     const { value, checked } = event.target;
 
-    if (value === "others") {
-      setIsOtherSelected(checked);
-      if (checked) {
-        // Focus on the "Others" input field when selected
-        setTimeout(() => {
-          otherInputRef.current?.focus();
-        }, 0);
-      }
-    }
-
-    setSelectedReason((prevSelected) =>
-      checked
-        ? [...prevSelected, value]
-        : prevSelected.filter((reason) => reason !== value)
-    );
+    setSelectedReason(value);
   };
 
   const handleSubmit = async () => {
     const reportData = {
-      userID: entry.userID,
+      userID: entry,
       entryID,
       reason: selectedReason,
     };
@@ -94,26 +42,45 @@ function FlagButton({
     console.log("Submitting report data:", reportData);
 
     try {
+      // Show loading alert
+      Swal.fire({
+        title: "Submitting report...",
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading();
+        },
+      });
+
       const response = await axios.post(
         `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/flags`,
         reportData
       );
 
       if (response.status === 200) {
-        // alert("Flagged successfully");
-        setModal({
-          show: true,
-          message: `Flagged successfully`,
+        Swal.fire({
+          icon: "success",
+          title: "Report Submitted",
+          text: "Flagged successfully.",
         });
         console.log("Report submitted successfully");
+        setFlagCount(flagCount + 1);
         updateEngagement(entryID);
         handleClose();
       } else {
+        Swal.fire({
+          icon: "error",
+          title: "Submission Failed",
+          text: "Failed to submit report.",
+        });
         console.error("Failed to submit report");
       }
     } catch (error) {
       console.error("Error submitting report:", error);
-      alert("There was an error submitting your report. Please try again.");
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "There was an error submitting your report. Please try again.",
+      });
     }
   };
 
@@ -133,27 +100,12 @@ function FlagButton({
       <button
         className="InteractButton d-flex align-items-center justify-content-center gap-2"
         onClick={handleShow}
-        disabled={fromAdmin || entry.userID === userID || entry.isAdmin}
+        disabled={fromAdmin || entry === userID || entry?.isAdmin}
       >
         <i className="bx bx-flag"></i>
-        <span>{flaggedCount}</span>
+        <span>{flagCount}</span>
         <p className="m-0 d-none d-md-block">Flag</p>
       </button>
-
-      <MessageModal
-        showModal={modal}
-        closeModal={closeModal}
-        title={"Notice"}
-        message={modal.message}
-      ></MessageModal>
-      <MessageModal
-        showModal={confirmModal}
-        closeModal={closeConfirmModal}
-        title={"Confirmation"}
-        message={confirmModal.message}
-        confirm={confirmModal.onConfirm}
-        needConfirm={1}
-      ></MessageModal>
 
       <Modal show={show} onHide={handleClose} centered>
         <Modal.Header closeButton>

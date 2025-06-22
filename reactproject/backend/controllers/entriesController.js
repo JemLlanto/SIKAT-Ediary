@@ -375,6 +375,17 @@ const fetchingEntries = (req, res) => {
       } else if (lowerFilter !== "general") {
         filterConditions.push(`LOWER(diary_entries.subjects) LIKE ?`);
         queryParams.push(`%${lowerFilter}%`);
+      } else {
+        filterConditions.push(`
+          (
+            LOWER(diary_entries.subjects) LIKE ?
+            OR LOWER(diary_entries.subjects) LIKE ?
+            OR diary_entries.subjects IS NULL
+            OR TRIM(diary_entries.subjects) = ''
+          )
+        `);
+        queryParams.push(`%${lowerFilter}%`);
+        queryParams.push("%general%");
       }
     });
 
@@ -582,7 +593,7 @@ const fetchSingleEntry = (req, res) => {
     if (result.length === 0) {
       return res.status(404).json({ error: "Entry not found" });
     }
-
+    // console.log(result[0].flagCount);
     res.status(200).json({ entry: result[0] });
   });
 };

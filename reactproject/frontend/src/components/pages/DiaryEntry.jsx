@@ -32,6 +32,7 @@ const DiaryEntry = () => {
   const [error, setError] = useState(null);
   const navigate = useNavigate();
   const commentSectionRef = useRef(null);
+  const [flaggingOptions, setFlaggingOptions] = useState([]);
 
   // FOR MESSAGE MODALS
   const [modal, setModal] = useState({ show: false, message: "" });
@@ -71,6 +72,22 @@ const DiaryEntry = () => {
       navigate("/");
     }
   }, [navigate]);
+
+  // FETCHING FLAGGING OPTIONS
+  useEffect(() => {
+    const fetchFlaggingOptions = async () => {
+      try {
+        const response = await axios.get(
+          `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/flaggingOptions`
+        );
+        // console.log("flagging options", response.data);
+        setFlaggingOptions(response.data);
+      } catch (error) {
+        console.error("Error fetching flagging options:", error);
+      }
+    };
+    fetchFlaggingOptions();
+  }, []);
 
   // Fetch the data of the current user
   const [currentUser, setCurrentUser] = useState(null);
@@ -536,13 +553,15 @@ const DiaryEntry = () => {
                           ></ChatButton>
                         ) : (
                           <FlagButton
+                            flaggingOptions={flaggingOptions}
                             firstName={entry.firstName}
                             isAnon={entry.anonimity}
                             alias={entry.alias}
-                            flaggedCount={flaggedCount}
+                            flaggedCount={entry.flagCount}
                             userID={user.userID}
                             entryID={entry.entryID}
-                            entry={entry}
+                            entry={entry.userID}
+                            fromAdmin={entry.isAdmin}
                           />
                         )}
                       </div>

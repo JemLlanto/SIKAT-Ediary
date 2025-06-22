@@ -52,12 +52,12 @@ export default function Login() {
             import.meta.env.VITE_REACT_APP_ENCRYPT_SECRET
           ).toString();
 
-          console.log(
-            "UserID: ",
-            res.data.userID.toString(),
-            "converted to, ",
-            encryptedUserID
-          );
+          // console.log(
+          //   "UserID: ",
+          //   res.data.userID.toString(),
+          //   "converted to, ",
+          //   encryptedUserID
+          // );
 
           // Store encrypted userID in cookie
           Cookies.set("userID", encryptedUserID, { expires: 7 }); // expires in 7 days

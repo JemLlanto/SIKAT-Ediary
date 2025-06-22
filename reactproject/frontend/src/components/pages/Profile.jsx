@@ -36,6 +36,7 @@ const Profile = () => {
   const [loading, setLoading] = useState(true);
   const [loadingEntries, setLoadingEntries] = useState(true);
   const [isUploading, setIsUploading] = useState(false);
+  const [flaggingOptions, setFlaggingOptions] = useState([]);
 
   const navigate = useNavigate();
 
@@ -61,6 +62,22 @@ const Profile = () => {
       onCancel: () => {},
     });
   };
+
+  // FETCHING FLAGGING OPTIONS
+  useEffect(() => {
+    const fetchFlaggingOptions = async () => {
+      try {
+        const response = await axios.get(
+          `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/flaggingOptions`
+        );
+        // console.log("flagging options", response.data);
+        setFlaggingOptions(response.data);
+      } catch (error) {
+        console.error("Error fetching flagging options:", error);
+      }
+    };
+    fetchFlaggingOptions();
+  }, []);
 
   useEffect(() => {
     const userData = localStorage.getItem("user");
@@ -119,7 +136,22 @@ const Profile = () => {
       );
 
       if (response.data.entries && Array.isArray(response.data.entries)) {
-        setEntries(response.data.entries);
+        const gadifyStatusResponse = await axios.get(
+          `${
+            import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+          }/gadifyStatus/${userID}`
+        );
+
+        // console.log("Gadify status response:", gadifyStatusResponse.data);
+
+        const updatedEntries = response.data.entries.map((entry) => {
+          const isGadified = gadifyStatusResponse.data.some(
+            (g) => g.entryID === entry.entryID
+          );
+          // console.log("Gadified", isGadified);
+          return { ...entry, isGadified };
+        });
+        setEntries(updatedEntries);
       } else {
         setEntries([]);
       }
@@ -231,7 +263,7 @@ const Profile = () => {
       );
       const followedUsersData = response.data.map((user) => user.userID);
       setFollowedUsers(followedUsersData);
-      console.log("Followed Users:", followedUsersData);
+      // console.log("Followed Users:", followedUsersData);
     } catch (error) {
       console.error("Error fetching followed users:", error);
     }
@@ -792,6 +824,7 @@ const Profile = () => {
                           entry.visibility === "private" ? null : (
                             <div className="w-100 ">
                               <DiaryEntryLayout
+                                flaggingOptions={flaggingOptions}
                                 // key={entry.entryID}
                                 entry={entry}
                                 user={user}

@@ -70,7 +70,7 @@ const IndexPage = () => {
           }/indexImagesAPI/index-images`
         );
         setImages(response.data);
-        console.log("Index images: ", response.data);
+        // console.log("Index images: ", response.data);
         setIsLoading(false);
       } catch (error) {
         console.error("Error fetching images:", error);

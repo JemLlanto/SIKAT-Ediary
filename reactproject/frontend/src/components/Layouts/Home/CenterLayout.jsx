@@ -17,7 +17,7 @@ import FilterButtonAdmin from "./FilterButtonAdmin";
 const CenterLayout = ({ setLoad, user }) => {
   const [entries, setEntries] = useState([]);
   const [followedUsers, setFollowedUsers] = useState([]);
-  const [expandButtons, setExpandButtons] = useState([]);
+  const [flaggingOptions, setFlaggingOptions] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [filters, setFilters] = useState({});
   const [error, setError] = useState(null);
@@ -52,6 +52,22 @@ const CenterLayout = ({ setLoad, user }) => {
       navigate("/");
     }
   }, [user]);
+
+  // FETCHING FLAGGING OPTIONS
+  useEffect(() => {
+    const fetchFlaggingOptions = async () => {
+      try {
+        const response = await axios.get(
+          `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/flaggingOptions`
+        );
+        // console.log("flagging options", response.data);
+        setFlaggingOptions(response.data);
+      } catch (error) {
+        console.error("Error fetching flagging options:", error);
+      }
+    };
+    fetchFlaggingOptions();
+  }, []);
 
   useEffect(() => {
     if (user && !doneFetched) {
@@ -103,18 +119,19 @@ const CenterLayout = ({ setLoad, user }) => {
         const isGadified = gadifyStatusResponse.data.some(
           (g) => g.entryID === entry.entryID
         );
+        // console.log("Gadified", isGadified);
         return { ...entry, isGadified };
       });
-      console.log(
-        "Entry subjects: ",
-        updatedEntries.map((e) => e.subjects)
-      );
+      // console.log(
+      //   "Entry subjects: ",
+      //   updatedEntries.map((e) => e.subjects)
+      // );
       setEntries(updatedEntries);
     } catch (error) {
       console.error("There was an error fetching the diary entries!", error);
     } finally {
       setDoneFetched(true);
-      console.log("Entries Fetched...");
+      // console.log("Entries Fetched...");
       setIsLoading(false);
     }
   };
@@ -128,63 +145,6 @@ const CenterLayout = ({ setLoad, user }) => {
 
     setFilters(activeFilters);
     // console.log("Active Filters:", activeFilters);
-  };
-
-  const handleGadify = (entryID) => {
-    if (!user) return;
-
-    const entry = entries.find((entry) => entry.entryID === entryID);
-    if (!entry) return;
-
-    axios
-      .post(
-        `${
-          import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
-        }/entry/${entryID}/gadify`,
-        {
-          userID: user.userID,
-        }
-      )
-      .then((res) => {
-        const isGadified =
-          res.data.message === "Gadify action recorded successfully";
-
-        setEntries((prevEntries) =>
-          prevEntries.map((entry) =>
-            entry.entryID === entryID
-              ? {
-                  ...entry,
-                  gadifyCount: isGadified
-                    ? entry.gadifyCount + 1
-                    : entry.gadifyCount - 1,
-                }
-              : entry
-          )
-        );
-
-        if (isGadified && user.userID !== entry.userID) {
-          axios
-            .post(
-              `${
-                import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
-              }/notifications/${entry.userID}`,
-              {
-                actorID: user.userID,
-                entryID: entryID,
-                profile_image: user.profile_image,
-                type: "gadify",
-                message: `${user.firstName} ${user.lastName} gadified your diary entry.`,
-              }
-            )
-            .then((res) => {
-              console.log("Notification response:", res.data);
-            })
-            .catch((err) => {
-              console.error("Error sending gadify notification:", err);
-            });
-        }
-      })
-      .catch((err) => console.error("Error updating gadify count:", err));
   };
 
   const handleFollowToggle = async (followUserId, targetUsername) => {
@@ -284,26 +244,6 @@ const CenterLayout = ({ setLoad, user }) => {
         message: `There was an error processing your request.`,
       });
     }
-  };
-
-  const handleClick = (entryID) => {
-    setEntries((prevEntries) =>
-      prevEntries.map((entry) =>
-        entry.entryID === entryID
-          ? { ...entry, isGadified: !entry.isGadified }
-          : entry
-      )
-    );
-
-    const updatedExpandButtons = { ...expandButtons, [entryID]: true };
-    setExpandButtons(updatedExpandButtons);
-
-    setTimeout(() => {
-      updatedExpandButtons[entryID] = false;
-      setExpandButtons({ ...updatedExpandButtons });
-    }, 300);
-
-    handleGadify(entryID);
   };
 
   const updateEngagement = async (entryID) => {
@@ -586,13 +526,12 @@ const CenterLayout = ({ setLoad, user }) => {
               .map((entry) => (
                 <DiaryEntryLayout
                   // key={entry.entryID}
+                  flaggingOptions={flaggingOptions}
                   entry={entry}
                   user={user}
                   followedUsers={followedUsers}
                   suspended={entry.isSuspended}
                   handleFollowToggle={handleFollowToggle}
-                  handleClick={handleClick}
-                  expandButtons={expandButtons}
                   formatDate={formatDate}
                 />
               ))
@@ -611,7 +550,7 @@ const CenterLayout = ({ setLoad, user }) => {
                 onClick={() => {
                   window.scrollTo({ top: 0, behavior: "smooth" }); // Scroll to top
                   setTimeout(() => {
-                    window.location.reload(); // Refresh page
+                    fetchEntries(user.userID, filters); // Refresh page
                   }, 500); // Wait for smooth scroll before refreshing
                 }}
               >

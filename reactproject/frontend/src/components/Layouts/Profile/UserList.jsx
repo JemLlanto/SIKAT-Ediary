@@ -24,13 +24,7 @@ const UserList = ({
               <div className="d-flex align-items-center">
                 <div className="profilePicture">
                   <img
-                    src={
-                      user.profile_image
-                        ? `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}${
-                            user.profile_image
-                          }`
-                        : DefaultProfile
-                    }
+                    src={user.profile_image}
                     alt="Profile"
                     style={{
                       width: "100%",

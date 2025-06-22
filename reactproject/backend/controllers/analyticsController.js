@@ -1,7 +1,7 @@
 const db = require("../database");
 
 const fetchingAllUsers = (req, res) => {
-  const departmentID = req.query.departmentID;
+  const departmentID = req.query;
 
   let query = `
     SELECT u.*
@@ -20,7 +20,7 @@ const fetchingAllUsers = (req, res) => {
 };
 
 const fetchingFlaggedUsers = (req, res) => {
-  const departmentID = req.query.departmentID;
+  const departmentID = req.query;
 
   if (!departmentID) {
     return res.status(400).json({ error: "Department ID is required" });
@@ -56,27 +56,20 @@ const fetchingFlaggedUsers = (req, res) => {
 };
 
 const fetchingReportedComments = (req, res) => {
-  const departmentID = req.query.departmentID;
-
-  if (!departmentID) {
-    return res.status(400).json({ error: "Department ID is required" });
-  }
   const query = `
-    SELECT
-      comments.*,
-      user_table.firstName,
-      user_table.lastName,
-      user_table.studentNumber,
-      diary_entries.*
-    FROM 
-      comments
-    JOIN user_table ON comments.userID = user_table.userID
-    JOIN diary_entries ON comments.entryID = diary_entries.entryID
-    WHERE comments.isReported = 1 AND user_table.departmentID = ?
-    ORDER BY comments.isReviewed, comments.reportCount DESC 
+  SELECT 
+  comments.*,
+  user_table.firstName,
+  user_table.lastName,
+  user_table.studentNumber,
+  user_table.departmentID
+  FROM comments
+  JOIN user_table ON comments.userID = user_table.userID
+  WHERE comments.isReported = 1 AND comments.isReviewed = 0
+  ORDER BY comments.isReviewed, comments.reportCount DESC ;
   `;
 
-  db.query(query, [departmentID], (err, results) => {
+  db.query(query, (err, results) => {
     if (err) {
       console.error("Error fetching reported comments:", err.message);
       return res
@@ -88,29 +81,23 @@ const fetchingReportedComments = (req, res) => {
 };
 
 const fetchingReportedUsers = (req, res) => {
-  const { departmentID } = req.query;
-
-  // Check if departmentID is provided
-  if (!departmentID) {
-    return res.status(400).json({ error: "Department ID is required" });
-  }
-
   const query = `
- SELECT
+    SELECT
       user_table.*,
       user_profiles.profile_image
     FROM 
       user_table
     JOIN user_profiles ON user_table.userID = user_profiles.userID
-    WHERE user_table.isReported = 1 AND user_table.departmentID = ?
+    WHERE user_table.isReported = 1 AND user_table.isReviewed = 0
     ORDER BY user_table.isReviewed, user_table.reportCount DESC;
   `;
 
-  db.query(query, [departmentID], (err, results) => {
+  db.query(query, (err, results) => {
     if (err) {
       console.error("Error fetching reported users:", err.message);
       return res.status(500).json({ error: "Error fetching reported users" });
     }
+    console.log("results: ", results[0]);
     res.status(200).json(results);
   });
 };

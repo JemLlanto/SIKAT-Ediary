@@ -119,9 +119,55 @@ const deleteReportingUsersOption = (req, res) => {
   );
 };
 
+const reportingUser = (req, res) => {
+  const { reportedUserID, reason } = req.body;
+
+  if (!reportedUserID || !reason) {
+    return res.status(400).json({ message: "Missing required fields" });
+  }
+
+  // Insert the report into the comment_reports table
+  db.query(
+    "INSERT INTO reported_users (UserID, reason) VALUES (?,?)",
+    [reportedUserID, reason],
+    (error, results) => {
+      if (error) {
+        console.error("Error saving report:", error);
+        return res
+          .status(500)
+          .json({ message: "Error submitting report", error: error.message });
+      }
+
+      const reasonArray = reason.split(", ").map((r) => r.trim());
+
+      db.query(
+        `UPDATE user_table 
+        SET reportCount = reportCount + 1,
+        isReported =  1 
+        WHERE userID = ?`,
+        [reportedUserID],
+        (updateError) => {
+          if (updateError) {
+            console.error(
+              `Error updating count for reason: ${reasonItem}`,
+              updateError
+            );
+          }
+        }
+      );
+
+      // Send response once the main report is saved
+      res
+        .status(200)
+        .json({ message: "Report submitted and counts updated successfully" });
+    }
+  );
+};
+
 module.exports = {
   fetchReportingUsers,
   addingReportingUsersOption,
   editingReportingUsersOption,
   deleteReportingUsersOption,
+  reportingUser,
 };

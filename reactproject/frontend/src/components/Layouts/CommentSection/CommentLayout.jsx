@@ -2,7 +2,9 @@ import { useState } from "react";
 import { Dropdown, Accordion, FloatingLabel, Form } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import ReportButton from "./ReportCommentButton";
+import Suspend from "../Profile/Suspend";
 import AnonymousIcon from "../../../assets/anonymous.png";
+import CommentDropdown from "./CommentDropdown";
 
 const CommentLayout = ({
   entryData,
@@ -123,61 +125,12 @@ const CommentLayout = ({
           )}
           {/* FOR COMMENT OPTIONS */}
           <div>
-            <Dropdown>
-              <Dropdown.Toggle
-                className="btn-light d-flex align-items-center pt-0 pb-2"
-                id="dropdown-basic"
-                bsPrefix="custom-toggle"
-                disabled={comment.isAdmin}
-              >
-                <h5 className="m-0">...</h5>
-              </Dropdown.Toggle>
-
-              <Dropdown.Menu className="p-2 ">
-                {!canManage &&
-                  (user.isAdmin ? (
-                    <>
-                      <Suspend profileOwner={comment} />
-                      {/* <Hide type={"comment"} entry={entry} /> */}
-                    </>
-                  ) : (
-                    <Dropdown.Item className="p-0 btn btn-light">
-                      <ReportButton
-                        ownComment={ownComment}
-                        isAnon={isAnon}
-                        alias={entryData.alias}
-                        commentID={comment.commentID}
-                        userID={comment.userID}
-                        firstName={comment.firstName}
-                        entryID={entryID}
-                      />
-                    </Dropdown.Item>
-                  ))}
-
-                {canManage && (
-                  <>
-                    <Dropdown.Item className="p-0 btn btn-light ">
-                      <button
-                        className="btn btn-light w-100 d-flex align-items-center justify-content-center"
-                        onClick={() => handleEditComment(comment)}
-                      >
-                        <p className="m-0">Edit</p>
-                        <i className="bx bxs-edit m-0 ms-1"></i>
-                      </button>
-                    </Dropdown.Item>
-                    <Dropdown.Item className="p-0 btn btn-light ">
-                      <button
-                        className="btn btn-light w-100 d-flex align-items-center justify-content-center"
-                        onClick={() => handleDeleteComment(comment.commentID)}
-                      >
-                        <p className="m-0">Delete</p>
-                        <i className="bx bx-message-square-x m-0 ms-1"></i>
-                      </button>
-                    </Dropdown.Item>
-                  </>
-                )}
-              </Dropdown.Menu>
-            </Dropdown>
+            <CommentDropdown
+              comment={comment}
+              entryData={entryData}
+              user={user}
+              canManage={canManage}
+            />
           </div>
         </div>
       </div>
@@ -404,63 +357,12 @@ const CommentLayout = ({
                       )}
                       {/* FOR COMMENT OPTIONS */}
                       <div>
-                        <Dropdown>
-                          <Dropdown.Toggle
-                            className="btn-light d-flex align-items-center pt-0 pb-2"
-                            id="dropdown-basic"
-                            bsPrefix="custom-toggle"
-                            disabled={reply.isAdmin}
-                          >
-                            <h5 className="m-0">...</h5>
-                          </Dropdown.Toggle>
-
-                          <Dropdown.Menu className="p-2 ">
-                            {!canManage &&
-                              (user.isAdmin ? (
-                                <>
-                                  <Suspend profileOwner={reply} />
-                                  {/* <Hide type={"comment"} entry={entry} /> */}
-                                </>
-                              ) : (
-                                <Dropdown.Item className="p-0 btn btn-light">
-                                  <ReportButton
-                                    ownComment={ownComment}
-                                    isAnon={isAnon}
-                                    alias={entryData.alias}
-                                    commentID={reply.commentID}
-                                    userID={reply.userID}
-                                    firstName={reply.firstName}
-                                    entryID={entryID}
-                                  />
-                                </Dropdown.Item>
-                              ))}
-
-                            {canManage && (
-                              <>
-                                <Dropdown.Item className="p-0 btn btn-light ">
-                                  <button
-                                    className="btn btn-light w-100 d-flex align-items-center justify-content-center"
-                                    onClick={() => handleEditComment(reply)}
-                                  >
-                                    <p className="m-0">Edit</p>
-                                    <i className="bx bxs-edit m-0 ms-1"></i>
-                                  </button>
-                                </Dropdown.Item>
-                                <Dropdown.Item className="p-0 btn btn-light ">
-                                  <button
-                                    className="btn btn-light w-100 d-flex align-items-center justify-content-center"
-                                    onClick={() =>
-                                      handleDeleteComment(reply.commentID)
-                                    }
-                                  >
-                                    <p className="m-0">Delete</p>
-                                    <i className="bx bx-message-square-x m-0 ms-1"></i>
-                                  </button>
-                                </Dropdown.Item>
-                              </>
-                            )}
-                          </Dropdown.Menu>
-                        </Dropdown>
+                        <CommentDropdown
+                          comment={reply}
+                          entryData={entryData}
+                          user={user}
+                          canManage={canManage}
+                        />
                       </div>
                     </div>
                   </div>

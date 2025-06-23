@@ -9,7 +9,6 @@ import AnonymousIcon from "../../../assets/anonymous.png";
 import DefaultProfile from "../../../assets/userDefaultProfile.png";
 import React from "react";
 import { Dropdown, ToggleButton } from "react-bootstrap";
-import Suspend from "../Profile/Suspend";
 import MessageModal from "../DiaryEntry/messageModal";
 import MessageAlert from "../DiaryEntry/messageAlert";
 import CommentLayout from "./CommentLayout";

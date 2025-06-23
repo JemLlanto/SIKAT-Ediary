@@ -235,7 +235,7 @@ const DiaryEntryLayout = ({
         <div className="col p-0">
           <CommentSection
             user={user}
-            entryData={entry}
+            entryData={entryData}
             commentCount={comments.length}
             userID={currentUser?.userID}
             entryID={entryData.entryID}

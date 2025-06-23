@@ -1,19 +1,23 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, useId } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import Modal from "react-bootstrap/Modal";
 import FloatingLabel from "react-bootstrap/FloatingLabel";
 import Form from "react-bootstrap/Form";
-import Accordion from "react-bootstrap/Accordion";
+import DropDownButton from "../../../assets/DropDown.png";
 import AnonymousIcon from "../../../assets/anonymous.png";
+import DefaultProfile from "../../../assets/userDefaultProfile.png";
 import React from "react";
-import Dropdown from "react-bootstrap/Dropdown";
-import ReportButton from "./ReportCommentButton";
+import { Dropdown, ToggleButton } from "react-bootstrap";
 import Suspend from "../Profile/Suspend";
 import MessageModal from "../DiaryEntry/messageModal";
 import MessageAlert from "../DiaryEntry/messageAlert";
+import CommentLayout from "./CommentLayout";
+import Swal from "sweetalert2";
 
 const CommentSection = ({
+  user,
+  entryData,
   userID,
   entryID,
   entry,
@@ -22,7 +26,6 @@ const CommentSection = ({
   isAnon,
   alias,
 }) => {
-  const [user, setUser] = useState(null);
   const [show, setShow] = useState(false);
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState("");
@@ -30,25 +33,66 @@ const CommentSection = ({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [openAccordions, setOpenAccordions] = useState([]);
-
+  const [count, setCount] = useState(0);
   const [editComment, setEditComment] = useState(null);
   const [editCommentText, setEditCommentText] = useState("");
   const [isSendingComment, setIsSendingComment] = useState(false);
   const [isSendingReply, setIsSendingReply] = useState(false);
-
+  const [interactAsAnon, setInteractAsAnon] = useState(
+    isAnon === "private"
+      ? true
+      : () => {
+          const storedValue = localStorage.getItem("interactAsAnon");
+          return storedValue ? JSON.parse(storedValue) : false;
+        }
+  );
+  const [hasCommented, setHasCommented] = useState(false);
   const replyTextsRef = useRef({});
   const newCommentRef = useRef(null);
-  const newReplyRef = useRef(null);
+  useEffect(() => {
+    if (newCommentRef.current) {
+      // console.log("Ref", newCommentRef.current);
+      newCommentRef.current.scrollIntoView({
+        behavior: "smooth",
+        block: "end",
+      });
+    }
+  }, [comments]); // runs every time a new comment is added
+  // const newReplyRef = useRef(null);
 
   useEffect(() => {
     const userData = localStorage.getItem("user");
     if (userData) {
-      const parsedUser = JSON.parse(userData);
-      setUser(parsedUser);
     } else {
       window.location.href = "/";
     }
-  }, []);
+    if (!commentCount) return;
+    setCount(commentCount);
+  }, [commentCount]);
+
+  const toggleAnon = () => {
+    setInteractAsAnon((prev) => {
+      const newValue = !prev;
+
+      // Save to localStorage
+      localStorage.setItem("interactAsAnon", JSON.stringify(newValue));
+
+      // Show SweetAlert message
+      Swal.fire({
+        icon: "info",
+        title: "Notice",
+        text: newValue
+          ? "You're now interacting anonymously"
+          : "You're no longer interacting anonymously",
+        // toast: true,
+        // position: "top-end",
+        timer: 5000,
+        showConfirmButton: false,
+      });
+
+      return newValue;
+    });
+  };
 
   const fetchComments = useCallback(async () => {
     // setLoading(true);
@@ -61,6 +105,17 @@ const CommentSection = ({
       const fetchedComments = response.data;
       const nestedComments = nestComments(fetchedComments);
       setComments(nestedComments);
+
+      // Check if the user has commented
+      const hasUserCommented = fetchedComments.some(
+        (comment) => comment.userID === user?.userID
+      );
+      // console.log(
+      //   hasUserCommented
+      //     ? "User alreeady commented"
+      //     : "No comment for the current user"
+      // );
+      setHasCommented(hasUserCommented);
     } catch (error) {
       console.error("Error fetching comments:", error);
       setError("Failed to fetch comments. Please try again.");
@@ -105,6 +160,7 @@ const CommentSection = ({
       userID,
       entryID,
       text: newComment,
+      isAnon: interactAsAnon,
     };
 
     setIsSendingComment(true);
@@ -115,10 +171,14 @@ const CommentSection = ({
       );
       setNewComment("");
       fetchComments();
+      setCount(count + 1);
       updateEngagement(entryID);
-      setTimeout(() => {
-        newCommentRef.current?.scrollIntoView({ behavior: "smooth" });
-      }, 100);
+      // setTimeout(() => {
+      //   newCommentRef.current?.scrollIntoView({
+      //     behavior: "smooth",
+      //     block: "end",
+      //   });
+      // }, 100);
     } catch (error) {
       console.error("Error posting comment:", error);
       setError("Failed to post comment. Please try again.");
@@ -155,7 +215,7 @@ const CommentSection = ({
 
   const handleSendReply = async (parentID, repliedUserID) => {
     const replyText = replyTextsRef.current[parentID] || "";
-    console.log("reply content: ", replyText);
+    // console.log("reply content: ", replyText);
 
     if (replyText.trim() === "") return;
 
@@ -163,6 +223,7 @@ const CommentSection = ({
       userID,
       entryID,
       text: replyText,
+      isAnon: interactAsAnon,
       replyCommentID: parentID,
       repliedUserID,
     };
@@ -193,11 +254,12 @@ const CommentSection = ({
       setReplyTo(null);
       replyTextsRef.current[parentID] = "";
       fetchComments();
+      setCount(count + 1);
       updateEngagement(entryID);
       setOpenAccordions((prevOpen) => [...prevOpen, parentID]);
-      setTimeout(() => {
-        newReplyRef.current?.scrollIntoView({ behavior: "smooth" });
-      }, 100);
+      // setTimeout(() => {
+      //   newReplyRef.current?.scrollIntoView({ behavior: "smooth" });
+      // }, 100);
     } catch (error) {
       console.error("Error posting reply:", error);
       setError("Failed to post reply. Please try again.");
@@ -213,7 +275,7 @@ const CommentSection = ({
 
   const handleSaveEditComment = useCallback(async () => {
     if (!editCommentText.trim()) return; // Ensure non-empty edit text
-    setLoading(true);
+    setIsSendingComment(true);
     try {
       await axios.put(
         `${
@@ -230,7 +292,7 @@ const CommentSection = ({
       console.error("Error editing comment:", error);
       setError("Failed to edit comment. Please try again.");
     } finally {
-      setLoading(false);
+      setIsSendingComment(false);
     }
   }, [editComment, editCommentText, fetchComments]);
 
@@ -281,24 +343,6 @@ const CommentSection = ({
     }
   };
 
-  const formatDate = (dateString) => {
-    const entryDate = new Date(dateString);
-    const now = new Date();
-    const timeDiff = now - entryDate;
-
-    if (timeDiff < 24 * 60 * 60 * 1000) {
-      return entryDate.toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
-      });
-    } else {
-      return entryDate.toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric",
-      });
-    }
-  };
-
   const updateEngagement = async (entryID) => {
     try {
       await axios.post(
@@ -310,463 +354,7 @@ const CommentSection = ({
     }
   };
 
-  const Comment = React.memo(({ comment, depth = 0 }) => {
-    const canManage = comment.userID === userID;
-    const isAccordionOpen = openAccordions.includes(comment.commentID);
-    const ownComment = entry === comment.userID;
-
-    return (
-      <div
-        className="position-relative"
-        style={{ marginLeft: "1rem", marginTop: "10px" }}
-        ref={comment.commentID === replyTo ? newReplyRef : null}
-      >
-        {comment.replies.length > 0 ? (
-          <>
-            <div
-              className="position-absolute border-start border-2 mt-2"
-              style={{ height: "69%", width: "5%", left: "20px", zIndex: "1" }}
-            ></div>
-          </>
-        ) : null}
-
-        {/* Profile */}
-        <div className="d-flex align-items-start flex-column gap-2 pb-2">
-          <div className="w-100 d-flex align-items-center justify-content-between pe-3">
-            {isAnon === "private" && ownComment ? (
-              <div className="d-flex align-items-center gap-2">
-                <div
-                  className="profilePicture d-flex align-items-center justify-content-center"
-                  style={{ zIndex: "2" }}
-                >
-                  <img
-                    src={AnonymousIcon}
-                    alt="Profile"
-                    style={{
-                      width: "100%",
-                      height: "100%",
-                      objectFit: "cover",
-                    }}
-                  />
-                </div>
-                <div className="d-flex justify-content-start flex-column">
-                  <p className="m-0 text-start">{alias}</p>
-                </div>
-              </div>
-            ) : (
-              <Link
-                to={`/Profile/${comment.userID}`}
-                className="linkText rounded"
-              >
-                <div className="d-flex align-items-center gap-2">
-                  <div
-                    className="profilePicture d-flex align-items-center justify-content-center"
-                    style={{ zIndex: "2" }}
-                  >
-                    <img
-                      src={
-                        comment.profile_image
-                          ? comment.profile_image
-                          : AnonymousIcon
-                      }
-                      alt="Profile"
-                      style={{
-                        width: "100%",
-                        height: "100%",
-                        objectFit: "cover",
-                      }}
-                    />
-                  </div>
-                  <div className="d-flex justify-content-start flex-column">
-                    <p className="m-0 text-start">
-                      {comment.firstName} {comment.lastName}{" "}
-                      {user.isAdmin ? <>({comment.DepartmentName})</> : null}
-                    </p>
-                  </div>
-                </div>
-              </Link>
-            )}
-            {/* FOR COMMENT OPTIONS */}
-            <div>
-              <Dropdown>
-                <Dropdown.Toggle
-                  className="btn-light d-flex align-items-center pt-0 pb-2"
-                  id="dropdown-basic"
-                  bsPrefix="custom-toggle"
-                  disabled={comment.isAdmin}
-                >
-                  <h5 className="m-0">...</h5>
-                </Dropdown.Toggle>
-
-                <Dropdown.Menu className="p-2 ">
-                  {!canManage &&
-                    (user.isAdmin ? (
-                      <>
-                        <Suspend profileOwner={comment} />
-                        {/* <Hide type={"comment"} entry={entry} /> */}
-                      </>
-                    ) : (
-                      <Dropdown.Item className="p-0 btn btn-light">
-                        <ReportButton
-                          ownComment={ownComment}
-                          isAnon={isAnon}
-                          alias={alias}
-                          commentID={comment.commentID}
-                          userID={comment.userID}
-                          firstName={comment.firstName}
-                          entryID={entryID}
-                        />
-                      </Dropdown.Item>
-                    ))}
-
-                  {canManage && (
-                    <>
-                      <Dropdown.Item className="p-0 btn btn-light ">
-                        <button
-                          className="btn btn-light w-100 d-flex align-items-center justify-content-center"
-                          onClick={() => handleEditComment(comment)}
-                        >
-                          <p className="m-0">Edit</p>
-                          <i className="bx bxs-edit m-0 ms-1"></i>
-                        </button>
-                      </Dropdown.Item>
-                      <Dropdown.Item className="p-0 btn btn-light ">
-                        <button
-                          className="btn btn-light w-100 d-flex align-items-center justify-content-center"
-                          onClick={() => handleDeleteComment(comment.commentID)}
-                        >
-                          <p className="m-0">Delete</p>
-                          <i className="bx bx-message-square-x m-0 ms-1"></i>
-                        </button>
-                      </Dropdown.Item>
-                    </>
-                  )}
-                </Dropdown.Menu>
-              </Dropdown>
-            </div>
-          </div>
-        </div>
-
-        <div style={{ zIndex: "10" }}>
-          <div className="ps-5 ms-2 d-flex align-items-center gap-2">
-            <p
-              className="m-0 p-2 rounded border-2 text-secondary"
-              style={{
-                whiteSpace: "pre-wrap",
-                maxWidth: "500px",
-                width: "fit-content",
-                wordWrap: "break-word",
-                backgroundColor: "var(--background_light)",
-              }}
-              ref={
-                comment.commentID === comments[comments.length - 1]?.commentID
-                  ? newCommentRef
-                  : null
-              }
-            >
-              {comment.text}
-            </p>
-            <h6
-              className="m-0"
-              style={{ fontSize: "clamp(.5rem, 9dvw, .7rem)", color: "gray" }}
-            >
-              {formatDate(comment.created_at)}
-            </h6>
-          </div>
-
-          <div className="ps-5 d-flex align-items-center gap-2">
-            {/* <button className="btn btn-light btn-sm ">Gadify</button> */}
-            <button
-              className="btn btn-sm"
-              onClick={() => setReplyTo(comment.commentID)}
-            >
-              <p className="m-0">Reply</p>
-            </button>
-          </div>
-
-          {editComment === comment.commentID ? (
-            <div className="mb-2 w-100"></div>
-          ) : (
-            <div></div>
-          )}
-        </div>
-
-        {replyTo === comment.commentID && (
-          <div className="ps-5 mt-2">
-            <FloatingLabel
-              controlId={`replyTextarea-${comment.commentID}`}
-              label="Reply"
-            >
-              <Form.Control
-                as="textarea"
-                placeholder="Leave a reply here"
-                style={{ height: "80px" }}
-                onChange={(e) =>
-                  handleReplyTextChange(comment.commentID, e.target.value)
-                }
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && !e.shiftKey) {
-                    e.preventDefault();
-                    handleSendReply(comment.commentID, comment.userID);
-                  }
-                }}
-              />
-              <div
-                className="d-flex justify-content-end mt-2 position-absolute gap-1 gap-md-2"
-                style={{ right: "10px", bottom: "10px" }}
-              >
-                <button
-                  className="py-2 d-flex align-items-center justify-content-center border-0"
-                  onClick={() => setReplyTo(null)}
-                  style={{
-                    height: "30px",
-                    width: "30px",
-                    borderRadius: "50%",
-                    backgroundColor: "#ffff",
-                    right: "10px",
-                    bottom: "10px",
-                    color: "red",
-                    // fontSize: "clamp(1.2rem, 5dvw, 2rem)",
-                  }}
-                >
-                  <h3 className="m-0 d-flex align-items-center justify-content-center">
-                    <i className="bx bx-x"></i>
-                  </h3>
-                </button>
-                <button
-                  onClick={() =>
-                    handleSendReply(comment.commentID, comment.userID)
-                  }
-                  className="py-2 d-flex align-items-center justify-content-center border-0"
-                  style={{
-                    height: "30px",
-                    width: "30px",
-                    borderRadius: "50%",
-                    backgroundColor: "#ffff",
-                    color: "var(--primary)",
-                  }}
-                >
-                  <h4 className="m-0 d-flex align-items-center justify-content-center">
-                    {isSendingReply ? (
-                      <>
-                        <i className="bx bx-spin bx-loader-circle"></i>
-                      </>
-                    ) : (
-                      <>
-                        <i className="bx bxs-send"></i>
-                      </>
-                    )}
-                  </h4>
-                </button>
-              </div>
-            </FloatingLabel>
-          </div>
-        )}
-
-        {comment.replies.length > 0 && (
-          <Accordion
-            className="commentAccordion text-secondary mt-2 ps-4"
-            activeKey={isAccordionOpen ? `reply-${comment.commentID}` : null}
-            onSelect={() => toggleAccordion(comment.commentID)}
-          >
-            <Accordion.Item eventKey={`reply-${comment.commentID}`}>
-              <Accordion.Header className="position-relative">
-                {isAccordionOpen ? null : (
-                  <div
-                    className="position-absolute border-bottom border-start rounded-bottom-3 border-2 mt-2 "
-                    style={{
-                      height: "4rem",
-                      width: "5rem",
-                      top: "-45px",
-                      left: "-4px",
-                      zIndex: "0",
-                    }}
-                  ></div>
-                )}
-
-                <p className="m-0 bg-white" style={{ zIndex: "1" }}>
-                  View Replies ({comment.replies.length})
-                </p>
-              </Accordion.Header>
-              <Accordion.Body className="pt-0">
-                {/* REPLIES */}
-                {comment.replies.map((reply) => (
-                  <>
-                    <div className="d-flex align-items-start flex-column gap-2 mt-2 position-relative">
-                      <div
-                        className="position-absolute border-bottom border-start rounded-bottom-3 border-2 mt-2"
-                        style={{
-                          height: "6.6rem",
-                          width: "3rem",
-                          top: "-85px",
-                          left: "-24px",
-                          zIndex: "1",
-                        }}
-                      ></div>
-                      <div className="w-100 d-flex align-items-center justify-content-between pe-3">
-                        {isAnon === "private" && ownComment ? (
-                          <div className="d-flex align-items-center gap-2">
-                            <div
-                              className="profilePicture d-flex align-items-center justify-content-center"
-                              style={{ zIndex: "2" }}
-                            >
-                              <img
-                                src={AnonymousIcon}
-                                alt="Profile"
-                                style={{
-                                  width: "100%",
-                                  height: "100%",
-                                  objectFit: "cover",
-                                }}
-                              />
-                            </div>
-                            <div className="d-flex justify-content-start flex-column">
-                              <p className="m-0 text-start">{alias}</p>
-                            </div>
-                          </div>
-                        ) : (
-                          <Link
-                            to={`/Profile/${reply.userID}`}
-                            className="linkText rounded"
-                          >
-                            <div className="d-flex align-items-center gap-2">
-                              <div
-                                className="profilePicture d-flex align-items-center justify-content-center"
-                                style={{ zIndex: "2" }}
-                              >
-                                <img
-                                  src={
-                                    reply.profile_image
-                                      ? reply.profile_image
-                                      : AnonymousIcon
-                                  }
-                                  alt="Profile"
-                                  style={{
-                                    width: "100%",
-                                    height: "100%",
-                                    objectFit: "cover",
-                                  }}
-                                />
-                              </div>
-                              <div className="d-flex justify-content-start flex-column">
-                                <p className="m-0 text-start">
-                                  {reply.firstName} {reply.lastName}{" "}
-                                  {user.isAdmin ? (
-                                    <>({reply.DepartmentName})</>
-                                  ) : null}
-                                </p>
-                              </div>
-                            </div>
-                          </Link>
-                        )}
-                        {/* FOR COMMENT OPTIONS */}
-                        <div>
-                          <Dropdown>
-                            <Dropdown.Toggle
-                              className="btn-light d-flex align-items-center pt-0 pb-2"
-                              id="dropdown-basic"
-                              bsPrefix="custom-toggle"
-                              disabled={reply.isAdmin}
-                            >
-                              <h5 className="m-0">...</h5>
-                            </Dropdown.Toggle>
-
-                            <Dropdown.Menu className="p-2 ">
-                              {!canManage &&
-                                (user.isAdmin ? (
-                                  <>
-                                    <Suspend profileOwner={reply} />
-                                    {/* <Hide type={"comment"} entry={entry} /> */}
-                                  </>
-                                ) : (
-                                  <Dropdown.Item className="p-0 btn btn-light">
-                                    <ReportButton
-                                      ownComment={ownComment}
-                                      isAnon={isAnon}
-                                      alias={alias}
-                                      commentID={reply.commentID}
-                                      userID={reply.userID}
-                                      firstName={reply.firstName}
-                                      entryID={entryID}
-                                    />
-                                  </Dropdown.Item>
-                                ))}
-
-                              {canManage && (
-                                <>
-                                  <Dropdown.Item className="p-0 btn btn-light ">
-                                    <button
-                                      className="btn btn-light w-100 d-flex align-items-center justify-content-center"
-                                      onClick={() => handleEditComment(reply)}
-                                    >
-                                      <p className="m-0">Edit</p>
-                                      <i className="bx bxs-edit m-0 ms-1"></i>
-                                    </button>
-                                  </Dropdown.Item>
-                                  <Dropdown.Item className="p-0 btn btn-light ">
-                                    <button
-                                      className="btn btn-light w-100 d-flex align-items-center justify-content-center"
-                                      onClick={() =>
-                                        handleDeleteComment(reply.commentID)
-                                      }
-                                    >
-                                      <p className="m-0">Delete</p>
-                                      <i className="bx bx-message-square-x m-0 ms-1"></i>
-                                    </button>
-                                  </Dropdown.Item>
-                                </>
-                              )}
-                            </Dropdown.Menu>
-                          </Dropdown>
-                        </div>
-                      </div>
-                    </div>
-                    <div>
-                      <div className="ps-5 ms-2 d-flex align-items-center gap-2">
-                        <p
-                          className="m-0 p-2 rounded border-2 text-secondary"
-                          style={{
-                            whiteSpace: "pre-wrap",
-                            maxWidth: "500px",
-                            width: "fit-content",
-                            wordWrap: "break-word",
-                            backgroundColor: "var(--background_light)",
-                          }}
-                          ref={
-                            reply.commentID ===
-                            reply[reply.length - 1]?.commentID
-                              ? newCommentRef
-                              : null
-                          }
-                        >
-                          {reply.text}
-                        </p>
-                        <h6
-                          className="m-0"
-                          style={{
-                            fontSize: "clamp(.5rem, 9dvw, .7rem)",
-                            color: "gray",
-                          }}
-                        >
-                          {formatDate(reply.created_at)}
-                        </h6>
-                      </div>
-
-                      {editComment === reply.commentID ? (
-                        <div className="mb-2 w-100"></div>
-                      ) : (
-                        <div></div>
-                      )}
-                    </div>
-                  </>
-                ))}
-              </Accordion.Body>
-            </Accordion.Item>
-          </Accordion>
-        )}
-      </div>
-    );
-  });
+  const Comment = React.memo(({ comment, depth = 0 }) => {});
 
   return (
     <>
@@ -775,7 +363,7 @@ const CommentSection = ({
         onClick={handleShow}
       >
         <i className="bx bx-comment"></i>
-        <span>{commentCount}</span>
+        <span>{count}</span>
         <p className="m-0 d-none d-md-block">Comments</p>
       </button>
 
@@ -789,16 +377,24 @@ const CommentSection = ({
         <Modal.Header closeButton>
           <Modal.Title>
             <h5 className="m-0">
-              Comments on {isAnon === "private" ? alias : firstName}'s Diary
+              Comments on{" "}
+              {isAnon === "private"
+                ? user.userID === entryData.userID
+                  ? "your"
+                  : `${alias}'s`
+                : user.userID === entryData.userID
+                ? "your"
+                : `${firstName}'s`}
+              {entryData.isAdmin ? " post" : " diary"}
             </h5>
           </Modal.Title>
         </Modal.Header>
         <Modal.Body
-          className="d-flex flex-column justify-content-between p-1 p-sm-3"
+          className="d-flex flex-column justify-content-between p-0"
           style={{ height: "clamp(30rem ,40dvw ,35rem)" }}
         >
           <div
-            className="pe-2 custom-scrollbar"
+            className="custom-scrollbar"
             style={{ overflowY: "scroll", height: "100%" }}
           >
             {loading ? (
@@ -829,7 +425,27 @@ const CommentSection = ({
                 ) : (
                   <>
                     {comments.map((comment) => (
-                      <Comment key={comment.commentID} comment={comment} />
+                      <CommentLayout
+                        key={comment.commentID}
+                        entryData={entryData}
+                        comment={comment}
+                        comments={comments}
+                        userID={userID}
+                        openAccordions={openAccordions}
+                        entry={entry}
+                        entryID={entryID}
+                        replyTo={replyTo}
+                        setReplyTo={setReplyTo}
+                        isAnon={isAnon}
+                        user={user}
+                        editComment={editComment}
+                        newCommentRef={newCommentRef}
+                        toggleAccordion={toggleAccordion}
+                        isSendingReply={isSendingReply}
+                        handleSendReply={handleSendReply}
+                        handleReplyTextChange={handleReplyTextChange}
+                        handleEditComment={handleEditComment}
+                      />
                     ))}
                   </>
                 )}
@@ -837,88 +453,184 @@ const CommentSection = ({
             )}
             {/* {error && <p className="text-danger">{error}</p>} */}
           </div>
-          <FloatingLabel
-            controlId="newCommentTextarea"
-            label={editComment ? "Edit Comment" : "Comment"}
-            className="commentInput mt-3 position-relative"
-          >
-            <Form.Control
-              as="textarea"
-              className="pe-5"
-              placeholder="Leave a comment here"
-              style={{ height: "clamp(4rem, 10dvw, 6rem)" }}
-              value={editComment ? editCommentText : newComment}
-              onChange={(e) => {
-                if (editComment) {
-                  setEditCommentText(e.target.value); // Update the text for editing
-                } else {
-                  setNewComment(e.target.value); // Update the new comment
-                }
-              }}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && !e.shiftKey) {
-                  e.preventDefault();
-                  {
-                    editComment ? handleSaveEditComment() : handleSendComment();
-                  }
-                }
-              }}
-            />
-            <div
-              className="d-flex justify-content-end mt-2 position-absolute gap-1 gap-md-2"
-              style={{ right: "10px", bottom: "10px" }}
-            >
-              {editComment ? (
-                <button
-                  className="py-2 d-flex align-items-center justify-content-center border-0"
-                  onClick={() => setEditComment(null)}
-                  style={{
-                    height: "30px",
-                    width: "30px",
-                    borderRadius: "50%",
-                    backgroundColor: "#ffff",
-                    right: "10px",
-                    bottom: "10px",
-                    color: "red",
-                    fontSize: "clamp(1.2rem, 5dvw, 2rem)",
-                  }}
-                >
-                  <h3 className="m-0 d-flex align-items-center justify-content-center">
-                    <i className="bx bx-x"></i>
-                  </h3>
-                </button>
-              ) : (
-                ""
-              )}
-
-              <button
-                onClick={
-                  editComment ? handleSaveEditComment : handleSendComment
-                }
-                className="py-2 d-flex align-items-center justify-content-center border-0"
-                style={{
-                  height: "30px",
-                  width: "30px",
-                  borderRadius: "50%",
-                  backgroundColor: "#ffff",
-                  color: "var(--primary)",
-                  fontSize: "clamp(1.2rem, 5dvw, 1.5rem)",
-                }}
-              >
-                <h4 className="m-0 d-flex align-items-center justify-content-center">
-                  {isSendingComment ? (
-                    <>
-                      <i className="bx bx-spin bx-loader-circle"></i>
-                    </>
+          <div className="w-100 row m-0 px-2">
+            <div className="col p-0">
+              <FloatingLabel
+                controlId="newCommentTextarea"
+                label={
+                  editComment ? (
+                    "Edit Comment"
+                  ) : interactAsAnon ? (
+                    "Comment anonimously"
                   ) : (
-                    <>
-                      <i className="bx bxs-send"></i>
-                    </>
+                    <>{`Comment as ${user.firstName}`}</>
+                  )
+                }
+                className="commentInput mt-3 position-relative m-2"
+              >
+                <Form.Control
+                  as="textarea"
+                  className="pe-5"
+                  placeholder="Leave a comment here"
+                  style={{ height: "clamp(4rem, 10dvw, 6rem)" }}
+                  value={editComment ? editCommentText : newComment}
+                  onChange={(e) => {
+                    if (editComment) {
+                      setEditCommentText(e.target.value); // Update the text for editing
+                    } else {
+                      setNewComment(e.target.value); // Update the new comment
+                    }
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && !e.shiftKey) {
+                      e.preventDefault();
+                      {
+                        editComment
+                          ? handleSaveEditComment()
+                          : handleSendComment();
+                      }
+                    }
+                  }}
+                />
+                <div
+                  className="d-flex justify-content-end mt-2 position-absolute gap-1 gap-md-2"
+                  style={{ right: "10px", bottom: "10px" }}
+                >
+                  {editComment ? (
+                    <button
+                      className="py-2 d-flex align-items-center justify-content-center border-0"
+                      onClick={() => setEditComment(null)}
+                      style={{
+                        height: "30px",
+                        width: "30px",
+                        borderRadius: "50%",
+                        backgroundColor: "#ffff",
+                        right: "10px",
+                        bottom: "10px",
+                        color: "red",
+                        fontSize: "clamp(1.2rem, 5dvw, 2rem)",
+                      }}
+                    >
+                      <h3 className="m-0 d-flex align-items-center justify-content-center">
+                        <i className="bx bx-x"></i>
+                      </h3>
+                    </button>
+                  ) : (
+                    ""
                   )}
-                </h4>
-              </button>
+
+                  <button
+                    onClick={
+                      editComment ? handleSaveEditComment : handleSendComment
+                    }
+                    className="py-2 d-flex align-items-center justify-content-center border-0"
+                    style={{
+                      height: "30px",
+                      width: "30px",
+                      borderRadius: "50%",
+                      backgroundColor: "#ffff",
+                      color: "var(--primary)",
+                      fontSize: "clamp(1.2rem, 5dvw, 1.5rem)",
+                    }}
+                  >
+                    <h4 className="m-0 d-flex align-items-center justify-content-center">
+                      {isSendingComment ? (
+                        <>
+                          <i className="bx bx-spin bx-loader-circle"></i>
+                        </>
+                      ) : (
+                        <>
+                          <i className="bx bxs-send"></i>
+                        </>
+                      )}
+                    </h4>
+                  </button>
+                </div>
+              </FloatingLabel>
             </div>
-          </FloatingLabel>
+            <div className="col-2 col-md-1 p-0 d-flex justify-content-center align-items-center">
+              <Dropdown>
+                <Dropdown.Toggle
+                  as="button"
+                  className="logo position-relative custom-button d-flex align-items-center justify-content-center overflow-visible p-0"
+                  id="UserAccountDropdown"
+                  bsPrefix="custom-toggle"
+                  disabled={user.userID === entryData.userID || hasCommented}
+                >
+                  <div
+                    className="position-absolute rounded-circle d-flex justify-content-center align-items-center p-0"
+                    style={{
+                      width: "clamp(15px, 2dvw, 20px)",
+                      height: "clamp(15px, 2dvw, 20px)",
+                      backgroundColor: "white",
+                      right: "-3px",
+                      bottom: "-1px",
+                      border: "2px solid #ffffff",
+                    }}
+                  >
+                    <img
+                      className="mt-1"
+                      src={DropDownButton}
+                      alt=""
+                      style={{ width: "60%", height: "60%" }}
+                    />
+                  </div>
+                  <div
+                    className="overflow-hidden rounded-circle"
+                    style={{ width: "100%", height: "100%" }}
+                  >
+                    {interactAsAnon ? (
+                      <>
+                        <img
+                          src={AnonymousIcon}
+                          alt="Profile"
+                          style={{
+                            width: "100%",
+                            height: "100%",
+                            objectFit: "cover",
+                          }}
+                        />
+                      </>
+                    ) : (
+                      <>
+                        <img
+                          src={user.profile_image}
+                          alt="Profile"
+                          style={{
+                            width: "100%",
+                            height: "100%",
+                            objectFit: "cover",
+                          }}
+                        />
+                      </>
+                    )}
+                  </div>
+                </Dropdown.Toggle>
+                <Dropdown.Menu className="text-end mt-2 px-2">
+                  <Dropdown.Item className="dropdownItem w-100 btn text-end p-0">
+                    <div
+                      className="w-100 btn"
+                      onClick={toggleAnon}
+                      style={
+                        interactAsAnon
+                          ? {
+                              backgroundColor: "var(--primary)",
+                              color: "#ffffff",
+                            }
+                          : {
+                              backgroundColor: "transparent",
+                              color: "var(--primary)",
+                              border: "1px solid var(--primary)",
+                            }
+                      }
+                    >
+                      <p className="m-0">Anonimous</p>
+                    </div>
+                  </Dropdown.Item>
+                </Dropdown.Menu>
+              </Dropdown>
+            </div>
+          </div>
         </Modal.Body>
       </Modal>
     </>

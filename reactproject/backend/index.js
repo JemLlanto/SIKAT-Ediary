@@ -1762,9 +1762,10 @@ app.get("/fetchComments/:entryID", (req, res) => {
   const { entryID } = req.params;
   const query = `
     SELECT 
-      comments.commentID, comments.text, comments.created_at, comments.replyCommentID,
+      comments.commentID, comments.text, comments.isAnon, comments.created_at, comments.replyCommentID,
       comments.userID,  -- Add this line to fetch userID
       course_department.DepartmentName,
+      user_profiles.alias,
       user_table.username, user_table.firstName, user_table.isAdmin, user_table.isSuspended, user_table.lastName, user_profiles.profile_image
     FROM comments
     INNER JOIN user_table ON comments.userID = user_table.userID
@@ -1785,7 +1786,8 @@ app.get("/fetchComments/:entryID", (req, res) => {
 });
 
 app.post("/comments", (req, res) => {
-  const { userID, text, entryID, replyCommentID, repliedUserID } = req.body;
+  const { userID, text, entryID, isAnon, replyCommentID, repliedUserID } =
+    req.body;
 
   if (!text || !userID || !entryID) {
     return res
@@ -1794,7 +1796,7 @@ app.post("/comments", (req, res) => {
   }
 
   const commentQuery =
-    "INSERT INTO comments (userID, entryID, text, replyCommentID, repliedUserID) VALUES (?, ?, ?, ?, ?)";
+    "INSERT INTO comments (userID, entryID, text, isAnon, replyCommentID, repliedUserID) VALUES (?, ?, ?, ?, ?, ?)";
   const updateQuery = `
     UPDATE diary_entries 
     SET 
@@ -1810,6 +1812,7 @@ app.post("/comments", (req, res) => {
       userID,
       entryID,
       text,
+      isAnon,
       replyCommentID,
       repliedUserID,
       repliedUserID || null,

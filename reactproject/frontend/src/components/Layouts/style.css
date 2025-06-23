@@ -566,6 +566,7 @@ input.form-control:focus {
 /* FOR ACCORDION */
 .accordion-button:focus {
   box-shadow: none !important;
+  background-color: transparent !important;
   z-index: -10;
 }
 .accordion-button:not(.collapsed) {
@@ -575,6 +576,9 @@ input.form-control:focus {
 .accordion-button {
   color: gray !important;
   z-index: ;
+}
+.accordion-button:hover {
+  background-color: transparent !important;
 }
 
 /* FOR COMMENT REPLIES */

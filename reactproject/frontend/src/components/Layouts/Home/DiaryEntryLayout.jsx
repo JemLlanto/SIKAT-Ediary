@@ -21,9 +21,9 @@ const DiaryEntryLayout = ({
   entry,
   user,
   followedUsers,
-  handleFollowToggle,
-  formatDate,
   flaggingOptions,
+  fetchFollowedUsers,
+  setFollowedUsers,
 }) => {
   const [entryData, setEntryData] = useState(entry);
   const [entries, setEntries] = useState([]);
@@ -49,12 +49,6 @@ const DiaryEntryLayout = ({
     setCurrentUser(storedUser);
   }, [navigate]);
 
-  // useEffect(() => {
-  //   if (user) {
-  //     fetchEntries(user.userID, filters);
-  //   }
-  // }, [user, filters]);
-
   useEffect(() => {
     if (entryData.entryID) {
       const fetchComments = async () => {
@@ -90,63 +84,6 @@ const DiaryEntryLayout = ({
       fetchComments();
     }
   }, [entryData.entryID]);
-
-  // const fetchEntries = async (userID, filters) => {
-  //   try {
-  //     // console.log("Fetching single entry...");
-  //     setLoading(true);
-  //     const response = await axios.get(
-  //       `${
-  //         import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
-  //       }/entries/fetchEntries`,
-  //       {
-  //         params: { userID, filters },
-  //       }
-  //     );
-
-  //     const gadifyStatusResponse = await axios.get(
-  //       `${
-  //         import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
-  //       }/gadifyStatus/${userID}`
-  //     );
-
-  //     const updatedEntries = response.data.map((entry) => {
-  //       const isGadified = gadifyStatusResponse.data.some(
-  //         (g) => g.entryID === entryData.entryID
-  //       );
-  //       return { ...entry, isGadified };
-  //     });
-  //     console.log("ENTRY FETCHED IN DIARY LAYOUT: ", updatedEntries);
-  //     setEntries(updatedEntries);
-  //   } catch (error) {
-  //     console.error("Error fetching diary entries:", error);
-  //   } finally {
-  //     // console.log("Entry fetched");
-  //     setLoading(false);
-  //   }
-  // };
-
-  // const handleDeleteEntry = async (entryID) => {
-  //   const confirmed = window.confirm(
-  //     "Are you sure you want to delete this entry?"
-  //   );
-  //   if (confirmed) {
-  //     try {
-  //       await axios.delete(
-  //         `${
-  //           import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
-  //         }/deleteEntry/${entryID}`
-  //       );
-  //       alert("Diary entry deleted successfully.");
-  //       setEntries((prevEntries) =>
-  //         prevEntries.filter((entry) => entryData.entryID !== entryID)
-  //       );
-  //     } catch (error) {
-  //       console.error("Error deleting diary entry:", error);
-  //       alert("Failed to delete the entry.");
-  //     }
-  //   }
-  // };
 
   const updateEngagement = async (entryID) => {
     try {
@@ -158,6 +95,26 @@ const DiaryEntryLayout = ({
       );
     } catch (error) {
       console.error("Error updating engagement:", error);
+    }
+  };
+
+  const formatDate = (dateString) => {
+    const entryDate = new Date(dateString);
+    const now = new Date();
+    const timeDiff = now - entryDate;
+
+    if (timeDiff < 24 * 60 * 60 * 1000) {
+      return entryDate.toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+    } else {
+      return entryDate.toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
     }
   };
 
@@ -181,7 +138,8 @@ const DiaryEntryLayout = ({
         currentUser={currentUser}
         FollowButton={FollowButton}
         followedUsers={followedUsers}
-        handleFollowToggle={handleFollowToggle}
+        fetchFollowedUsers={fetchFollowedUsers}
+        setFollowedUsers={setFollowedUsers}
       />
 
       <DiaryDetails
@@ -226,12 +184,6 @@ const DiaryEntryLayout = ({
           />
         </div>
 
-        {/* <div className="row pt-2">
-          <div className="col">
-            <i className="bx bx-comment"></i>
-            {comments.length}
-          </div> */}
-
         <div className="col p-0">
           <CommentSection
             user={user}
@@ -244,7 +196,6 @@ const DiaryEntryLayout = ({
             isAnon={entryData.anonimity}
             alias={entryData.alias}
           />
-          {/* {entry.isFlagged} */}
         </div>
 
         <div className="col p-0">

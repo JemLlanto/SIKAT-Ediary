@@ -97,7 +97,7 @@ const fetchingReportedUsers = (req, res) => {
       console.error("Error fetching reported users:", err.message);
       return res.status(500).json({ error: "Error fetching reported users" });
     }
-    console.log("results: ", results[0]);
+    // console.log("results: ", results[0]);
     res.status(200).json(results);
   });
 };

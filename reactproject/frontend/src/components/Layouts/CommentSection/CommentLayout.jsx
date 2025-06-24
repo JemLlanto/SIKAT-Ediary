@@ -275,10 +275,10 @@ const CommentLayout = ({
               <div
                 className="position-absolute border-bottom border-start rounded-bottom-3 border-2 mt-2"
                 style={{
-                  height: "4rem",
+                  height: "8rem",
                   width: "5rem",
-                  top: "-45px",
-                  left: "3.5px",
+                  top: "-110px",
+                  left: "3px",
                   zIndex: "0",
                 }}
               ></div>
@@ -295,7 +295,7 @@ const CommentLayout = ({
                         height: "6.6rem",
                         width: "3rem",
                         top: "-85px",
-                        left: "-16.5px",
+                        left: "-17px",
                         zIndex: "1",
                       }}
                     ></div>

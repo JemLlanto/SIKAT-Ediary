@@ -148,105 +148,6 @@ const CenterLayout = ({ setLoad, user, fetchUserData }) => {
     // console.log("Active Filters:", activeFilters);
   };
 
-  const handleFollowToggle = async (followUserId, targetUsername) => {
-    if (!followUserId) {
-      console.error("User ID to follow/unfollow is undefined");
-      return;
-    }
-
-    if (user.userID === followUserId) {
-      alert("You cannot follow yourself.");
-      return;
-    }
-
-    const isFollowing = followedUsers.includes(followUserId);
-
-    try {
-      if (isFollowing) {
-        setConfirmModal({
-          show: true,
-          message: `Are you sure you want to unfollow ${targetUsername}?`,
-          onConfirm: async () => {
-            try {
-              await axios.delete(
-                `${
-                  import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
-                }/unfollow/${followUserId}`,
-                {
-                  data: { followerId: user.userID },
-                }
-              );
-
-              // Update followed users list after unfollowing
-              setFollowedUsers((prev) =>
-                prev.filter((id) => id !== followUserId)
-              );
-
-              // Close confirmation modal and show success modal
-              setConfirmModal({ show: false, message: "" });
-              setModal({
-                show: true,
-                message: `You have unfollowed ${targetUsername}.`,
-              });
-
-              // Refresh the followed users list from the backend
-              await fetchFollowedUsers(user.userID);
-            } catch (error) {
-              console.error("Error unfollowing user:", error);
-              setModal({
-                show: true,
-                message: `There was an error unfollowing ${targetUsername}.`,
-              });
-            }
-          },
-          onCancel: () => setConfirmModal({ show: false, message: "" }),
-        });
-      } else {
-        await axios.post(
-          `${
-            import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
-          }/follow/${followUserId}`,
-          {
-            followerId: user.userID,
-          }
-        );
-
-        // Update followed users list after following
-        setFollowedUsers((prev) => [...prev, followUserId]);
-
-        // Show success modal
-        setModal({
-          show: true,
-          message: `You are now following ${targetUsername}.`,
-        });
-
-        // Send follow notification to the followed user
-        await axios.post(
-          `${
-            import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
-          }/notifications/${followUserId}`,
-          {
-            userID: followUserId,
-            actorID: user.userID,
-            entryID: null,
-            profile_image: user.profile_image,
-            type: "follow",
-            message: `${user.firstName} ${user.lastName} has followed you.`,
-          }
-        );
-
-        // Refresh the followed users list from the backend
-        await fetchFollowedUsers(user.userID);
-      }
-    } catch (error) {
-      console.error("Error toggling follow status:", error);
-      setModal({
-        show: true,
-        message: `There was an error processing your request.`,
-      });
-    }
-  };
-
   const updateEngagement = async (entryID) => {
     try {
       await axios.post(
@@ -532,8 +433,8 @@ const CenterLayout = ({ setLoad, user, fetchUserData }) => {
                   user={user}
                   followedUsers={followedUsers}
                   suspended={entry.isSuspended}
-                  handleFollowToggle={handleFollowToggle}
-                  formatDate={formatDate}
+                  fetchFollowedUsers={fetchFollowedUsers}
+                  setFollowedUsers={setFollowedUsers}
                 />
               ))
           )}

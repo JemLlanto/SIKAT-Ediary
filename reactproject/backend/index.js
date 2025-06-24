@@ -1675,6 +1675,8 @@ app.delete("/unfollow/:followUserId", (req, res) => {
   const { followerId } = req.body;
   const followUserId = req.params.followUserId;
 
+  console.log(followerId, followUserId);
+
   if (followerId === followUserId) {
     return res
       .status(400)
@@ -2100,7 +2102,7 @@ app.post("/notifications/:userID", async (req, res) => {
   const { userID } = req.params;
   const { actorID, message, entryID, profile_image, type, isAdmin } = req.body;
 
-  console.log("Request received:", req.body);
+  // console.log("Request received:", req.body);
 
   const insertNotificationQuery = `
     INSERT INTO notifications (userID, actorID, message, entryID, profile_image, type)

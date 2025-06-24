@@ -554,7 +554,11 @@ const CommentSection = ({
                   className="logo position-relative custom-button d-flex align-items-center justify-content-center overflow-visible p-0"
                   id="UserAccountDropdown"
                   bsPrefix="custom-toggle"
-                  disabled={user.userID === entryData.userID || hasCommented}
+                  disabled={
+                    user.userID === entryData.userID ||
+                    hasCommented ||
+                    user.isAdmin
+                  }
                 >
                   <div
                     className="position-absolute rounded-circle d-flex justify-content-center align-items-center p-0"
@@ -565,13 +569,17 @@ const CommentSection = ({
                       right: "-3px",
                       bottom: "-1px",
                       border: "2px solid #ffffff",
+                      zIndex: "10",
                     }}
                   >
                     <img
                       className="mt-1"
                       src={DropDownButton}
                       alt=""
-                      style={{ width: "60%", height: "60%" }}
+                      style={{
+                        width: "60%",
+                        height: "60%",
+                      }}
                     />
                   </div>
                   <div
@@ -599,6 +607,12 @@ const CommentSection = ({
                             width: "100%",
                             height: "100%",
                             objectFit: "cover",
+                            opacity:
+                              user.userID === entryData.userID ||
+                              hasCommented ||
+                              user.isAdmin
+                                ? ".5"
+                                : "",
                           }}
                         />
                       </>

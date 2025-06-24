@@ -14,10 +14,10 @@ const DiaryEntryHeader = ({
   user,
   formatDate,
   ownDiary,
-  currentUser,
   FollowButton,
   followedUsers,
-  handleFollowToggle,
+  fetchFollowedUsers,
+  setFollowedUsers,
 }) => {
   return (
     <div className="border-bottom d-flex gap-2 pb-2">
@@ -100,9 +100,11 @@ const DiaryEntryHeader = ({
                       </h3>
                       <FollowButton
                         userID={entry.userID}
+                        user={user}
                         firstName={entry.firstName}
                         followedUsers={followedUsers}
-                        handleFollowToggle={handleFollowToggle}
+                        fetchFollowedUsers={fetchFollowedUsers}
+                        setFollowedUsers={setFollowedUsers}
                       ></FollowButton>
                     </div>
                   )}

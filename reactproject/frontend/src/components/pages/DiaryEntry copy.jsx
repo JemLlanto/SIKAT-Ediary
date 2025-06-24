@@ -488,7 +488,6 @@ const DiaryEntry = () => {
                       currentUser={currentUser}
                       FollowButton={FollowButton}
                       followedUsers={followedUsers}
-                      setFollowedUsers={setFollowedUsers}
                       handleFollowToggle={handleFollowToggle}
                     />
 

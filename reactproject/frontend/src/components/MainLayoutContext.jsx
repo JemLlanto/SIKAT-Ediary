@@ -64,6 +64,8 @@ const MainLayoutContext = ({ children, ActiveTab }) => {
       setUser(data);
     } catch (err) {
       console.log("Unexpected error occured: ", err.message);
+      localStorage.removeItem("user");
+      window.location.href = "/";
     } finally {
       setLoading(false);
     }

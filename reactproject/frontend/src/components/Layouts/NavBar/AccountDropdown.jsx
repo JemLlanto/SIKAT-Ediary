@@ -26,6 +26,16 @@ const AccountDropdown = ({ user }) => {
     if (userData) {
       const parsedUser = JSON.parse(userData);
 
+      // 🔄 Show loading SweetAlert
+      Swal.fire({
+        title: "Logging out...",
+        allowOutsideClick: false,
+        allowEscapeKey: false,
+        didOpen: () => {
+          Swal.showLoading();
+        },
+      });
+
       try {
         const response = await axios.post(
           `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/logout`,
@@ -36,13 +46,28 @@ const AccountDropdown = ({ user }) => {
 
         if (response.status === 200) {
           localStorage.removeItem("user");
+
+          // ✅ Show success message briefly
+          Swal.fire({
+            icon: "success",
+            title: "Logged out",
+            timer: 1500,
+            showConfirmButton: false,
+            toast: true,
+            position: "top-end",
+          });
+
           navigate("/");
         }
       } catch (error) {
-        console.error(
-          "Error logging out:",
-          error.response ? error.response.data.message : error.message
-        );
+        // ❌ Show error SweetAlert
+        Swal.fire({
+          icon: "error",
+          title: "Logout Failed",
+          text:
+            error.response?.data?.message ||
+            "An error occurred while logging out.",
+        });
       }
     }
   };

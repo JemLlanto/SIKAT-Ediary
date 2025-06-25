@@ -6,6 +6,7 @@ import logo from "../../assets/TransparentLogo.png";
 import ForgotPassword from "./ForgotPassword";
 import Cookies from "js-cookie";
 import CryptoJS from "crypto-js";
+import Swal from "sweetalert2";
 
 export default function Login() {
   const [values, setValues] = useState({
@@ -28,7 +29,6 @@ export default function Login() {
       navigate("/Home");
     }
   }, [navigate]);
-
   const handleSubmit = (event) => {
     event.preventDefault();
     const validationErrors = LoginValidation(values);
@@ -37,45 +37,76 @@ export default function Login() {
     if (Object.keys(validationErrors).length === 0) {
       setLoading(true);
       setServerError("");
+
+      // 🔄 Show loading state
+      // Swal.fire({
+      //   title: "Logging in...",
+      //   allowOutsideClick: false,
+      //   allowEscapeKey: false,
+      //   didOpen: () => {
+      //     Swal.showLoading();
+      //   },
+      // });
+
       axios
         .post(
           `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/auth/Login`,
           values
         )
         .then((res) => {
-          console.log("UserData: ", res.data);
           localStorage.setItem("user", JSON.stringify(res.data));
 
-          // Encrypt userID
+          // 🔐 Encrypt userID
           const encryptedUserID = CryptoJS.AES.encrypt(
             res.data.userID.toString(),
             import.meta.env.VITE_REACT_APP_ENCRYPT_SECRET
           ).toString();
 
-          // console.log(
-          //   "UserID: ",
-          //   res.data.userID.toString(),
-          //   "converted to, ",
-          //   encryptedUserID
-          // );
+          // 🍪 Store in cookie
+          Cookies.set("userID", encryptedUserID, { expires: 7 });
 
-          // Store encrypted userID in cookie
-          Cookies.set("userID", encryptedUserID, { expires: 7 }); // expires in 7 days
+          // ✅ Show success toast
+          // Swal.fire({
+          //   icon: "success",
+          //   title: "Login Successful",
+          //   text: "Redirecting...",
+          //   toast: true,
+          //   position: "top-end",
+          //   timer: 1500,
+          //   showConfirmButton: false,
+          // });
 
-          if (res.data.isAdmin) {
-            navigate("/Admin/Home");
-          } else {
-            navigate("/Home");
-          }
+          // 🧭 Navigate after short delay
+          setTimeout(() => {
+            if (res.data.isAdmin) {
+              navigate("/Admin/Home");
+            } else {
+              navigate("/Home");
+            }
+          }, 1500);
         })
         .catch((err) => {
           console.error("Login Error:", err);
-          setServerError(
+          const errorMessage =
             err.response?.data?.error ||
-              "Invalid login credentials. Please try again."
-          );
+            "Invalid login credentials. Please try again.";
+
+          setServerError(errorMessage);
+
+          Swal.fire({
+            icon: "error",
+            title: "Login Failed",
+            text: errorMessage,
+          });
         })
         .finally(() => setLoading(false));
+    } else {
+      // ⚠️ Show validation warning
+      Swal.fire({
+        icon: "warning",
+        title: "Invalid Form",
+        text: "Please fill in all required fields correctly.",
+      });
     }
   };
 
@@ -196,11 +227,11 @@ export default function Login() {
               </div>
             </div>
           </div>
-          {errors.password && (
+          {/* {errors.password && (
             <div className="text-danger">{errors.password}</div>
-          )}
+          )} */}
 
-          {serverError && <span className="text-danger">{serverError}</span>}
+          {/* {serverError && <span className="text-danger">{serverError}</span>} */}
 
           {/* {serverError && (
             <Modal show={!!serverError} onHide={closeSuspendModal} centered>

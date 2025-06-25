@@ -46,11 +46,11 @@ const FilterButton = ({
                 updatedItems[filter] = true;
               }
             });
-            console.log("User filters fetched:", savedFilters);
+            // console.log("User filters fetched:", savedFilters);
             setSelectedItems(updatedItems);
             onFilterChange(savedFilters);
             setAlreadyFetched(true);
-            console.log("Fetching entries based on saved filters.");
+            // console.log("Fetching entries based on saved filters.");
             fetchEntries(userID, savedFilters);
           }
         }

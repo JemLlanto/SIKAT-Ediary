@@ -2,8 +2,7 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
-import MessageModal from "../Layouts/DiaryEntry/messageModal";
-import MessageAlert from "../Layouts/DiaryEntry/messageAlert";
+import Swal from "sweetalert2";
 
 const ForgotPassword = () => {
   const [show, setShow] = useState(false);
@@ -84,10 +83,7 @@ const ForgotPassword = () => {
   const handleSendOTP = async () => {
     setError("");
     setLoading(true);
-    // setModal({
-    //   show: true,
-    //   message: `Sending otp.`,
-    // });
+
     try {
       await axios.post(
         `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/send-otp`,
@@ -95,30 +91,38 @@ const ForgotPassword = () => {
           email: values.cvsuEmail,
         }
       );
-      setModal({
-        show: true,
-        message: `OTP Sent`,
+
+      Swal.fire({
+        icon: "success",
+        // title: "OTP Sent",
+        text: "OTP Sent, please check your email for the verification code.",
+        timer: 3000,
+        showConfirmButton: false,
+        toast: true,
+        position: "top-end",
       });
-      setLoading(false);
 
       setStep(2);
     } catch (err) {
-      setModal({
-        show: true,
-        message:
-          err.response?.data?.error || "Error sending OTP. Please try again.",
+      Swal.fire({
+        icon: "error",
+        // title: "Failed to Send OTP",
+        text:
+          err.response?.data?.message || "Error sending OTP. Please try again.",
+        timer: 4000,
+        showConfirmButton: false,
+        toast: true,
+        position: "top-end",
       });
+    } finally {
       setLoading(false);
     }
   };
 
   const handleVerifyOTP = async () => {
     setError("");
-    // setModal({
-    //   show: true,
-    //   message: `Verifying OTP.`,
-    // });
     setLoading(true);
+
     try {
       await axios.post(
         `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/verify-otp`,
@@ -127,33 +131,69 @@ const ForgotPassword = () => {
           otp: values.OTP,
         }
       );
-      setModal({
-        show: true,
-        message: `OTP successfully verified.`,
+
+      Swal.fire({
+        icon: "success",
+        // title: "OTP Verified",
+        text: "Your OTP has been successfully verified.",
+        timer: 3000,
+        showConfirmButton: false,
+        toast: true,
+        position: "top-end",
       });
-      setLoading(false);
+
       setStep(3);
     } catch (err) {
-      setError(err.response?.data?.error || "Invalid OTP. Please try again.");
-      setModal({
-        show: true,
-        message: `Invalid OTP. Please try again.`,
+      const errorMsg =
+        err.response?.data?.error || "Invalid OTP. Please try again.";
+
+      setError(errorMsg);
+
+      Swal.fire({
+        icon: "error",
+        // title: "Verification Failed",
+        text: `Verification failed, ${errorMsg}.`,
+        timer: 4000,
+        showConfirmButton: false,
+        toast: true,
+        position: "top-end",
       });
+    } finally {
       setLoading(false);
     }
   };
 
   const handleResetPassword = async () => {
-    setModal({
-      show: true,
-      message: `Please input password.`,
-    });
-    setLoading(true);
-    // setError("");
-    if (values.password !== values.confirmPassword) {
-      setError("Passwords do not match.");
+    if (!values.password || !values.confirmPassword) {
+      Swal.fire({
+        icon: "warning",
+        // title: "Missing Fields",
+        text: "Please input password.",
+        toast: true,
+        position: "top-end",
+        timer: 3000,
+        showConfirmButton: false,
+      });
       return;
     }
+
+    if (values.password !== values.confirmPassword) {
+      setError("Passwords do not match.");
+      Swal.fire({
+        icon: "error",
+        // title: "Mismatch",
+        text: "Passwords do not match.",
+        toast: true,
+        position: "top-end",
+        timer: 3000,
+        showConfirmButton: false,
+      });
+      return;
+    }
+
+    setLoading(true);
+    // setError("");
+
     try {
       await axios.post(
         `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/reset-password`,
@@ -162,18 +202,36 @@ const ForgotPassword = () => {
           password: values.password,
         }
       );
-      setModal({
-        show: true,
-        message: `Password reset successfully. You can now log in.`,
-      });
-      setLoading(false);
 
-      setTimeout(handleClose, 3000);
+      Swal.fire({
+        icon: "success",
+        // title: "Password Reset",
+        text: "Password reset successfully. You can now log in.",
+        timer: 3000,
+        showConfirmButton: false,
+        toast: true,
+        position: "top-end",
+      });
+
+      // setTimeout(, 3000);
+      handleClose();
     } catch (err) {
-      setError(
+      const errorMsg =
         err.response?.data?.error ||
-          "Error resetting password. Please try again."
-      );
+        "Error resetting password. Please try again.";
+
+      setError(errorMsg);
+
+      Swal.fire({
+        icon: "error",
+        title: "Reset Failed",
+        text: errorMsg,
+        toast: true,
+        position: "top-end",
+        timer: 4000,
+        showConfirmButton: false,
+      });
+    } finally {
       setLoading(false);
     }
   };
@@ -221,21 +279,6 @@ const ForgotPassword = () => {
       >
         <p className="hoverUnderline m-0 text-light">Forgot Password?</p>
       </button>
-
-      <MessageModal
-        showModal={modal}
-        closeModal={closeModal}
-        title={"Notice"}
-        message={modal.message}
-      ></MessageModal>
-      <MessageModal
-        showModal={confirmModal}
-        closeModal={closeConfirmModal}
-        title={"Confirmation"}
-        message={confirmModal.message}
-        confirm={confirmModal.onConfirm}
-        needConfirm={1}
-      ></MessageModal>
 
       <Modal show={show} onHide={handleClose} centered>
         <Modal.Header closeButton>
@@ -450,11 +493,32 @@ const ForgotPassword = () => {
           )} */}
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={handleClose}>
+          <Button
+            variant="secondary"
+            onClick={async () => {
+              const result = await Swal.fire({
+                title: "Are you sure?",
+                text: "All progress will be lost.",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonText: "Yes, cancel",
+                cancelButtonText: "No, don't cancel",
+                reverseButtons: true,
+              });
+
+              if (result.isConfirmed) {
+                handleClose(); // only run this if confirmed
+              }
+            }}
+          >
             <p className="m-0">Close</p>
           </Button>
           {step === 1 && (
-            <button className="primaryButton py-2" onClick={handleSendOTP}>
+            <button
+              className="primaryButton py-2"
+              onClick={handleSendOTP}
+              disabled={loading || values.cvsuEmail === ""}
+            >
               <p className="m-0">
                 {loading ? (
                   <>
@@ -472,7 +536,11 @@ const ForgotPassword = () => {
             </button>
           )}
           {step === 2 && (
-            <button className="primaryButton py-2" onClick={handleVerifyOTP}>
+            <button
+              className="primaryButton py-2"
+              onClick={handleVerifyOTP}
+              disabled={loading}
+            >
               <p className="m-0">
                 {loading ? (
                   <>
@@ -493,6 +561,7 @@ const ForgotPassword = () => {
             <button
               className="primaryButton py-2"
               onClick={handleResetPassword}
+              disabled={loading}
             >
               <p className="m-0">
                 {loading ? (

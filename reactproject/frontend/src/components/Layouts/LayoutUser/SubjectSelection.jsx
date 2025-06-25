@@ -132,7 +132,11 @@ const SubjectSelection = ({ onSubjectsChange }) => {
                     key={subject.subjectID}
                     type="checkbox"
                     id={subject.subject}
-                    label={subject.subject}
+                    label={`${subject.subject} ${
+                      subject.subject === "General"
+                        ? "(Non-subject Specific Diary)"
+                        : ""
+                    }`}
                     name={subject.subject}
                     checked={selectedItems[subject.subject] || false}
                     onChange={handleCheckboxChange}

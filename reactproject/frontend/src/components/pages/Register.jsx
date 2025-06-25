@@ -10,6 +10,7 @@ import ProgressBarLayout from "../Layouts/Registration/ProgressBarLayout";
 import Step1 from "../Layouts/Registration/Step1";
 import Step2 from "../Layouts/Registration/Step2";
 import Step3 from "../Layouts/Registration/Step3";
+import Swal from "sweetalert2";
 
 export default function Register() {
   const [values, setValues] = useState({
@@ -112,12 +113,17 @@ export default function Register() {
 
     if (step === 3) {
       console.log("Verifying OTP for email:", values.cvsuEmail);
-      // setModal({
-      //   show: true,
-      //   message: `Verifying OTP for email:", ${values.cvsuEmail}`,
-      // });
 
       try {
+        Swal.fire({
+          title: "Verifying OTP...",
+          allowOutsideClick: false,
+          allowEscapeKey: false,
+          didOpen: () => {
+            Swal.showLoading();
+          },
+        });
+
         const response = await axios.post(
           `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/verify-otp`,
           {
@@ -126,45 +132,57 @@ export default function Register() {
           }
         );
 
-        console.log("OTP verification response:", response.data);
-
         if (response.data.success) {
-          console.log("OTP verified successfully, registering user...");
-          setModal({
-            show: true,
-            message: `OTP verified successfully, registering user...`,
+          Swal.fire({
+            icon: "success",
+            // title: "OTP Verified",
+            text: "OTP Verified, Registering user...",
+            showConfirmButton: false,
+            timer: 1500,
           });
+
           try {
             await axios.post(
               `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/Register`,
               values
             );
-            setModal({
-              show: true,
-              message: `OTP verified successfully, registering user...`,
+
+            Swal.fire({
+              icon: "success",
+              // title: "Registration Successful",
+              text: "Registration Successful, Redirecting...",
+              timer: 2000,
+              showConfirmButton: false,
             });
-            // alert("Email successfully verified.");
+
             setTimeout(() => {
               window.location.reload();
               // navigate("/Login");
             }, 2000);
           } catch (err) {
+            const errorMsg =
+              err.response?.data?.error || "Invalid OTP. Please try again.";
             console.error("Error during registration:", err);
-            setModal({
-              show: true,
-              message: `Registration failed. Please try again.`,
+            Swal.fire({
+              icon: "error",
+              // title: "Registration Failed",
+              text: `Verification failed, ${errorMsg}.`,
             });
-            // setOtpError("Registration failed. Please try again.");
-            setShowAlert(true);
           }
         } else {
-          setOtpError("Incorrect OTP. Please try again.");
-          setShowAlert(true);
+          Swal.fire({
+            icon: "error",
+            // title: "Invalid OTP",
+            text: "Incorrect OTP. Please try again.",
+          });
         }
       } catch (err) {
         console.error("Error during OTP verification:", err);
-        setOtpError("Incorrect OTP. Please try again.");
-        setShowAlert(true);
+        Swal.fire({
+          icon: "error",
+          // title: "OTP Verification Failed",
+          text: "OTP Verification Failed, Please try again later.",
+        });
       }
     } else if (step === 2) {
       console.log("Step 2: Validating registration fields...");
@@ -175,15 +193,31 @@ export default function Register() {
         const isEmailValid = await validateEmail(values.cvsuEmail);
         if (isEmailValid) {
           console.log("Validation passed, sending OTP...");
+
+          Swal.fire({
+            icon: "info",
+            // title: "Sending OTP",
+            text: "Sending OTP, Please wait while we send a verification code to your email.",
+            showConfirmButton: false,
+            timer: 2000,
+          });
+
           sendOTP(values.cvsuEmail);
           setStep(step + 1);
         } else {
-          console.log("Email validation failed.");
-          setShowAlert(true);
+          Swal.fire({
+            icon: "error",
+            // title: "Invalid Email",
+            text: "Invalid Email, The email format or domain is invalid.",
+          });
         }
       } else {
         console.log("Validation errors:", validationErrors);
-        setShowAlert(true);
+        Swal.fire({
+          icon: "warning",
+          // title: "Incomplete Fields",
+          text: "Incomplete Fields, Please fill in all required fields correctly.",
+        });
       }
     } else {
       setStep(step + 1);
@@ -192,31 +226,49 @@ export default function Register() {
 
   const sendOTP = async (email) => {
     console.log("Sending OTP to:", email);
-    setModal({
-      show: true,
-      message: `Sending OTP.`,
+
+    // Show loading state using SweetAlert2
+    Swal.fire({
+      // title: "Sending OTP...",
+      text: `Sending OTP to ${email}`,
+      allowOutsideClick: false,
+      allowEscapeKey: false,
+      didOpen: () => {
+        Swal.showLoading();
+      },
     });
+
     try {
       const response = await axios.post(
-        `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/send-otp`,
-        {
-          email,
-        }
+        `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/send-register-otp`,
+        { email }
       );
+
       console.log("OTP sent response:", response.data);
       setOtpSent(true);
-      setModal({
-        show: true,
-        message: `OTP sent.`,
-      });
       setResendCountdown(60);
+
+      // Show success alert
+      Swal.fire({
+        icon: "success",
+        // title: "OTP Sent",
+        text: "OTP Sent, Please check your email for the verification code.",
+        timer: 2500,
+        showConfirmButton: false,
+        toast: true,
+        position: "top-end",
+      });
     } catch (error) {
       console.error("Error sending OTP:", error);
-      setModal({
-        show: true,
-        message: `Error sending OTP. Please check your internet and try again.`,
+
+      // Show error alert
+      Swal.fire({
+        icon: "error",
+        // title: "Failed to Send OTP",
+        text:
+          error.response?.data?.message ||
+          "Please check your internet connection and try again.",
       });
-      setShowAlert(true);
     }
   };
 

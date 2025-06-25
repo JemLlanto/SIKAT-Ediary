@@ -52,13 +52,12 @@ const Step1 = ({ values, handleInput, courses }) => {
             <select
               className="form-select"
               id="sex"
-              className="form-select"
               name="sex"
               onChange={handleInput}
               value={values.sex}
               required
             >
-              <option selected>Sex...</option>
+              <option selected>Sex assigned at birth</option>
               <option value="Male">Male</option>
               <option value="Female">Female</option>
               <option value="Prefer not to say">Prefer not to say</option>

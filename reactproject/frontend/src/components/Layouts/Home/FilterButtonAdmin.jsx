@@ -43,7 +43,7 @@ const FilterButtonAdmin = ({ fetchEntries, onFilterChange, userID }) => {
 
           setSelectedItems(updatedItems);
           onFilterChange(savedFilters);
-          console.log("Fetching entries based on saved filters.");
+          // console.log("Fetching entries based on saved filters.");
           fetchEntries(userID, savedFilters);
           setAlreadyFetched(true);
         }

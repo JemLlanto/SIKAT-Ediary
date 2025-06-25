@@ -189,20 +189,42 @@ app.get("/", verifyUser, (req, res) => {
   // return res.json({ Status: "Success", userID: req.userID });
 });
 
-app.post("/send-otp", async (req, res) => {
+app.post("/send-register-otp", async (req, res) => {
   const { email } = req.body;
-  const otp = Math.floor(100000 + Math.random() * 900000);
 
-  otpStore[email] = otp;
-  console.log(`Sending OTP: ${otp} to email: ${email}`);
+  if (!email) {
+    return res
+      .status(400)
+      .json({ success: false, message: "Email is required" });
+  }
 
-  try {
-    let info = await transporter.sendMail({
-      from: "sikatediary@gmail.com",
-      to: email,
-      subject: "One-Time Password (OTP) from SIKAT eDiary",
-      text: `Your OTP is: ${otp}`,
-      html: `
+  // 🔍 Check if the user already exists in the database
+  const query = "SELECT * FROM user_table WHERE cvsuEmail = ?";
+  db.query(query, [email], async (err, result) => {
+    if (err) {
+      console.error("Database error:", err);
+      return res.status(500).json({ success: false, message: "Server error" });
+    }
+
+    if (result.length > 0) {
+      // ⛔ Email already registered
+      return res.status(409).json({
+        success: false,
+        message: "This email is already registered. Please log in instead.",
+      });
+    }
+
+    // ✅ User does NOT exist, proceed to send OTP
+    const otp = Math.floor(100000 + Math.random() * 900000);
+    otpStore[email] = otp;
+
+    try {
+      let info = await transporter.sendMail({
+        from: "sikatediary@gmail.com",
+        to: email,
+        subject: "One-Time Password (OTP) from SIKAT eDiary",
+        text: `Your OTP is: ${otp}`,
+        html: `
       <html lang="en">
         <head>
           <meta charset="UTF-8" />
@@ -276,8 +298,8 @@ app.post("/send-otp", async (req, res) => {
             "
           >
             <img
-              src="https://i.postimg.cc/HsFH9HCs/TextLogo.png"
-              alt="Animated GIF"
+              src="https://res.cloudinary.com/dhgpir5ae/image/upload/v1750858252/sikatEdiaryUploads/diaryUploads/qpr7dlxfxrqtlk3hoqyu.png"
+              alt="Official Logo"
               style="height: 60%; width: 60%; object-fit: cover"
             />
           </div>              
@@ -290,14 +312,157 @@ app.post("/send-otp", async (req, res) => {
             </tr>
           </table>
         </body>
-      </html>`,
-    });
+      </html>`, // Your full HTML from earlier
+      });
 
-    res.status(200).json({ success: true, message: "OTP sent successfully" });
-  } catch (error) {
-    console.error("Error sending OTP:", error);
-    res.status(500).json({ success: false, message: "Failed to send OTP" });
+      return res
+        .status(200)
+        .json({ success: true, message: "OTP sent successfully" });
+    } catch (error) {
+      console.error("Error sending OTP:", error);
+      return res
+        .status(500)
+        .json({ success: false, message: "Failed to send OTP" });
+    }
+  });
+});
+
+app.post("/send-otp", async (req, res) => {
+  const { email } = req.body;
+
+  if (!email) {
+    return res
+      .status(400)
+      .json({ success: false, message: "Email is required" });
   }
+
+  // 🔍 Check if the user exists in the database
+  const query = "SELECT * FROM user_table WHERE cvsuEmail = ?";
+  db.query(query, [email], async (err, result) => {
+    if (err) {
+      console.error("Database error:", err);
+      return res.status(500).json({ success: false, message: "Server error" });
+    }
+
+    if (result.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "User with this email does not exist.",
+      });
+    }
+
+    // ✅ User exists, now generate and send OTP
+    const otp = Math.floor(100000 + Math.random() * 900000);
+    otpStore[email] = otp;
+    // console.log(`Sending OTP: ${otp} to email: ${email}`);
+
+    try {
+      let info = await transporter.sendMail({
+        from: "sikatediary@gmail.com",
+        to: email,
+        subject: "One-Time Password (OTP) from SIKAT eDiary",
+        text: `Your OTP is: ${otp}`,
+        html: `
+      <html lang="en">
+        <head>
+          <meta charset="UTF-8" />
+          <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+          <title>Document</title>
+          <style>
+            body {
+              font-family: Arial, sans-serif;
+              background-color: #f7f7f7;
+              color: #333;
+              margin: 0;
+              padding: 0;
+            }
+            table {
+              width: 100%;
+              max-width: 600px;
+              margin: 0 auto;
+              background-color: #fff;
+              border-radius: 8px;
+              box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+            }
+            .header {
+              text-align: center;
+              padding: 20px;
+              background-color: #5c0099;
+              color: white;
+              border-radius: 8px 8px 0 0;
+            }
+            .content {
+              padding: 20px;
+              text-align: center;
+            }
+            .footer {
+              text-align: center;
+              padding: 10px;
+              background-color: #f1f1f1;
+              color: #777;
+              font-size: 12px;
+              border-radius: 0 0 8px 8px;
+            }
+            img {
+              max-width: 100%;
+              height: auto;
+              border-radius: 5px;
+            }
+          </style>
+        </head>
+        <body>
+          <table>
+            <tr>
+              <td class="header">
+                <h2>Your OTP from SIKAT eDiary</h2>
+              </td>
+            </tr>
+            <tr>
+              <td class="content">
+                <p>Hello,</p>
+                <p>
+                  Thank you for using Sikat eDiary. Your One-Time Password (OTP) is:
+                </p>
+                <h3 style="font-size: 36px; color: #ffb31a">${otp}</h3>
+                <p>
+                  This OTP is valid for only one minute. Please use it immediately and
+                  keep it confidential. Do not share it with anyone.
+                </p>
+                  <div
+            style="
+              background-color: #5c0099;
+              border-radius: 0.5rem;
+              padding: 1rem 0 1rem 0;
+            "
+          >
+            <img
+              src="https://res.cloudinary.com/dhgpir5ae/image/upload/v1750858252/sikatEdiaryUploads/diaryUploads/qpr7dlxfxrqtlk3hoqyu.png"
+              alt="Official Logo"
+              style="height: 60%; width: 60%; object-fit: cover"
+            />
+          </div>              
+          </td>
+            </tr>
+            <tr>
+              <td class="footer">
+                <p>Copyright © 2024 | All rights reserved</p>
+              </td>
+            </tr>
+          </table>
+        </body>
+      </html>`, // Your existing HTML here (keep it unchanged or paste it fully)
+      });
+
+      return res
+        .status(200)
+        .json({ success: true, message: "OTP sent successfully" });
+    } catch (error) {
+      console.error("Error sending OTP:", error);
+      return res
+        .status(500)
+        .json({ success: false, message: "Failed to send OTP" });
+    }
+  });
 });
 
 app.post("/verify-otp", (req, res) => {

@@ -41,11 +41,18 @@ const DiaryEntryLayout = ({
   const handleCloseModal = () => setShowModal(false);
 
   useEffect(() => {
+    if (!entry) return;
+
+    setEntryData(entry);
+  }, [entry]);
+
+  useEffect(() => {
     const storedUser = JSON.parse(localStorage.getItem("user"));
     if (!storedUser) {
       navigate("/");
       return;
     }
+    // console.log("Entry data on layout: ", entry);
     setCurrentUser(storedUser);
   }, [navigate]);
 
@@ -141,7 +148,6 @@ const DiaryEntryLayout = ({
         fetchFollowedUsers={fetchFollowedUsers}
         setFollowedUsers={setFollowedUsers}
       />
-
       <DiaryDetails
         user={user}
         entry={entry}
@@ -149,7 +155,6 @@ const DiaryEntryLayout = ({
           entryData.diary_image
         }`}
       />
-
       <div
         className="text-start border-bottom py-2 pt-2"
         style={{ minHeight: "" }}
@@ -202,7 +207,7 @@ const DiaryEntryLayout = ({
           {user.isAdmin ? (
             <ChatButton
               user={user}
-              entry={entry}
+              entry={entryData}
               userToChat={entryData.userID}
             ></ChatButton>
           ) : (

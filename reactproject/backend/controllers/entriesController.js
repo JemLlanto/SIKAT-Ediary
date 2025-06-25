@@ -571,16 +571,17 @@ const fetchSingleEntry = (req, res) => {
 
   const query = `
   SELECT diary_entries.*, 
-         user_table.isAdmin, 
-         user_table.isSuspended, 
-         user_table.firstName, 
-         user_table.lastName, 
-         user_table.course, 
-         user_profiles.*, 
-         flagged_reports.isReviewed
+      user_table.firstName,
+      user_table.lastName,
+      user_table.isAdmin,
+      user_table.isSuspended,
+      user_table.course,
+      user_table.departmentID,
+      user_profiles.profile_image,
+      user_profiles.alias
   FROM diary_entries 
-  INNER JOIN user_table ON diary_entries.userID = user_table.userID 
-  INNER JOIN user_profiles ON diary_entries.userID = user_profiles.userID 
+  JOIN user_table ON diary_entries.userID = user_table.userID 
+  JOIN user_profiles ON diary_entries.userID = user_profiles.userID 
   LEFT JOIN flagged_reports ON diary_entries.entryID = flagged_reports.entryID 
   WHERE diary_entries.entryID = ?
 `;

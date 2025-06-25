@@ -427,7 +427,6 @@ const CenterLayout = ({ setLoad, user, fetchUserData }) => {
               .slice(0, visibleEntries)
               .map((entry) => (
                 <DiaryEntryLayout
-                  // key={entry.entryID}
                   flaggingOptions={flaggingOptions}
                   entry={entry}
                   user={user}

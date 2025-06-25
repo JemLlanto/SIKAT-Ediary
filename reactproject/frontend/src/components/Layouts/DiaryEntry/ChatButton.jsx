@@ -11,14 +11,14 @@ import Modal from "react-bootstrap/Modal";
 import DefaultProfile from "../../../assets/anonymous.png";
 import axios from "axios";
 
-const ChatButton = ({ user, entry, imageFile, userToChat }) => {
+const ChatButton = ({ user, entry, userToChat }) => {
   const [show, setShow] = useState(false);
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState("");
   const [parsedUser, setUser] = useState(null);
-  const [selectedUser, setSelectedUser] = useState(userToChat);
+  const [selectedUser, setSelectedUser] = useState(entry);
   const [users, setUsers] = useState([]);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [isLoadingMess, setIsLoadingMess] = useState(false);
   const messagesEndRef = useRef(null);
 
   const handleClose = () => {
@@ -28,43 +28,10 @@ const ChatButton = ({ user, entry, imageFile, userToChat }) => {
   };
 
   const handleShow = () => {
+    console.log("Fetching messages");
+    fetchMessages(entry.userID);
     setShow(true);
   };
-
-  useEffect(() => {
-    if (userToChat && users.length > 0) {
-      const foundUser = users.find((usr) => usr.userID === userToChat);
-      setSelectedUser(foundUser || null);
-    }
-  }, [userToChat, users]);
-
-  useEffect(() => {
-    const userData = localStorage.getItem("user");
-    if (userData) {
-      const parsedUser = JSON.parse(userData);
-      setUser(parsedUser);
-    } else {
-      alert("You need to log in to access the chat.");
-      window.location.href = "/";
-    }
-
-    const fetchUsers = async () => {
-      try {
-        const response = await fetch(
-          `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/users`
-        );
-        if (!response.ok) {
-          throw new Error("Failed to fetch users");
-        }
-        const data = await response.json();
-        setUsers(data);
-      } catch (error) {
-        console.error("Error fetching users:", error);
-      }
-    };
-
-    fetchUsers();
-  }, []);
 
   useEffect(() => {
     if (!user) return;
@@ -80,8 +47,8 @@ const ChatButton = ({ user, entry, imageFile, userToChat }) => {
 
     channel.bind("message-event", function (data) {
       if (
-        selectedUser &&
-        data.recipientID === selectedUser.userID &&
+        entry &&
+        data.recipientID === entry.userID &&
         data.senderID !== user.userID // Ignore your own messages
       ) {
         setMessages((prevMessages) => [
@@ -107,52 +74,43 @@ const ChatButton = ({ user, entry, imageFile, userToChat }) => {
       adminChannel.unsubscribe();
       pusher.disconnect();
     };
-  }, [user, selectedUser]);
+  }, [user, entry]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  const fetchMessagesForSelectedUser = async (withUserID) => {
+  const fetchMessages = async (userID) => {
+    if (!user) return;
+
     try {
+      setIsLoadingMess(true);
       const response = await axios.get(
         `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/messages`,
         {
           params: {
-            userID: user?.userID,
-            withUserID: withUserID,
+            userID: user.userID,
+            withUserID: userID,
           },
         }
       );
-
       setMessages(response.data);
-      setSelectedUser(users.find((usr) => usr.userID === withUserID));
-
-      setUsers((prevUsers) =>
-        prevUsers.map((userItem) =>
-          userItem.userID === withUserID
-            ? { ...userItem, unreadMessages: 0 }
-            : userItem
-        )
-      );
+      setSelectedUser(userID);
     } catch (error) {
       console.error("Error fetching messages:", error);
+    } finally {
+      setIsLoadingMess(false);
     }
   };
 
-  const handleUserClick = (userItem) => {
-    fetchMessagesForSelectedUser(userItem.userID);
-  };
-
   const sendMessage = async () => {
-    if (newMessage.trim() === "" || !user || !selectedUser) return;
-
+    if (newMessage.trim() === "" || !user || !entry) return;
     try {
       const response = await axios.post(
         `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/message`,
         {
           senderID: user.userID,
-          recipientID: selectedUser.userID,
+          recipientID: entry.userID,
           message: newMessage,
         }
       );
@@ -178,17 +136,6 @@ const ChatButton = ({ user, entry, imageFile, userToChat }) => {
     }
   };
 
-  const handleBackClick = () => {
-    setSelectedUser(null);
-    setMessages([]);
-  };
-
-  const filteredUsers = users.filter((userItem) =>
-    `${userItem.firstName} ${userItem.lastName}`
-      .toLowerCase()
-      .includes(searchQuery.toLowerCase())
-  );
-
   const formatDate = (dateString) => {
     const entryDate = new Date(dateString);
     const now = new Date();
@@ -206,7 +153,7 @@ const ChatButton = ({ user, entry, imageFile, userToChat }) => {
       });
     }
   };
-
+  console.log("use: ", user);
   return (
     <>
       <div className=" d-flex align-items-center justify-content-center position-relative">
@@ -250,207 +197,137 @@ const ChatButton = ({ user, entry, imageFile, userToChat }) => {
         </Modal.Header>
         <Modal.Body className="p-2" style={{ overflow: "hidden" }}>
           <div>
-            {!selectedUser ? (
-              <div
-                className="UserList"
-                style={{ height: "clamp(400px, 30vh, 500px)" }}
-              >
-                <div className="d-flex justify-content-between px-3 py-2 mb-2 border-bottom">
-                  <h5 className="m-0 mt-2">Users</h5>
-                  <InputGroup className="m-0 w-50">
-                    <InputGroup.Text id="basic-addon1">
-                      <i className="bx bx-search-alt-2"></i>
-                    </InputGroup.Text>
-                    <Form.Control
-                      type="text"
-                      placeholder="Search users..."
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      className=""
+            <div
+              className="ChatRoom p-2 pt-0"
+              style={{ minHeight: "clamp(400px, 30vh, 500px)" }}
+            >
+              <div className="py-0 d-flex align-items-center gap-2">
+                <Link
+                  to={`/Profile/${userToChat}`}
+                  className="linkText d-flex align-items-center gap-1 text-decoration-none "
+                >
+                  <div className="profilePicture">
+                    <img
+                      src={entry.profile_image}
+                      alt="Profile"
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "cover",
+                      }}
                     />
-                  </InputGroup>
-                </div>
-                <div style={{ height: "85%" }}>
-                  <div
-                    className="mb-4 pe-2 d-flex flex-column gap-2 overflow-y-scroll custom-scrollbar"
-                    style={{ height: "100%" }}
-                  >
-                    {filteredUsers.map((userItem, index) => (
-                      <div
-                        key={index}
-                        className="grayHover d-flex align-items-center justify-content-between gap-2 bg-light p-2 pe-3 rounded"
-                        onClick={() => handleUserClick(userItem)}
-                        style={{ cursor: "pointer" }}
-                      >
-                        <div className=" d-flex align-items-center gap-2">
-                          <div className="profilePicture">
-                            <img
-                              src={
-                                userItem.profile_image
-                                  ? `${
-                                      import.meta.env
-                                        .VITE_REACT_APP_BACKEND_BASEURL
-                                    }${userItem.profile_image}`
-                                  : DefaultProfile
-                              }
-                              alt="Profile"
-                              style={{
-                                width: "100%",
-                                height: "100%",
-                                objectFit: "cover",
-                              }}
-                            />
-                          </div>
-                          <p className="m-0">
-                            {userItem.firstName} {userItem.lastName}
-                          </p>
-                        </div>
-                        {userItem.isActive === 1 ? (
-                          <div
-                            className="p-0 m-0 d-flex align-items-center justify-content-center"
-                            style={{
-                              backgroundColor: "var(--primary)",
-                              height: "15px",
-                              width: "15px",
-                              borderRadius: "50%",
-                              color: "#ffff",
-                            }}
-                          ></div>
-                        ) : (
-                          <div
-                            className="p-0 m-0 d-flex align-items-center justify-content-center"
-                            style={{
-                              backgroundColor: "gray",
-                              height: "15px",
-                              width: "15px",
-                              borderRadius: "50%",
-                              color: "#ffff",
-                            }}
-                          ></div>
-                        )}
-                      </div>
-                    ))}
                   </div>
-                </div>
+                  <h5 className="m-0">
+                    {entry.firstName} {entry.lastName}
+                  </h5>
+                </Link>
               </div>
-            ) : (
-              <div
-                className="ChatRoom p-2 pt-0"
-                style={{ minHeight: "clamp(400px, 30vh, 500px)" }}
-              >
-                <div className="py-0 d-flex align-items-center gap-2">
-                  {/* <div
-                    className="d-flex align-items-center"
-                    onClick={handleBackClick}
-                    style={{ cursor: "pointer" }}
-                  >
-                    <i className="bx bx-arrow-back"></i>
-                  </div> */}
-
-                  <Link
-                    to={`/Profile/${userToChat}`}
-                    className="linkText d-flex align-items-center gap-1 text-decoration-none "
-                  >
-                    <div className="profilePicture">
-                      <img
-                        src={`${
-                          import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
-                        }${selectedUser.profile_image}`}
-                        alt="Profile"
-                        style={{
-                          width: "100%",
-                          height: "100%",
-                          objectFit: "cover",
-                        }}
-                      />
-                    </div>
-                    <h5 className="m-0">
-                      {selectedUser.firstName} {selectedUser.lastName}
-                    </h5>
-                  </Link>
-                </div>
-                <div>
-                  <div
-                    className="border rounded mb-1 p-2 custom-scrollbar"
-                    style={{ height: "300px", overflowY: "scroll" }}
-                  >
-                    {messages.map((msg, index) => (
+              <div>
+                <div
+                  className="border rounded mb-1 p-2 custom-scrollbar"
+                  style={{ height: "300px", overflowY: "scroll" }}
+                >
+                  {isLoadingMess ? (
+                    <>
                       <div
-                        key={index}
-                        className={`w-100 p-0 d-flex justify-content-${
-                          msg.senderID === user?.userID ? "end" : "start"
+                        className={`w-100 p-0 d-flex justify-content-center
                         }`}
                       >
                         <div
-                          className="rounded p-2 mt-1 text-light text-start"
+                          className="rounded p-2 mt-1 text-secondary"
                           style={{
-                            backgroundColor:
-                              msg.senderID === user?.userID
-                                ? "var(--secondary)"
-                                : "var(--primary)",
                             maxWidth: "80%",
-                            minWidth: "20%",
                             width: "fit-content",
                             wordWrap: "break-word",
                             whiteSpace: "pre-wrap",
                           }}
                         >
-                          <p className="m-0">{msg.message}</p>
-                          <p className="m-0 text-end">
-                            <span
-                              style={{
-                                fontSize: "clamp(0.5rem, 1.5dvw, 0.6rem)",
-                              }}
-                            >
-                              {msg.created_at ? formatDate(msg.created_at) : ""}
-                            </span>{" "}
-                          </p>
+                          <p className="m-0">Loading messages.</p>
                         </div>
                       </div>
-                    ))}
-                    <div ref={messagesEndRef} /> {/* Scroll reference */}
-                  </div>
-                  <div className="position-relative">
-                    <FloatingLabel
-                      controlId="floatingTextarea2"
-                      label="Message"
-                    >
-                      <Form.Control
-                        as="textarea"
-                        placeholder="Message"
-                        style={{ height: "70px" }}
-                        value={newMessage}
-                        onChange={(e) => setNewMessage(e.target.value)}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter" && !e.shiftKey) {
-                            e.preventDefault();
-                            sendMessage();
-                          }
-                        }}
-                      />
-                    </FloatingLabel>
-                    <button
-                      className="position-absolute py-2 d-flex align-items-center justify-content-center border-0"
-                      onClick={sendMessage}
-                      style={{
-                        height: "40px",
-                        width: "40px",
-                        borderRadius: "50%",
-                        backgroundColor: "#ffff",
-                        right: "10px",
-                        bottom: "10px",
-                        color: "var(--primary)",
+                    </>
+                  ) : (
+                    <>
+                      {messages.map((msg, index) => (
+                        <>
+                          {msg.created_at ? (
+                            <div
+                              key={index}
+                              className={`w-100 p-0 d-flex justify-content-${
+                                msg.senderID === user?.userID ? "end" : "start"
+                              }`}
+                            >
+                              <div
+                                className="rounded p-2 mt-1 text-light"
+                                style={{
+                                  backgroundColor:
+                                    msg.senderID === user?.userID
+                                      ? "var(--secondary)"
+                                      : "var(--primary)",
+                                  maxWidth: "80%",
+                                  width: "fit-content",
+                                  wordWrap: "break-word",
+                                  whiteSpace: "pre-wrap",
+                                }}
+                              >
+                                <p className="m-0">{msg.message}</p>
+                                <p className="m-0 text-end">
+                                  <span
+                                    style={{
+                                      fontSize: "clamp(0.5rem, 1.5dvw, 0.6rem)",
+                                    }}
+                                  >
+                                    {msg.created_at
+                                      ? formatDate(msg.created_at)
+                                      : ""}
+                                  </span>
+                                </p>
+                              </div>
+                            </div>
+                          ) : null}
+                        </>
+                      ))}
+                    </>
+                  )}
+                  <div ref={messagesEndRef} /> {/* Scroll reference */}
+                </div>
+                <div className="position-relative">
+                  <FloatingLabel controlId="floatingTextarea2" label="Message">
+                    <Form.Control
+                      as="textarea"
+                      placeholder="Message"
+                      style={{ height: "70px" }}
+                      value={newMessage}
+                      onChange={(e) => setNewMessage(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" && !e.shiftKey) {
+                          e.preventDefault();
+                          sendMessage();
+                        }
                       }}
-                    >
-                      <i
-                        className="bx bxs-send "
-                        style={{ fontSize: "clamp(1.2rem, 2dvw, 1.5rem)" }}
-                      ></i>
-                    </button>
-                  </div>
+                    />
+                  </FloatingLabel>
+                  <button
+                    className="position-absolute py-2 d-flex align-items-center justify-content-center border-0"
+                    onClick={sendMessage}
+                    style={{
+                      height: "40px",
+                      width: "40px",
+                      borderRadius: "50%",
+                      backgroundColor: "#ffff",
+                      right: "10px",
+                      bottom: "10px",
+                      color: "var(--primary)",
+                    }}
+                  >
+                    <i
+                      className="bx bxs-send "
+                      style={{ fontSize: "clamp(1.2rem, 2dvw, 1.5rem)" }}
+                    ></i>
+                  </button>
                 </div>
               </div>
-            )}
+            </div>
           </div>
         </Modal.Body>
       </Modal>

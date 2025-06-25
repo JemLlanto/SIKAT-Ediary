@@ -343,14 +343,7 @@ const ChatButton = ({ user }) => {
                             <div className=" d-flex align-items-center gap-2">
                               <div className="profilePicture">
                                 <img
-                                  src={
-                                    userItem.profile_image
-                                      ? `${
-                                          import.meta.env
-                                            .VITE_REACT_APP_BACKEND_BASEURL
-                                        }${userItem.profile_image}`
-                                      : DefaultProfile
-                                  }
+                                  src={userItem.profile_image}
                                   alt="Profile"
                                   style={{
                                     width: "100%",
@@ -418,9 +411,7 @@ const ChatButton = ({ user }) => {
                       >
                         <div className="profilePicture">
                           <img
-                            src={`${
-                              import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
-                            }${selectedUser.profile_image}`}
+                            src={selectedUser.profile_image}
                             alt="Profile"
                             style={{
                               width: "100%",

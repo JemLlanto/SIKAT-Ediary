@@ -2447,7 +2447,7 @@ app.get("/getnotifications/:userID", (req, res) => {
     WHERE
       notifications.userID = ?
     ORDER BY
-      notifications.timestamp
+      notifications.timestamp DESC
   `;
 
   db.query(fetchNotificationsQuery, [userID], (error, results) => {

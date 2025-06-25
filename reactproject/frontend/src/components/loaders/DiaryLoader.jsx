@@ -4,7 +4,7 @@ import userDefaultProfile from "../../assets/userDefaultProfile.png";
 const DiaryLoader = () => {
   return (
     <div
-      className="position-relative rounded shadow-sm p-3 mb-2 d-flex flex-column justify-content-between"
+      className="position-relative rounded shadow-sm p-3 mb-2 d-flex flex-column justify-content-between w-100"
       style={{ backgroundColor: "white" }}
     >
       <div>
@@ -55,6 +55,33 @@ const DiaryLoader = () => {
             }}
           ></h5>
           <div>
+            <p
+              className="m-0 mt-3"
+              style={{
+                height: "14px",
+                width: "100%",
+                backgroundColor: "lightgray",
+                marginBottom: "10px", // Optional, adds space between divs
+              }}
+            ></p>
+            <p
+              className="m-0 mt-3"
+              style={{
+                height: "14px",
+                width: "100%",
+                backgroundColor: "lightgray",
+                marginBottom: "10px", // Optional, adds space between divs
+              }}
+            ></p>
+            <p
+              className="m-0 mt-3"
+              style={{
+                height: "14px",
+                width: "100%",
+                backgroundColor: "lightgray",
+                marginBottom: "10px", // Optional, adds space between divs
+              }}
+            ></p>
             <p
               className="m-0 mt-3"
               style={{

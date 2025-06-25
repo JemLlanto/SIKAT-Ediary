@@ -826,17 +826,11 @@ const Profile = () => {
                             <div className="w-100 " key={entry.entryID}>
                               <DiaryEntryLayout
                                 flaggingOptions={flaggingOptions}
-                                // key={entry.entryID}
                                 entry={entry}
                                 user={user}
-                                // isGadified={entry.isGadified}
-                                // currentUser={user}
-                                // suspended={profileOwner.isSuspended}
                                 followedUsers={followedUsers}
-                                handleFollowToggle={handleFollowToggle}
-                                handleClick={handleClick}
-                                expandButtons={expandButtons}
-                                formatDate={formatDate}
+                                setFollowedUsers={setFollowedUsers}
+                                fetchFollowedUsers={fetchFollowedUsers}
                               />
                             </div>
                           )}

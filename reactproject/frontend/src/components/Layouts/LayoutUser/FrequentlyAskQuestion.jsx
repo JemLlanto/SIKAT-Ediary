@@ -9,7 +9,7 @@ const FrequentlyAskQuestion = () => {
   useEffect(() => {
     setIsLoading(true);
     axios
-      .get(`${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/faqs`)
+      .get(`${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/FAQAPI/faqs`)
       .then((response) => {
         setFaqs(response.data);
         setIsLoading(false);
@@ -37,7 +37,7 @@ const FrequentlyAskQuestion = () => {
             {faqs.map((faq, index) => (
               <Accordion.Item key={faq.faqID} eventKey={String(index)}>
                 <Accordion.Header>
-                  <h6 className="m-0">Q: {faq.question}</h6>
+                  <h5 className="m-0">Q: {faq.question}</h5>
                 </Accordion.Header>
                 <Accordion.Body className="border-top">
                   <p className="m-0 ms-2 text-secondary">A: {faq.answer}</p>

@@ -62,30 +62,30 @@ function NotificationButton() {
     }
   }, []);
 
+  const fetchNotifications = async () => {
+    if (!user) return;
+
+    try {
+      const response = await axios.get(
+        `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/getnotifications/${
+          user.userID
+        }`
+      );
+
+      setNotifications(response.data);
+
+      const unread = response.data.filter(
+        (notification) => !notification.read
+      ).length;
+      setUnreadCount(unread);
+
+      localStorage.setItem("notifications", JSON.stringify(response.data));
+    } catch (error) {
+      console.error("Error fetching notifications:", error);
+    }
+  };
+
   useEffect(() => {
-    const fetchNotifications = async () => {
-      if (!user) return;
-
-      try {
-        const response = await axios.get(
-          `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/getnotifications/${
-            user.userID
-          }`
-        );
-
-        setNotifications(response.data);
-
-        const unread = response.data.filter(
-          (notification) => !notification.read
-        ).length;
-        setUnreadCount(unread);
-
-        localStorage.setItem("notifications", JSON.stringify(response.data));
-      } catch (error) {
-        console.error("Error fetching notifications:", error);
-      }
-    };
-
     if (show) {
       fetchNotifications();
     }
@@ -147,6 +147,7 @@ function NotificationButton() {
           notificationID,
         }
       )
+      .then(fetchNotifications())
       .catch((error) =>
         console.error("Error marking notification as read:", error)
       );

@@ -229,9 +229,7 @@ const ChatButton = ({ user }) => {
               >
                 <div className="profilePicture">
                   <img
-                    src={`${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}${
-                      admin?.profile_image
-                    }`}
+                    src={admin?.profile_image}
                     alt="Profile"
                     style={{
                       width: "100%",

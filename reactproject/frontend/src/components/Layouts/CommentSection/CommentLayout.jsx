@@ -88,44 +88,61 @@ const CommentLayout = ({
               </div>
             </div>
           ) : (
-            <Link
-              to={`/Profile/${comment.userID}`}
-              className="linkText rounded"
-            >
-              <div className="d-flex align-items-center gap-2">
-                <div
-                  className="profilePicture d-flex align-items-center justify-content-center"
-                  style={{ zIndex: "2" }}
-                >
-                  <img
-                    src={comment.isAnon ? AnonymousIcon : comment.profile_image}
-                    alt="Profile"
-                    style={{
-                      width: "100%",
-                      height: "100%",
-                      objectFit: "cover",
-                    }}
-                  />
+            <>
+              {comment.isAnon ? (
+                <div className="linkText rounded">
+                  <div className="d-flex align-items-center gap-2">
+                    <div
+                      className="profilePicture d-flex align-items-center justify-content-center"
+                      style={{ zIndex: "2" }}
+                    >
+                      <img
+                        src={AnonymousIcon}
+                        alt="Anonymous Profile"
+                        style={{
+                          width: "100%",
+                          height: "100%",
+                          objectFit: "cover",
+                        }}
+                      />
+                    </div>
+                    <div className="d-flex justify-content-start flex-column">
+                      <p className="m-0 text-start">{comment.alias}</p>
+                    </div>
+                  </div>
                 </div>
-                <div className="d-flex justify-content-start flex-column">
-                  <p className="m-0 text-start">
-                    {comment.isAnon ? (
-                      <>{comment.alias}</>
-                    ) : (
-                      <>
-                        {" "}
+              ) : (
+                <Link
+                  to={`/Profile/${comment.userID}`}
+                  className="linkText rounded"
+                >
+                  <div className="d-flex align-items-center gap-2">
+                    <div
+                      className="profilePicture d-flex align-items-center justify-content-center"
+                      style={{ zIndex: "2" }}
+                    >
+                      <img
+                        src={comment.profile_image}
+                        alt="Profile"
+                        style={{
+                          width: "100%",
+                          height: "100%",
+                          objectFit: "cover",
+                        }}
+                      />
+                    </div>
+                    <div className="d-flex justify-content-start flex-column">
+                      <p className="m-0 text-start">
                         {comment.firstName} {comment.lastName}{" "}
-                        {comment.isAdmin ? (
-                          ""
-                        ) : user.isAdmin ? (
+                        {!comment.isAdmin && user.isAdmin ? (
                           <>({comment.DepartmentName})</>
                         ) : null}
-                      </>
-                    )}
-                  </p>
-                </div>
-              </div>
-            </Link>
+                      </p>
+                    </div>
+                  </div>
+                </Link>
+              )}
+            </>
           )}
           {/* FOR COMMENT OPTIONS */}
           <div>
@@ -325,39 +342,63 @@ const CommentLayout = ({
                           </div>
                         </div>
                       ) : (
-                        <Link
-                          to={`/Profile/${reply.userID}`}
-                          className="linkText rounded"
-                        >
-                          <div className="d-flex align-items-center gap-2">
-                            <div
-                              className="profilePicture d-flex align-items-center justify-content-center"
-                              style={{ zIndex: "2" }}
+                        <>
+                          {reply.isAnon ? (
+                            <div className="linkText rounded">
+                              <div className="d-flex align-items-center gap-2">
+                                <div
+                                  className="profilePicture d-flex align-items-center justify-content-center"
+                                  style={{ zIndex: "2" }}
+                                >
+                                  <img
+                                    src={AnonymousIcon}
+                                    alt="Anonymous Profile"
+                                    style={{
+                                      width: "100%",
+                                      height: "100%",
+                                      objectFit: "cover",
+                                    }}
+                                  />
+                                </div>
+                                <div className="d-flex justify-content-start flex-column">
+                                  <p className="m-0 text-start">
+                                    {reply.alias}
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+                          ) : (
+                            <Link
+                              to={`/Profile/${reply.userID}`}
+                              className="linkText rounded"
                             >
-                              <img
-                                src={
-                                  reply.profile_image
-                                    ? reply.profile_image
-                                    : AnonymousIcon
-                                }
-                                alt="Profile"
-                                style={{
-                                  width: "100%",
-                                  height: "100%",
-                                  objectFit: "cover",
-                                }}
-                              />
-                            </div>
-                            <div className="d-flex justify-content-start flex-column">
-                              <p className="m-0 text-start">
-                                {reply.firstName} {reply.lastName}{" "}
-                                {user.isAdmin ? (
-                                  <>({reply.DepartmentName})</>
-                                ) : null}
-                              </p>
-                            </div>
-                          </div>
-                        </Link>
+                              <div className="d-flex align-items-center gap-2">
+                                <div
+                                  className="profilePicture d-flex align-items-center justify-content-center"
+                                  style={{ zIndex: "2" }}
+                                >
+                                  <img
+                                    src={reply.profile_image}
+                                    alt="Profile"
+                                    style={{
+                                      width: "100%",
+                                      height: "100%",
+                                      objectFit: "cover",
+                                    }}
+                                  />
+                                </div>
+                                <div className="d-flex justify-content-start flex-column">
+                                  <p className="m-0 text-start">
+                                    {reply.firstName} {reply.lastName}{" "}
+                                    {!reply.isAdmin && user.isAdmin ? (
+                                      <>({reply.DepartmentName})</>
+                                    ) : null}
+                                  </p>
+                                </div>
+                              </div>
+                            </Link>
+                          )}
+                        </>
                       )}
                       {/* FOR COMMENT OPTIONS */}
                       <div>

@@ -38,7 +38,9 @@ const CommentSection = ({
   const [isSendingComment, setIsSendingComment] = useState(false);
   const [isSendingReply, setIsSendingReply] = useState(false);
   const [interactAsAnon, setInteractAsAnon] = useState(
-    isAnon === "private"
+    user.isAdmin
+      ? false
+      : isAnon === "private"
       ? true
       : () => {
           const storedValue = localStorage.getItem("interactAsAnon");

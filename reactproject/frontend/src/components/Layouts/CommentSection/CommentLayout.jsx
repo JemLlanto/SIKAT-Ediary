@@ -115,7 +115,11 @@ const CommentLayout = ({
                       <>
                         {" "}
                         {comment.firstName} {comment.lastName}{" "}
-                        {user.isAdmin ? <>({comment.DepartmentName})</> : null}
+                        {comment.isAdmin ? (
+                          ""
+                        ) : user.isAdmin ? (
+                          <>({comment.DepartmentName})</>
+                        ) : null}
                       </>
                     )}
                   </p>

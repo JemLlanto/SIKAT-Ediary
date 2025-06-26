@@ -360,18 +360,20 @@ const ForgotPassword = () => {
                 </div>
 
                 <div className="mt-2">
-                  <span
-                    style={{
-                      color:
-                        passwordStrength === "Weak"
-                          ? "red"
-                          : passwordStrength === "Medium"
-                          ? "orange"
-                          : "green",
-                    }}
-                  >
-                    {passwordStrength}
-                  </span>
+                  <h5 className="m-0">
+                    <span
+                      style={{
+                        color:
+                          passwordStrength === "Weak"
+                            ? "red"
+                            : passwordStrength === "Medium"
+                            ? "orange"
+                            : "green",
+                      }}
+                    >
+                      {passwordStrength}
+                    </span>
+                  </h5>
                 </div>
                 <div className="">
                   <p className="m-0">
@@ -475,13 +477,17 @@ const ForgotPassword = () => {
                   required
                 />
                 <div className="mt-2">
-                  {passwordMatch === null ? (
-                    ""
-                  ) : passwordMatch ? (
-                    <span style={{ color: "green" }}>Passwords match</span>
-                  ) : (
-                    <span style={{ color: "red" }}>Passwords do not match</span>
-                  )}
+                  <p className="m-0">
+                    {passwordMatch === null ? (
+                      ""
+                    ) : passwordMatch ? (
+                      <span style={{ color: "green" }}>Passwords match</span>
+                    ) : (
+                      <span style={{ color: "red" }}>
+                        Passwords do not match
+                      </span>
+                    )}
+                  </p>
                 </div>
               </div>
             </div>

@@ -1213,6 +1213,28 @@ app.post("/updateEngagement", (req, res) => {
   );
 });
 
+app.put("/hideComment", (req, res) => {
+  const { commentID } = req.body;
+
+  if (!commentID) {
+    res.status(400).send({ error: "Comment ID is required" });
+    return;
+  }
+
+  db.query(
+    "UPDATE comments SET isHidden = 1  WHERE commentID = ?",
+    [commentID],
+    (err, result) => {
+      if (err) {
+        console.error("Error updating Hide:", err);
+        res.status(500).send({ error: "Failed to update Hide" });
+      } else {
+        res.status(200).send({ message: "Hide updated" });
+      }
+    }
+  );
+});
+
 app.put("/hide", (req, res) => {
   const { entryID } = req.body;
 
@@ -1324,7 +1346,7 @@ app.put("/reviewedProfile/:userID", (req, res) => {
 });
 
 app.put("/reviewedComments", (req, res) => {
-  const { entryID } = req.body;
+  const { commentID } = req.body;
 
   if (!entryID) {
     res.status(400).send({ error: "Entry ID is required" });
@@ -1332,7 +1354,7 @@ app.put("/reviewedComments", (req, res) => {
   }
 
   db.query(
-    "UPDATE comment_reports SET isReviewed = 1 WHERE entryID = ?",
+    "UPDATE comments SET isReviewed = 1 WHERE commentID = ?",
     [entryID],
     (err, result) => {
       if (err) {
@@ -1929,8 +1951,7 @@ app.get("/fetchComments/:entryID", (req, res) => {
   const { entryID } = req.params;
   const query = `
     SELECT 
-      comments.commentID, comments.text, comments.isAnon, comments.created_at, comments.replyCommentID,
-      comments.userID,  -- Add this line to fetch userID
+      comments.*,  -- Add this line to fetch userID
       course_department.DepartmentName,
       user_profiles.alias,
       user_table.username, user_table.firstName, user_table.isAdmin, user_table.isSuspended, user_table.lastName, user_profiles.profile_image
@@ -2737,7 +2758,7 @@ app.put("/flaggedAddress/:id", (req, res) => {
 
 app.put("/commentAddress/:id", (req, res) => {
   const commentID = req.params.id;
-
+  console.log(commentID);
   const query = `
     UPDATE comments
     SET isReviewed = 1
@@ -2811,7 +2832,7 @@ app.post("/suspendUser", (req, res) => {
   console.log("Suspend Until Date:", suspendUntil);
 
   db.query(
-    "UPDATE user_table SET isSuspended = 1, suspendReason = ?, suspendUntil = ? WHERE userID = ?",
+    "UPDATE user_table SET offenseCount = offenseCount + 1, isSuspended = 1, suspendReason = ?, suspendUntil = ? WHERE userID = ?",
     [reason, suspendUntil, userID],
     (err, result) => {
       if (err) {

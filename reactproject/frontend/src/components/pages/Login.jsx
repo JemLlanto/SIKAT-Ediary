@@ -39,14 +39,14 @@ export default function Login() {
       setServerError("");
 
       // 🔄 Show loading state
-      // Swal.fire({
-      //   title: "Logging in...",
-      //   allowOutsideClick: false,
-      //   allowEscapeKey: false,
-      //   didOpen: () => {
-      //     Swal.showLoading();
-      //   },
-      // });
+      Swal.fire({
+        title: "Logging in...",
+        allowOutsideClick: false,
+        allowEscapeKey: false,
+        didOpen: () => {
+          Swal.showLoading();
+        },
+      });
 
       axios
         .post(
@@ -66,15 +66,15 @@ export default function Login() {
           Cookies.set("userID", encryptedUserID, { expires: 7 });
 
           // ✅ Show success toast
-          // Swal.fire({
-          //   icon: "success",
-          //   title: "Login Successful",
-          //   text: "Redirecting...",
-          //   toast: true,
-          //   position: "top-end",
-          //   timer: 1500,
-          //   showConfirmButton: false,
-          // });
+          Swal.fire({
+            icon: "success",
+            // title: "Login Successful",
+            text: "Login Successful.",
+            toast: true,
+            position: "top-end",
+            timer: 1500,
+            showConfirmButton: false,
+          });
 
           // 🧭 Navigate after short delay
           setTimeout(() => {

@@ -241,7 +241,7 @@ const CommentLayout = ({
         </>
       ) : (
         <>
-          <div className="d-flex align-items-start flex-column gap-2 pb-2">
+          <div className="d-flex align-items-start flex-column gap-2">
             <div className="w-100 d-flex align-items-center justify-content-between pe-3">
               {isAnon === "private" && ownComment ? (
                 // IF USER IS ANONIMOUS
@@ -344,8 +344,7 @@ const CommentLayout = ({
                 className="m-0 p-2 rounded border-2 text-secondary d-flex flex-column"
                 style={{
                   whiteSpace: "pre-wrap",
-                  maxWidth: "500px",
-                  minWidth: "7rem",
+                  width: "clamp(13rem, 40dvw, 30rem)",
                   wordWrap: "break-word",
                   backgroundColor: "var(--background_light)",
                 }}

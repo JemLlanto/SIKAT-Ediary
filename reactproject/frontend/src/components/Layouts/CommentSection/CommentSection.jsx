@@ -269,11 +269,6 @@ const CommentSection = ({
     }
   };
 
-  const handleEditComment = useCallback((comment) => {
-    setEditComment(comment.commentID);
-    setEditCommentText(comment.text);
-  }, []);
-
   const handleSaveEditComment = useCallback(async () => {
     if (!editCommentText.trim()) return; // Ensure non-empty edit text
     setIsSendingComment(true);
@@ -296,34 +291,6 @@ const CommentSection = ({
       setIsSendingComment(false);
     }
   }, [editComment, editCommentText, fetchComments]);
-
-  const handleDeleteComment = async (commentID) => {
-    setConfirmModal({
-      show: true,
-      message: `Are you sure you want to delete this comment?`,
-      onConfirm: async () => {
-        try {
-          await axios.delete(
-            `${
-              import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
-            }/deleteComment/${commentID}`
-          );
-          fetchComments();
-          closeConfirmModal();
-          setModal({
-            show: true,
-            message: `Comment Deleted.`,
-          });
-        } catch (error) {
-          console.error("Error deleting comment:", error);
-          setError("Failed to delete comment. Please try again.");
-        } finally {
-          setLoading(false);
-        }
-      },
-      onCancel: () => setConfirmModal({ show: false, message: "" }),
-    });
-  };
 
   const handleClose = () => {
     setShow(false);
@@ -429,6 +396,7 @@ const CommentSection = ({
                       <CommentLayout
                         key={comment.commentID}
                         entryData={entryData}
+                        fetchComments={fetchComments}
                         comment={comment}
                         comments={comments}
                         userID={userID}
@@ -445,7 +413,10 @@ const CommentSection = ({
                         isSendingReply={isSendingReply}
                         handleSendReply={handleSendReply}
                         handleReplyTextChange={handleReplyTextChange}
-                        handleEditComment={handleEditComment}
+                        count={count}
+                        setCount={setCount}
+                        setEditComment={setEditComment}
+                        setEditCommentText={setEditCommentText}
                       />
                     ))}
                   </>

@@ -2,51 +2,36 @@ import { useState, useEffect } from "react";
 import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
 import axios from "axios";
-import MessageAlert from "../DiaryEntry/messageAlert";
+import Swal from "sweetalert2";
 
-function ReviewedComment({
-  entryID,
-  userID,
-  firstName,
-  suspended,
-  userComment,
-}) {
+function ReviewedComment({ fetchComments, comment }) {
   const [show, setShow] = useState(false);
-  const [reasons, setReasons] = useState([]);
-  const [selectedReason, setSelectedReason] = useState("");
-  const [selectedPeriod, setSelectedPeriod] = useState("3 Days");
 
-  const [modal, setModal] = useState({ show: false, message: "" });
-  const [confirmModal, setConfirmModal] = useState({
-    show: false,
-    message: "",
-    onConfirm: () => {},
-    onCancel: () => {},
-  });
-
-  const closeModal = () => {
-    setModal({ show: false, message: "" });
-  };
-  const closeConfirmModal = () => {
-    setConfirmModal({
-      show: false,
-      message: "",
-      onConfirm: () => {},
-      onCancel: () => {},
-    });
-  };
-
-  const handleReviewed = async (entryID) => {
+  const handleReviewed = async (commentID) => {
     try {
       await axios.put(
-        `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/reviewedComments`,
-        {
-          entryID,
-        }
+        `${
+          import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+        }/commentAddress/${commentID}`
       );
-      alert("reviewed");
+
+      Swal.fire({
+        icon: "success",
+        title: "Marked as Reviewed",
+        text: "The comment has been successfully marked as reviewed.",
+        timer: 5000,
+        showConfirmButton: true,
+      }).then(() => {
+        fetchComments();
+        handleClose();
+      });
     } catch (error) {
       console.error("Error updating reviewed:", error);
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "Failed to mark the comment as reviewed.",
+      });
     }
   };
 
@@ -55,24 +40,19 @@ function ReviewedComment({
 
   return (
     <>
-      <button
-        className="btn btn-light w-100 d-flex align-items-center justify-content-center gap-1"
-        disabled={userComment.isReviewed}
-        onClick={handleShow}
-        // disabled={suspended}
-      >
-        <i className="bx bx-message-alt-check"></i>{" "}
-        <p className="m-0">
-          {userComment.isReviewed ? "Reviewed" : "Not Reviewed"}
-        </p>
-      </button>
-
-      {/* <MessageAlert
-        showModal={modal}
-        closeModal={closeModal}
-        title={"Notice"}
-        message={modal.message}
-      ></MessageAlert> */}
+      {comment.isReported ? (
+        <button
+          className="btn btn-light w-100 d-flex align-items-center justify-content-center gap-1"
+          disabled={comment.isReviewed}
+          onClick={handleShow}
+          // disabled={suspended}
+        >
+          <i className="bx bx-message-alt-check"></i>{" "}
+          <p className="m-0">
+            {comment.isReviewed ? "Reviewed" : "Mark as Reviewed"}
+          </p>
+        </button>
+      ) : null}
 
       <Modal show={show} onHide={handleClose} centered>
         <Modal.Header closeButton>
@@ -81,7 +61,9 @@ function ReviewedComment({
           </Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          <p className="m-0">Are you sure you want to mark this as reviewed?</p>
+          <p className="m-0">
+            Are you sure you want to mark this comment as reviewed?
+          </p>
         </Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" onClick={handleClose}>
@@ -89,7 +71,7 @@ function ReviewedComment({
           </Button>
           <button
             className="primaryButton py-2 rounded"
-            onClick={() => handleReviewed(entryID)}
+            onClick={() => handleReviewed(comment.commentID)}
           >
             <p className="m-0">Confirm</p>
           </button>

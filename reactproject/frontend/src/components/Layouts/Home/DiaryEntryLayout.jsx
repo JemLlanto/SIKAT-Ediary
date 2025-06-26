@@ -78,6 +78,7 @@ const DiaryEntryLayout = ({
     if (entryData.entryID) {
       const fetchComments = async () => {
         try {
+          setLoading(true);
           const response = await axios.get(
             `  ${
               import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
@@ -86,6 +87,8 @@ const DiaryEntryLayout = ({
           setComments(response.data);
         } catch (error) {
           console.error("Error fetching comments:", error);
+        } finally {
+          setLoading(false);
         }
       };
       fetchComments();

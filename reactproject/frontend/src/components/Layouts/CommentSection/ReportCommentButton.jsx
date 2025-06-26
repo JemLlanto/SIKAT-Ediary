@@ -2,10 +2,10 @@ import { useState, useEffect } from "react";
 import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
 import axios from "axios";
-import MessageModal from "../DiaryEntry/messageModal";
-import MessageAlert from "../DiaryEntry/messageAlert";
+import Swal from "sweetalert2";
 
 function ReportCommentButton({
+  comment,
   ownComment,
   isAnon,
   alias,
@@ -19,26 +19,7 @@ function ReportCommentButton({
   const [otherText, setOtherText] = useState("");
   const [isOtherSelected, setIsOtherSelected] = useState(false);
   const [reportComments, setReportComments] = useState([]);
-
-  const [modal, setModal] = useState({ show: false, message: "" });
-  const [confirmModal, setConfirmModal] = useState({
-    show: false,
-    message: "",
-    onConfirm: () => {},
-    onCancel: () => {},
-  });
-
-  const closeModal = () => {
-    setModal({ show: false, message: "" });
-  };
-  const closeConfirmModal = () => {
-    setConfirmModal({
-      show: false,
-      message: "",
-      onConfirm: () => {},
-      onCancel: () => {},
-    });
-  };
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Fetch report comments from the backend
   useEffect(() => {
@@ -77,6 +58,7 @@ function ReportCommentButton({
 
   const handleSubmitReport = async () => {
     try {
+      setIsSubmitting(true);
       const response = await axios.post(
         `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/reportuserComment`,
         {
@@ -89,18 +71,22 @@ function ReportCommentButton({
 
       if (response.status === 200) {
         handleClose();
-        setConfirmModal({
-          show: true,
-          message: `Comment reported successfully.`,
-          onConfirm: async () => {
-            setTimeout(() => closeConfirmModal());
-          },
-          onCancel: () => closeConfirmModal(),
+        await Swal.fire({
+          icon: "success",
+          title: "Reported!",
+          text: "Comment reported successfully.",
+          confirmButtonText: "OK",
         });
       }
     } catch (error) {
       console.error("Error submitting report:", error);
-      alert("There was an error submitting your report.");
+      await Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "There was an error submitting your report.",
+      });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -109,19 +95,23 @@ function ReportCommentButton({
       <button
         className="btn btn-light w-100 d-flex align-items-center justify-content-center gap-1"
         onClick={handleShow}
+        disabled={comment.isReviewed}
       >
-        <p className="m-0">Report</p>
-        <i className="bx bx-error"></i>
+        <p className="m-0">
+          {comment.isReviewed
+            ? "This comment has been reviewed by admin/s."
+            : "Report"}
+        </p>
+        {comment.isReviewed ? (
+          <>
+            <i className="bx bx-check"></i>
+          </>
+        ) : (
+          <>
+            <i className="bx bx-error"></i>
+          </>
+        )}
       </button>
-
-      <MessageModal
-        showModal={confirmModal}
-        closeModal={closeConfirmModal}
-        title={"Notice"}
-        message={confirmModal.message}
-        confirm={confirmModal.onConfirm}
-        needConfirm={1}
-      ></MessageModal>
 
       <Modal show={show} onHide={handleClose} centered>
         <Modal.Header closeButton>
@@ -175,8 +165,9 @@ function ReportCommentButton({
           <button
             className="primaryButton py-2 rounded"
             onClick={handleSubmitReport}
+            disabled={isSubmitting}
           >
-            <p className="m-0">Confirm</p>
+            <p className="m-0">{isSubmitting ? <>Saving</> : <>Confirm</>}</p>
           </button>
         </Modal.Footer>
       </Modal>

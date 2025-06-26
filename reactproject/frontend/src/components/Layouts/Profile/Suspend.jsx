@@ -2,39 +2,22 @@ import { useState, useEffect } from "react";
 import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
 import axios from "axios";
-import MessageModal from "../DiaryEntry/messageModal";
+import Swal from "sweetalert2";
 
-function Suspend({ profileOwner }) {
+function Suspend({ fetchComments, profileOwner }) {
   const [show, setShow] = useState(false);
   const [reasons, setReasons] = useState([]);
   const [selectedReason, setSelectedReason] = useState("");
   const [selectedPeriod, setSelectedPeriod] = useState("3 Days");
-
-  const [modal, setModal] = useState({ show: false, message: "" });
-  const [confirmModal, setConfirmModal] = useState({
-    show: false,
-    message: "",
-    onConfirm: () => {},
-    onCancel: () => {},
-  });
-
-  const closeModal = () => {
-    setModal({ show: false, message: "" });
-  };
-  const closeConfirmModal = () => {
-    setConfirmModal({
-      show: false,
-      message: "",
-      onConfirm: () => {},
-      onCancel: () => {},
-    });
-  };
+  const [isLoading, setIsLoading] = useState(false);
+  const [suspended, setSuspended] = useState(null);
 
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
 
   const handleSuspend = async () => {
     try {
+      setIsLoading(true);
       const response = await axios.post(
         `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/suspendUser`,
         {
@@ -43,21 +26,38 @@ function Suspend({ profileOwner }) {
           period: selectedPeriod,
         }
       );
+      if (profileOwner.isReported && profileOwner.commentID) {
+        const commentID = profileOwner.commentID;
+        console.log("marking as reviewed: ", commentID);
+        const responseMark = await axios.put(
+          `${
+            import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+          }/commentAddress/${commentID}`
+        );
+      }
 
       handleClose();
-      setModal({
-        show: true,
-        message: `${profileOwner.firstName} ${profileOwner.lastName} has been suspended.`,
+
+      Swal.fire({
+        icon: "success",
+        title: "User Suspended",
+        text: `${profileOwner.firstName} ${profileOwner.lastName} has been suspended.`,
+        timer: 5000,
+        showConfirmButton: true,
+      }).then(() => {
+        setSuspended(profileOwner.userID);
+        fetchComments();
       });
-      setTimeout(() => {
-        window.location.reload();
-      }, 1500);
     } catch (error) {
       console.error("Error suspending user:", error);
-      setModal({
-        show: true,
-        message: `An error occurred while suspending the user.`,
+
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "An error occurred while suspending the user.",
       });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -83,20 +83,15 @@ function Suspend({ profileOwner }) {
       <button
         className="btn btn-light w-100 d-flex align-items-center justify-content-center gap-1"
         onClick={handleShow}
-        disabled={profileOwner.isSuspended}
+        disabled={profileOwner.isSuspended || suspended === profileOwner.userID}
       >
         <i className="bx bx-block"></i>
         <p className="m-0">
-          {profileOwner.isSuspended ? "Suspended" : "Suspend"}
+          {profileOwner.isSuspended || suspended === profileOwner.userID
+            ? "Suspended"
+            : "Suspend"}
         </p>
       </button>
-
-      <MessageModal
-        showModal={modal}
-        closeModal={closeModal}
-        title={"Notice"}
-        message={modal.message}
-      ></MessageModal>
 
       <Modal show={show} onHide={handleClose} centered>
         <Modal.Header closeButton>
@@ -108,7 +103,10 @@ function Suspend({ profileOwner }) {
         </Modal.Header>
         <Modal.Body>
           <div className="text-danger">
-            <h5>Number of Offense: {profileOwner.reportCount}</h5>
+            <h5>
+              Number of Offense: {profileOwner.reportCount}
+              {/* {profileOwner.commentID} */}
+            </h5>
           </div>
           <div className="d-flex flex-column gap-2">
             <div className="form-floating">
@@ -145,13 +143,14 @@ function Suspend({ profileOwner }) {
         </Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" onClick={handleClose}>
-            Cancel
+            <p className="m-0">Cancel</p>
           </Button>
           <button
             className="primaryButton py-2 rounded"
             onClick={handleSuspend}
+            disabled={isLoading || selectedReason === ""}
           >
-            Suspend
+            <p className="m-0">{isLoading ? "Saving" : "Suspend"}</p>
           </button>
         </Modal.Footer>
       </Modal>

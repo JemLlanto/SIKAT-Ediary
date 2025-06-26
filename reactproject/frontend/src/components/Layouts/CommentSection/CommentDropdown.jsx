@@ -1,19 +1,39 @@
 import Dropdown from "react-bootstrap/Dropdown";
 import ReportButton from "./ReportCommentButton";
 import Suspend from "../Profile/Suspend";
+import { useCallback } from "react";
+import ReviewedComment from "../Profile/ReviewedComment";
+import HideComment from "./HideComment";
 
-const CommentDropdown = ({ comment, entryData, user }) => {
+const CommentDropdown = ({
+  fetchComments,
+  comment,
+  entryData,
+  user,
+  handleDeleteComment,
+  setEditComment,
+  setEditCommentText,
+  setIsHidden,
+}) => {
   const ownComment = comment.userID === user.userID;
+
+  const handleEditComment = (comment) => {
+    setEditComment(comment.commentID);
+    setEditCommentText(comment.text);
+  };
+
   return (
     <Dropdown>
-      <Dropdown.Toggle
-        className="btn-light d-flex align-items-center pt-0 pb-2"
-        id="dropdown-basic"
-        bsPrefix="custom-toggle"
-        disabled={comment.isAdmin}
-      >
-        <h5 className="m-0">...</h5>
-      </Dropdown.Toggle>
+      {comment.isAdmin ? null : (
+        <Dropdown.Toggle
+          className="btn-light d-flex align-items-center pt-0 pb-2"
+          id="dropdown-basic"
+          bsPrefix="custom-toggle"
+          disabled={comment.isAdmin}
+        >
+          <h5 className="m-0">...</h5>
+        </Dropdown.Toggle>
+      )}
 
       <Dropdown.Menu className="p-2 ">
         {ownComment ? (
@@ -39,12 +59,14 @@ const CommentDropdown = ({ comment, entryData, user }) => {
           </>
         ) : user.isAdmin ? (
           <>
-            <Suspend profileOwner={comment} />
-            {/* <Hide type={"comment"} entry={entry} /> */}
+            <Suspend fetchComments={fetchComments} profileOwner={comment} />
+            <ReviewedComment fetchComments={fetchComments} comment={comment} />
+            <HideComment comment={comment} setIsHidden={setIsHidden} />
           </>
         ) : (
           <Dropdown.Item className="p-0 btn btn-light">
             <ReportButton
+              comment={comment}
               ownComment={ownComment}
               isAnon={entryData.anonimity}
               alias={entryData.alias}

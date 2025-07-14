@@ -153,7 +153,7 @@ const ChatButton = ({ user, entry, userToChat }) => {
       });
     }
   };
-  console.log("use: ", user);
+  // console.log("use: ", user);
   return (
     <>
       <div className=" d-flex align-items-center justify-content-center position-relative">

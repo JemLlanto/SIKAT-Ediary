@@ -56,23 +56,23 @@ const DiaryEntryLayout = ({
     setCurrentUser(storedUser);
   }, [navigate]);
 
-  useEffect(() => {
-    if (entryData.entryID) {
-      const fetchComments = async () => {
-        try {
-          const response = await axios.get(
-            `  ${
-              import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
-            }/fetchComments/${entryData.entryID}`
-          );
-          setComments(response.data);
-        } catch (error) {
-          console.error("Error fetching comments:", error);
-        }
-      };
-      fetchComments();
-    }
-  }, [entryData.entryID]);
+  // useEffect(() => {
+  //   if (entryData.entryID) {
+  //     const fetchComments = async () => {
+  //       try {
+  //         const response = await axios.get(
+  //           `  ${
+  //             import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+  //           }/fetchComments/${entryData.entryID}`
+  //         );
+  //         setComments(response.data);
+  //       } catch (error) {
+  //         console.error("Error fetching comments:", error);
+  //       }
+  //     };
+  //     fetchComments();
+  //   }
+  // }, [entryData.entryID]);
 
   useEffect(() => {
     if (entryData.entryID) {

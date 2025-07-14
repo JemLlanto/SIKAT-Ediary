@@ -97,14 +97,14 @@ const DiaryDetails = ({ entry, user }) => {
                         return count;
                       }, {})
                   ).map(([reason, count]) => (
-                    <div key={reason}>
-                      <p className="m-0">
+                    <span key={reason}>
+                      <span className="m-0">
                         {reason} x{count}
-                      </p>
-                    </div>
+                      </span>
+                    </span>
                   ))
                 ) : (
-                  <p className="m-0">No reason available</p>
+                  <span className="m-0">No reason available</span>
                 )}
               </p>
             </div>

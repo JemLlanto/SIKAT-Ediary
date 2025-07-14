@@ -2117,36 +2117,26 @@ app.get("/fetchReportedCommentReasons", (req, res) => {
   });
 });
 
-// app.get("/getReportedComments/:userID", (req, res) => {
-//   const { userID } = req.params;
+app.get("/getReportedComments/:userID", (req, res) => {
+  const { userID } = req.params;
 
-//   const query = `
-//   SELECT
-//     comment_reports.*,
-//     comments.*,
-//     user_table.firstName,
-//     user_table.lastName,
-//     user_table.studentNumber,
-//     user_profiles.profile_image,
-//     diary_entries.*
-//   FROM
-//     comment_reports
-//   JOIN user_table ON comment_reports.userID = user_table.userID
-//   JOIN comments ON comment_reports.commentID = comments.commentID
-//   JOIN user_profiles ON comment_reports.userID = user_profiles.userID
-//   JOIN diary_entries ON comment_reports.entryID = diary_entries.entryID
-//   WHERE comment_reports.userID = ?`;
+  const query = `
+  SELECT
+    *
+  FROM
+    comments
+  WHERE userID = ? AND isReported = 1`;
 
-//   db.query(query, [userID], (err, results) => {
-//     if (err) {
-//       console.error("Error fetching reported comments:", err.message);
-//       return res
-//         .status(500)
-//         .json({ error: "Error fetching reported comments" });
-//     }
-//     res.status(200).json(results);
-//   });
-// });
+  db.query(query, [userID], (err, results) => {
+    if (err) {
+      console.error("Error fetching reported comments:", err.message);
+      return res
+        .status(500)
+        .json({ error: "Error fetching reported comments" });
+    }
+    res.status(200).json(results);
+  });
+});
 
 app.get("/getReportedCommentsReview/:entryID", (req, res) => {
   const { entryID } = req.params;
@@ -2470,18 +2460,9 @@ app.get("/flagged/:userID", (req, res) => {
 
   const query = `
   SELECT 
-    flagged_reports.*,
-    user_table.firstName,
-    user_table.lastName,
-    user_table.studentNumber,
-    user_table.sex,
-    user_profiles.profile_image,
-    diary_entries.title
-  FROM flagged_reports
-  LEFT JOIN user_table ON flagged_reports.userID = user_table.userID
-  LEFT JOIN user_profiles ON flagged_reports.userID = user_profiles.userID
-  LEFT JOIN diary_entries ON flagged_reports.entryID = diary_entries.entryID
-  WHERE flagged_reports.userID = ?`;
+    *
+  FROM diary_entries
+  WHERE userID = ? AND isFlagged = 1`;
 
   db.query(query, [userID], (err, results) => {
     if (err) {

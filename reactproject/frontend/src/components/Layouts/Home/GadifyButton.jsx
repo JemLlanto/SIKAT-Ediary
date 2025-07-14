@@ -10,7 +10,7 @@ const GadifyButton = ({ entry, user, entries, setEntryData }) => {
 
     // const entry = entries.find((entry) => entry.entryID === entryID);
     if (!entry) return;
-    console.log("saving gadify");
+    // console.log("saving gadify");
     axios
       .post(
         `${
@@ -23,7 +23,7 @@ const GadifyButton = ({ entry, user, entries, setEntryData }) => {
       .then((res) => {
         const isGadified =
           res.data.message === "Gadify action recorded successfully";
-        console.log(res.data.message);
+        // console.log(res.data.message);
 
         setProcessing(false);
 

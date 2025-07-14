@@ -1,5 +1,5 @@
 import DiaryEntryButton from "./DiaryEntryButton";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Dropdown, Modal } from "react-bootstrap";
 import axios from "axios";
@@ -20,9 +20,13 @@ const CenterLayout = ({ setLoad, user, fetchUserData }) => {
   const [flaggingOptions, setFlaggingOptions] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [filters, setFilters] = useState({});
-  const [error, setError] = useState(null);
-  const navigate = useNavigate();
   const [doneFetched, setDoneFetched] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  const [page, setPage] = useState(1);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+
+  const navigate = useNavigate();
+  const ENTRIES_PER_PAGE = 5;
 
   const [modal, setModal] = useState({ show: false, message: "" });
   const [confirmModal, setConfirmModal] = useState({
@@ -71,6 +75,7 @@ const CenterLayout = ({ setLoad, user, fetchUserData }) => {
 
   useEffect(() => {
     if (user && !doneFetched) {
+      setPage(1);
       fetchFollowedUsers(user.userID);
       // fetchEntries(user.userID, filters);
     }
@@ -90,11 +95,18 @@ const CenterLayout = ({ setLoad, user, fetchUserData }) => {
     }
   };
 
-  const fetchEntries = async (userID, filters) => {
+  const fetchEntries = async (userID, filters, pageNum = 1, append = false) => {
     try {
       // console.log("Fetching entries for user:", userID);
-      // console.log("Applied filters:", filters);
-      setIsLoading(true);
+      console.log("Loading Page:", pageNum);
+      const loadingState = append ? setIsLoadingMore : setIsLoading;
+      loadingState(true);
+
+      if (!append) {
+        fetchUserData();
+      }
+
+      // setIsLoading(true);
       fetchUserData();
       // console.log("Fetching entries with filters:", filters);
       const response = await axios.get(
@@ -102,7 +114,12 @@ const CenterLayout = ({ setLoad, user, fetchUserData }) => {
           import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
         }/entries/fetchEntries`,
         {
-          params: { userID: userID, filters: filters },
+          params: {
+            userID: userID,
+            filters: filters,
+            page: pageNum,
+            limit: ENTRIES_PER_PAGE,
+          },
         }
       );
 
@@ -116,26 +133,107 @@ const CenterLayout = ({ setLoad, user, fetchUserData }) => {
 
       // console.log("Gadify status response:", gadifyStatusResponse.data);
 
-      const updatedEntries = response.data.map((entry) => {
+      const updatedEntries = response.data.entries.map((entry) => {
         const isGadified = gadifyStatusResponse.data.some(
           (g) => g.entryID === entry.entryID
         );
-        // console.log("Gadified", isGadified);
         return { ...entry, isGadified };
       });
-      // console.log(
-      //   "Entry subjects: ",
-      //   updatedEntries.map((e) => e.subjects)
-      // );
-      setEntries(updatedEntries);
+      // console.log("Updated entries: ", [...entries, ...updatedEntries]);
+      setEntries((prevEntries) => [...prevEntries, ...updatedEntries]);
+      // console.log("Current entries after fetch:", currentEntries);
+      // Check if there are more entries to load
+      setHasMore(
+        response.data.hasMore || updatedEntries.length === ENTRIES_PER_PAGE
+      );
+      console.log(
+        "Has more: ",
+        response.data.hasMore || updatedEntries.length === ENTRIES_PER_PAGE
+      );
+      // setEntries(updatedEntries);
     } catch (error) {
       console.error("There was an error fetching the diary entries!", error);
     } finally {
-      setDoneFetched(true);
-      // console.log("Entries Fetched...");
       setIsLoading(false);
+      setIsLoadingMore(false);
+      setDoneFetched(true);
     }
   };
+
+  // Load more entries (for infinite scroll)
+  const loadMoreEntries = useCallback(() => {
+    if (!isLoadingMore && hasMore && doneFetched) {
+      const nextPage = page + 1;
+      console.log("Loading more entries for page:", nextPage);
+      setPage(nextPage);
+      fetchEntries(user.userID, filters, nextPage, true);
+    } else {
+      console.log("Cannot load more:", {
+        isLoadingMore,
+        hasMore,
+        doneFetched,
+      });
+    }
+  }, [page, isLoadingMore, hasMore, user.userID, filters, doneFetched]);
+
+  // Scroll handler for infinite scrolling
+  const handleScroll = useCallback(() => {
+    const isNearBottom =
+      window.innerHeight + window.scrollY >=
+      document.documentElement.offsetHeight - 200;
+
+    if (isNearBottom && !isLoadingMore && hasMore && doneFetched) {
+      console.log("Near bottom, loading more entries");
+      loadMoreEntries();
+    }
+  }, [isLoadingMore, hasMore, doneFetched, loadMoreEntries]);
+
+  // Fixed throttled scroll handler
+  const throttledHandleScroll = useCallback(() => {
+    if (window.scrollThrottle) return;
+
+    window.scrollThrottle = setTimeout(() => {
+      handleScroll();
+      window.scrollThrottle = null; // ✅ Fixed: Clear the throttle
+    }, 200);
+  }, [handleScroll]);
+
+  // Set up scroll listener with proper cleanup
+  useEffect(() => {
+    window.addEventListener("scroll", throttledHandleScroll);
+
+    return () => {
+      window.removeEventListener("scroll", throttledHandleScroll);
+      if (window.scrollThrottle) {
+        clearTimeout(window.scrollThrottle);
+        window.scrollThrottle = null;
+      }
+    };
+  }, [throttledHandleScroll]);
+
+  // Loading indicator component
+  const LoadingIndicator = () => <CenterLoader />;
+
+  // Refresh all entries
+  const refreshEntries = () => {
+    console.log("Refreshing entries");
+    // setEntries([]);
+    setPage(1);
+    setHasMore(true);
+    setDoneFetched(false);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+
+    setTimeout(() => {
+      fetchEntries(user.userID, filters, 1, false);
+    }, 500);
+  };
+
+  // Filter entries by scheduled date
+  // const filteredEntries = entries.filter((entry) => {
+  //   const scheduledDate = new Date(entry.scheduledDate);
+  //   const dateToBePosted = new Date();
+  //   return scheduledDate < dateToBePosted;
+  // });
 
   const handleFilterChange = (selectedFiltersArray) => {
     const activeFilters = [];
@@ -181,10 +279,6 @@ const CenterLayout = ({ setLoad, user, fetchUserData }) => {
 
   // FOR INFINITE SCROLLING
   const [visibleEntries, setVisibleEntries] = useState(10);
-
-  const loadMoreEntries = () => {
-    setVisibleEntries((prev) => prev + 10); // Load 10 more entries
-  };
 
   if (!user) return null;
 
@@ -408,56 +502,39 @@ const CenterLayout = ({ setLoad, user, fetchUserData }) => {
         </div>
       )}
       {isLoading ? (
-        <>
-          <CenterLoader></CenterLoader>
-        </>
+        <CenterLoader />
       ) : (
         <>
-          {/* FOR POSTED DIARIES */}
           {entries.length === 0 ? (
             <p>No entries available.</p>
           ) : (
-            entries
-              .filter((entry) => {
-                const now = new Date();
-                const scheduledDate = new Date(entry.scheduledDate);
-                const dateToBePosted = new Date();
-                return scheduledDate < dateToBePosted;
-              })
-              .slice(0, visibleEntries)
-              .map((entry) => (
-                <DiaryEntryLayout
-                  flaggingOptions={flaggingOptions}
-                  entry={entry}
-                  user={user}
-                  followedUsers={followedUsers}
-                  suspended={entry.isSuspended}
-                  fetchFollowedUsers={fetchFollowedUsers}
-                  setFollowedUsers={setFollowedUsers}
-                />
-              ))
+            entries.map((entry, index) => (
+              <DiaryEntryLayout
+                key={index}
+                flaggingOptions={flaggingOptions}
+                entry={entry}
+                user={user}
+                followedUsers={followedUsers}
+                suspended={entry.isSuspended}
+                fetchFollowedUsers={fetchFollowedUsers}
+                setFollowedUsers={setFollowedUsers}
+              />
+            ))
           )}
-          {visibleEntries < entries.length ? (
-            <button
-              className="w-100 btn btn-secondary"
-              onClick={loadMoreEntries}
-            >
-              Load More
-            </button>
-          ) : (
-            <>
+
+          {/* Loading indicator for infinite scroll */}
+          {isLoadingMore && <LoadingIndicator />}
+
+          {/* End of entries */}
+          {!isLoadingMore && !hasMore && (
+            <div className="text-center mt-3">
               <button
                 className="w-100 btn btn-secondary"
-                onClick={() => {
-                  window.scrollTo({ top: 0, behavior: "smooth" }); // Scroll to top
-                  setTimeout(() => {
-                    fetchEntries(user.userID, filters); // Refresh page
-                  }, 500); // Wait for smooth scroll before refreshing
-                }}
+                onClick={refreshEntries}
               >
-                Your reached the end, see new entries.
+                You reached the end, see new entries.
               </button>
-            </>
+            </div>
           )}
         </>
       )}

@@ -133,7 +133,7 @@ const Profile = () => {
       const response = await axios.get(
         `${
           import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
-        }/entries/fetchLeftSideEntry/${profileOwner.userID}`
+        }/entries/fetchLeftSideEntry/${userID}`
       );
 
       if (response.data.entries && Array.isArray(response.data.entries)) {
@@ -199,7 +199,7 @@ const Profile = () => {
   const uploadProfile = async (file) => {
     const formData = new FormData();
     formData.append("file", file);
-    formData.append("userID", profileOwner.userID);
+    formData.append("userID", userID);
 
     const result = await Swal.fire({
       icon: "question",
@@ -315,7 +315,7 @@ const Profile = () => {
               });
 
               // Refresh the followed users list from the backend
-              await fetchFollowedUsers(profileOwner.userID);
+              await fetchFollowedUsers(userID);
             } catch (error) {
               console.error("Error unfollowing user:", error);
               setModal({
@@ -752,10 +752,10 @@ const Profile = () => {
                               <>
                                 <div className="d-flex gap-1">
                                   <FlaggedDiaries
-                                    userID={profileOwner.userID}
+                                    userID={userID}
                                   ></FlaggedDiaries>
                                   <ReportedComments
-                                    userID={profileOwner.userID}
+                                    userID={userID}
                                   ></ReportedComments>
                                 </div>
                               </>
@@ -772,7 +772,7 @@ const Profile = () => {
                       <>
                         {ownProfile ? (
                           <ProfileDropdown
-                            userID={profileOwner.userID}
+                            userID={userID}
                             isAdmin={user?.isAdmin}
                           />
                         ) : (
@@ -808,38 +808,35 @@ const Profile = () => {
                 <>
                   <CenterLoader />
                 </>
+              ) : entries.length > 0 ? (
+                entries
+                  .filter(
+                    (entry) =>
+                      user?.isAdmin ||
+                      ownProfile ||
+                      (entry.visibility !== "private" &&
+                        entry.anonimity !== "private")
+                  )
+                  .map((entry, index) => (
+                    <>
+                      {!ownProfile && entry.visibility === "private" ? null : (
+                        <div className="w-100 " key={index}>
+                          <DiaryEntryLayout
+                            flaggingOptions={flaggingOptions}
+                            entry={entry}
+                            user={user}
+                            followedUsers={followedUsers}
+                            setFollowedUsers={setFollowedUsers}
+                            fetchFollowedUsers={fetchFollowedUsers}
+                          />
+                        </div>
+                      )}
+                    </>
+                  ))
               ) : (
-                <>
-                  {entries.length > 0 ? (
-                    entries
-                      .filter(
-                        (entry) =>
-                          user?.isAdmin ||
-                          ownProfile ||
-                          (entry.visibility !== "private" &&
-                            entry.anonimity !== "private")
-                      )
-                      .map((entry) => (
-                        <>
-                          {!ownProfile &&
-                          entry.visibility === "private" ? null : (
-                            <div className="w-100 " key={entry.entryID}>
-                              <DiaryEntryLayout
-                                flaggingOptions={flaggingOptions}
-                                entry={entry}
-                                user={user}
-                                followedUsers={followedUsers}
-                                setFollowedUsers={setFollowedUsers}
-                                fetchFollowedUsers={fetchFollowedUsers}
-                              />
-                            </div>
-                          )}
-                        </>
-                      ))
-                  ) : (
-                    <p className="m-0 text-secondary mt-1 mt-xl-3">
-                      No diary entries.
-                      {/* , Post{" "}
+                <p className="m-0 text-secondary mt-1 mt-xl-3">
+                  No diary entries.
+                  {/* , Post{" "}
                 <Link
                   className="text-decoration-none"
                   to={user && user.isAdmin ? "/Admin/Home" : "/Home"}
@@ -847,9 +844,7 @@ const Profile = () => {
                   here
                 </Link>
                 . */}
-                    </p>
-                  )}
-                </>
+                </p>
               )}
             </div>
           </div>

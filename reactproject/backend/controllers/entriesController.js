@@ -325,6 +325,13 @@ const fetchingEntries = (req, res) => {
   const filters = req.query.filters;
   const scheduledDate = req.query.scheduledDate === "true";
 
+  // Add pagination parameters
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 5;
+  const offset = (page - 1) * limit;
+
+  console.log("Loading page: ", page);
+
   let query = `
     SELECT 
       diary_entries.*,
@@ -364,13 +371,13 @@ const fetchingEntries = (req, res) => {
     const filterConditions = [];
 
     filters.forEach((filter) => {
-      const lowerFilter = filter.toLowerCase(); // Convert once for consistency
+      const lowerFilter = filter.toLowerCase();
+
+      // console.log("Processing filter:", lowerFilter);
 
       if (lowerFilter === "flagged diaries") {
-        // All lowercase
         filterConditions.push(`diary_entries.isFlagged = 1`);
       } else if (lowerFilter === "with alarming words") {
-        // All lowercase
         filterConditions.push(`diary_entries.containsAlarmingWords = 1`);
       } else if (lowerFilter !== "general") {
         filterConditions.push(`LOWER(diary_entries.subjects) LIKE ?`);
@@ -393,7 +400,7 @@ const fetchingEntries = (req, res) => {
       query += ` AND (${filterConditions.join(" OR ")})`;
     }
 
-    console.log("Filter conditions:", filterConditions); // This should now log correctly
+    // console.log("Filter conditions:", filterConditions);
   }
 
   query += ` 
@@ -405,118 +412,157 @@ const fetchingEntries = (req, res) => {
       diary_entries.engagementCount DESC
   `;
 
-  db.query(query, queryParams, (err, results) => {
-    if (err) {
-      console.error("Error fetching diary entries:", err.message);
-      return res.status(500).json({ error: "Error fetching diary entries" });
+  // Create count query for pagination
+  let countQuery = query.replace(
+    /SELECT[\s\S]*?FROM/,
+    "SELECT COUNT(*) as total FROM"
+  );
+
+  // Add pagination to main query
+  query += ` LIMIT ? OFFSET ?`;
+  queryParams.push(limit, offset);
+
+  // First, get the total count
+  db.query(countQuery, queryParams.slice(0, -2), (countErr, countResults) => {
+    if (countErr) {
+      console.error("Error counting diary entries:", countErr.message);
+      return res.status(500).json({ error: "Error counting diary entries" });
     }
 
-    // Notify all users about scheduled entries
-    const notifyAllUsersQuery = `
-      SELECT 
-        diary_entries.entryID,
-        diary_entries.title,
-        diary_entries.scheduledDate,
-        diary_entries.isScheduled,
-        user_profiles.profile_image,
-        CONCAT(user_table.firstName, ' ', user_table.lastName) AS actorName
-      FROM diary_entries
-      JOIN user_table ON diary_entries.userID = user_table.userID
-      JOIN user_profiles ON diary_entries.userID = user_profiles.userID
-      WHERE diary_entries.isScheduled = 1 AND diary_entries.scheduledDate <= NOW()
-    `;
+    const totalEntries = countResults[0].total;
+    const totalPages = Math.ceil(totalEntries / limit);
+    const hasMore = page < totalPages;
 
-    db.query(notifyAllUsersQuery, (notifyErr, notifyResults) => {
-      if (notifyErr) {
-        console.error("Error fetching scheduled entries:", notifyErr.message);
-        return res
-          .status(500)
-          .json({ error: "Error processing notifications" });
+    // Then get the paginated results
+    db.query(query, queryParams, (err, results) => {
+      if (err) {
+        console.error("Error fetching diary entries:", err.message);
+        return res.status(500).json({ error: "Error fetching diary entries" });
       }
 
-      if (notifyResults.length > 0) {
-        notifyResults.forEach((entry) => {
-          const message = `${entry.actorName} has just published a new diary entry titled "${entry.title}"`;
-          const profile_image = entry.profile_image;
-          const entryID = entry.entryID;
-
-          const getAllUsersQuery = `
-            SELECT userID FROM user_table WHERE isAdmin = 0
-          `;
-
-          db.query(getAllUsersQuery, (userErr, users) => {
-            if (userErr) {
-              console.error("Error fetching users:", userErr.message);
-              return;
-            }
-
-            users.forEach((user) => {
-              const userID = user.userID;
-              let admin = 29;
-              let actorID = admin;
-
-              const insertNotificationQuery = `
-                INSERT INTO notifications (userID, actorID, message, entryID, profile_image, type)
-                VALUES (?, ?, ?, ?, ?, ?)
-              `;
-
-              db.query(
-                insertNotificationQuery,
-                [userID, actorID, message, entryID, profile_image, "entry"],
-                (insertErr) => {
-                  if (insertErr) {
-                    console.error(
-                      "Error inserting notification:",
-                      insertErr.message
-                    );
-                    return;
-                  }
-
-                  // Trigger notification via Pusher
-                  pusher
-                    .trigger(`notifications-${userID}`, "new-notification", {
-                      actorID,
-                      message,
-                      entryID,
-                      profile_image,
-                      type: "entry",
-                      timestamp: new Date().toISOString(),
-                    })
-                    .catch((pusherErr) => {
-                      console.error(
-                        "Error sending Pusher notification:",
-                        pusherErr
-                      );
-                    });
-                }
-              );
-            });
-          });
-        });
-
-        // Mark entries as no longer scheduled
-        const markAsNotScheduledQuery = `
-          UPDATE diary_entries
-          SET isScheduled = 0
-          WHERE entryID IN (${notifyResults
-            .map((entry) => entry.entryID)
-            .join(",")})
+      // Only process scheduled entries notifications on first page
+      if (page === 1) {
+        // Notify all users about scheduled entries
+        const notifyAllUsersQuery = `
+          SELECT 
+            diary_entries.entryID,
+            diary_entries.title,
+            diary_entries.scheduledDate,
+            diary_entries.isScheduled,
+            user_profiles.profile_image,
+            CONCAT(user_table.firstName, ' ', user_table.lastName) AS actorName
+          FROM diary_entries
+          JOIN user_table ON diary_entries.userID = user_table.userID
+          JOIN user_profiles ON diary_entries.userID = user_profiles.userID
+          WHERE diary_entries.isScheduled = 1 AND diary_entries.scheduledDate <= NOW()
         `;
 
-        db.query(markAsNotScheduledQuery, (updateErr) => {
-          if (updateErr) {
+        db.query(notifyAllUsersQuery, (notifyErr, notifyResults) => {
+          if (notifyErr) {
             console.error(
-              "Error updating scheduled entries:",
-              updateErr.message
+              "Error fetching scheduled entries:",
+              notifyErr.message
             );
-          } else {
-            console.log("Scheduled entries updated to not scheduled.");
+            return res
+              .status(500)
+              .json({ error: "Error processing notifications" });
+          }
+
+          if (notifyResults.length > 0) {
+            notifyResults.forEach((entry) => {
+              const message = `${entry.actorName} has just published a new diary entry titled "${entry.title}"`;
+              const profile_image = entry.profile_image;
+              const entryID = entry.entryID;
+
+              const getAllUsersQuery = `SELECT userID FROM user_table WHERE isAdmin = 0`;
+
+              db.query(getAllUsersQuery, (userErr, users) => {
+                if (userErr) {
+                  console.error("Error fetching users:", userErr.message);
+                  return;
+                }
+
+                users.forEach((user) => {
+                  const userID = user.userID;
+                  let admin = 29;
+                  let actorID = admin;
+
+                  const insertNotificationQuery = `
+                    INSERT INTO notifications (userID, actorID, message, entryID, profile_image, type)
+                    VALUES (?, ?, ?, ?, ?, ?)
+                  `;
+
+                  db.query(
+                    insertNotificationQuery,
+                    [userID, actorID, message, entryID, profile_image, "entry"],
+                    (insertErr) => {
+                      if (insertErr) {
+                        console.error(
+                          "Error inserting notification:",
+                          insertErr.message
+                        );
+                        return;
+                      }
+
+                      // Trigger notification via Pusher
+                      pusher
+                        .trigger(
+                          `notifications-${userID}`,
+                          "new-notification",
+                          {
+                            actorID,
+                            message,
+                            entryID,
+                            profile_image,
+                            type: "entry",
+                            timestamp: new Date().toISOString(),
+                          }
+                        )
+                        .catch((pusherErr) => {
+                          console.error(
+                            "Error sending Pusher notification:",
+                            pusherErr
+                          );
+                        });
+                    }
+                  );
+                });
+              });
+            });
+
+            // Mark entries as no longer scheduled
+            const markAsNotScheduledQuery = `
+              UPDATE diary_entries
+              SET isScheduled = 0
+              WHERE entryID IN (${notifyResults
+                .map((entry) => entry.entryID)
+                .join(",")})
+            `;
+
+            db.query(markAsNotScheduledQuery, (updateErr) => {
+              if (updateErr) {
+                console.error(
+                  "Error updating scheduled entries:",
+                  updateErr.message
+                );
+              } else {
+                console.log("Scheduled entries updated to not scheduled.");
+              }
+            });
           }
         });
       }
-    });
 
-    res.status(200).json(results);
+      // Return paginated response
+      res.status(200).json({
+        entries: results,
+        hasMore: hasMore,
+        currentPage: page,
+        totalEntries: totalEntries,
+        totalPages: totalPages,
+        entriesPerPage: limit,
+      });
+    });
   });
 };
 

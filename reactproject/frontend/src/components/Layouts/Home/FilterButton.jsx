@@ -51,7 +51,7 @@ const FilterButton = ({
             onFilterChange(savedFilters);
             setAlreadyFetched(true);
             // console.log("Fetching entries based on saved filters.");
-            fetchEntries(userID, savedFilters);
+            fetchEntries(userID, savedFilters, 1, false);
           }
         }
       } catch (err) {
@@ -61,7 +61,9 @@ const FilterButton = ({
       }
     };
 
-    fetchFilters();
+    if (!alreadyFetched) {
+      fetchFilters();
+    }
   }, [userID, alreadyFetched]);
 
   const handleToggleChange = async (subject) => {
@@ -98,11 +100,11 @@ const FilterButton = ({
         selectedSubjectsText.push(filter.subject);
       }
     });
-    console.log(
-      "Fetching entries based on updated filters: ",
-      selectedSubjectsText
-    );
-    fetchEntries(userID, selectedSubjectsText);
+    // console.log(
+    //   "Fetching entries based on updated filters: ",
+    //   selectedSubjectsText
+    // );
+    fetchEntries(userID, selectedSubjectsText, 1, false);
     onFilterChange(selectedSubjectsText); // Make sure this gets called with the correct array
 
     // Update filters in the backend
@@ -123,7 +125,7 @@ const FilterButton = ({
               }
             );
             if (res.status === 200) {
-              console.log(`Filter ${filter.subject} saved for user ${userID}`);
+              // console.log(`Filter ${filter.subject} saved for user ${userID}`);
             }
           } else {
             const res = await axios.delete(
@@ -138,9 +140,9 @@ const FilterButton = ({
               }
             );
             if (res.status === 200) {
-              console.log(
-                `Filter ${filter.subject} deleted for user ${userID}`
-              );
+              // console.log(
+              //   `Filter ${filter.subject} deleted for user ${userID}`
+              // );
             }
           }
         }

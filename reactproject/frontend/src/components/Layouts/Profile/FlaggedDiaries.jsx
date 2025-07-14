@@ -7,55 +7,45 @@ const FlaggedDiaries = ({ userID }) => {
   const [showModal, setShowModal] = useState(false);
   const [flaggedDiaries, setFlaggedDiaries] = useState([]);
   const [flaggedCount, setFlaggedCount] = useState(0);
-  const [reportedComments, setReportedComments] = useState([]);
-  const [reportedCount, setReportedCount] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
 
   const handleShow = () => setShowModal(true);
   const handleClose = () => setShowModal(false);
 
   useEffect(() => {
     fetchFlag();
-    fetchReportedComments();
-  }, []);
+  }, [userID]);
 
   const fetchFlag = async () => {
     try {
+      setIsLoading(true);
       const response = await axios.get(
         `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/flagged/${userID}`
       );
+      setFlaggedDiaries(response.data);
       setFlaggedCount(response.data.length);
     } catch (error) {
       console.error("Error fetching flagged diaries:", error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  useEffect(() => {
-    if (showModal) {
-      axios
-        .get(
-          `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/flagged/${userID}`
-        )
-        .then((response) => {
-          console.log("flag", response.data);
-          setFlaggedDiaries(response.data);
-          setFlaggedCount(response.data.length); // Update the count here as well
-        })
-        .catch((error) => {
-          console.error("Error fetching flagged diaries:", error);
-        });
-    }
-  }, [showModal, userID]);
+  const formatDate = (dateString) => {
+    const entryDate = new Date(dateString);
+    const now = new Date();
+    const timeDiff = now - entryDate;
 
-  const fetchReportedComments = async () => {
-    try {
-      const response = await axios.get(
-        `${
-          import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
-        }/getReportedComments/${userID}`
-      );
-      setReportedCount(response.data.length); // Set the count based on the response
-    } catch (error) {
-      console.error("Error fetching reported comments:", error);
+    if (timeDiff < 24 * 60 * 60 * 1000) {
+      return entryDate.toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+    } else {
+      return entryDate.toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+      });
     }
   };
 
@@ -79,24 +69,39 @@ const FlaggedDiaries = ({ userID }) => {
             className="overflow-y-scroll custom-scrollbar pe-1"
             style={{ height: "20rem" }}
           >
-            {flaggedDiaries.length > 0 ? (
-              flaggedDiaries.map((diary) => (
-                <div key={diary.entryID}>
-                  <Link
-                    className="text-decoration-none text-dark"
-                    to={`/DiaryEntry/${diary.entryID}`}
-                  >
-                    <h5
-                      className="m-0 grayHover px-3 py-2 rounded"
-                      style={{ backgroundColor: "transparent" }}
-                    >
-                      {diary.title} - {diary.reasons}
-                    </h5>
-                  </Link>
-                </div>
-              ))
+            {isLoading ? (
+              <>
+                <p className="m-0">Loading flagged diaries.</p>
+              </>
             ) : (
-              <p>No flagged diaries found.</p>
+              <>
+                {flaggedDiaries.length > 0 ? (
+                  flaggedDiaries.map((diary) => (
+                    <div key={diary.entryID}>
+                      <Link
+                        className="text-decoration-none text-dark"
+                        to={`/DiaryEntry/${diary.entryID}`}
+                      >
+                        <h5
+                          className="m-0 grayHover px-3 py-2 rounded"
+                          style={{ backgroundColor: "transparent" }}
+                        >
+                          {diary.title} -{" "}
+                          <span
+                            style={{
+                              fontSize: "clamp(0.5rem, .5vw + .5rem, .8rem)",
+                            }}
+                          >
+                            {formatDate(diary.created_at)}
+                          </span>
+                        </h5>
+                      </Link>
+                    </div>
+                  ))
+                ) : (
+                  <p>No flagged diaries found.</p>
+                )}
+              </>
             )}
           </div>
         </Modal.Body>

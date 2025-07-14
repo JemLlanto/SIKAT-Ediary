@@ -11,9 +11,9 @@ const OthersProfileDropdown = ({ user, profileOwner }) => {
         id="dropdown-basic"
         bsPrefix
       >
-        <button className="btn btn-bg-secondary bg-secondary-subtle d-lg-none p-0 px-2 py-1">
+        <div className="btn btn-bg-secondary bg-secondary-subtle d-lg-none p-0 px-2 py-1">
           <i className="bx bx-dots-vertical-rounded "></i>
-        </button>
+        </div>
         <div className="align-items-center gap-2 d-none d-lg-flex px-3 py-2">
           <p className="m-0">More Options </p>
           <i

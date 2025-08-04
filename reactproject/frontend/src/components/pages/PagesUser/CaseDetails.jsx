@@ -210,13 +210,7 @@ const CaseDetails = () => {
                     (document, index) => (
                       <div
                         key={index}
-                        onClick={() =>
-                          handleImageClick(
-                            `${
-                              import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
-                            }${document}`
-                          )
-                        }
+                        onClick={() => handleImageClick(document)}
                       >
                         <div
                           className="supportImageContainer overflow-hidden border-0"
@@ -227,9 +221,7 @@ const CaseDetails = () => {
                           }}
                         >
                           <img
-                            src={`${
-                              import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
-                            }${document}`} // Displaying the supporting document as an image
+                            src={document} // Displaying the supporting document as an image
                             alt={`Supporting Document ${index + 1}`}
                             style={{
                               width: "100%",
@@ -256,13 +248,30 @@ const CaseDetails = () => {
         </div>
 
         <Modal show={showModal} onHide={handleCloseModal} centered>
-          <Modal.Body className="p-0 d-flex justify-content-center">
+          <Modal.Body className="position-relative p-0">
             {selectedImage && (
-              <img
-                src={selectedImage}
-                alt="Enlarged proof"
-                style={{ width: "auto", height: "60vh" }}
-              />
+              <>
+                <div
+                  className="bg-light position-absolute rounded p-2"
+                  style={{
+                    top: "50%",
+                    left: "50%",
+                    transform: "translate(-50%, -50%)",
+                    width: "clamp(18rem, 70vw, 60rem)",
+                    height: "clamp(20rem, 50vw, 30rem)",
+                  }}
+                >
+                  <img
+                    src={selectedImage}
+                    alt="Enlarged proof"
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "contain",
+                    }}
+                  />
+                </div>
+              </>
             )}
           </Modal.Body>
         </Modal>

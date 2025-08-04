@@ -139,7 +139,9 @@ const ActivityLogs = ({ userID }) => {
                     className="d-flex align-items-center py-2 ps-3 mb-2 grayHover rounded bg-transparent linkText"
                   >
                     <p className="m-0">
-                      {comment.firstName}'s Diary - {comment.text}{" "}
+                      {comment.title} -{" "}
+                      {comment.text.split(" ").slice(0, 15).join(" ") +
+                        (comment.text.split(" ").length > 15 ? "..." : "")}{" "}
                       <span
                         style={{ fontSize: "clamp(0.6rem, 1.5dvw, 0.7rem)" }}
                       >
@@ -162,7 +164,7 @@ const ActivityLogs = ({ userID }) => {
                     className="d-flex align-items-center py-2 ps-3 mb-2 grayHover rounded bg-transparent linkText"
                   >
                     <p className="m-0">
-                      {flag.firstName}'s Diary - {flag.reasons}{" "}
+                      {flag.title} -{" "}
                       <span
                         style={{ fontSize: "clamp(0.6rem, 1.5dvw, 0.7rem)" }}
                       >

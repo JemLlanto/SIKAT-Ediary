@@ -339,11 +339,28 @@ const CaseDetails = () => {
         <Modal show={showModal} onHide={handleCloseModal} centered>
           <Modal.Body className="p-0 d-flex justify-content-center">
             {selectedImage && (
-              <img
-                src={selectedImage}
-                alt="Enlarged proof"
-                style={{ width: "auto", height: "60vh" }}
-              />
+              <>
+                <div
+                  className="bg-light position-absolute rounded p-2"
+                  style={{
+                    top: "50%",
+                    left: "50%",
+                    transform: "translate(-50%, -50%)",
+                    width: "clamp(18rem, 70vw, 60rem)",
+                    height: "clamp(20rem, 50vw, 30rem)",
+                  }}
+                >
+                  <img
+                    src={selectedImage}
+                    alt="Enlarged proof"
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "contain",
+                    }}
+                  />
+                </div>
+              </>
             )}
           </Modal.Body>
         </Modal>

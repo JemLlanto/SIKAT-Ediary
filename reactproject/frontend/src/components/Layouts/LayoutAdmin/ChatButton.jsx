@@ -20,6 +20,7 @@ const ChatButton = ({ user }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const messagesEndRef = useRef(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isSending, setIsSending] = useState(false);
   const loaders = [1, 2, 3, 4, 5];
 
   const handleClose = () => {
@@ -163,8 +164,8 @@ const ChatButton = ({ user }) => {
   };
 
   const sendMessage = async () => {
+    setIsSending(true);
     if (newMessage.trim() === "" || !user || !selectedUser) return;
-
     try {
       const response = await axios.post(
         `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/message`,
@@ -193,6 +194,8 @@ const ChatButton = ({ user }) => {
     } catch (error) {
       console.error("Error sending message:", error);
       alert("Failed to send message. Please try again.");
+    } finally {
+      setIsSending(false); // Reset sending state
     }
   };
 
@@ -512,10 +515,17 @@ const ChatButton = ({ user }) => {
                         color: "var(--primary)",
                       }}
                     >
-                      <i
-                        className="bx bxs-send "
-                        style={{ fontSize: "clamp(1.2rem, 2dvw, 1.5rem)" }}
-                      ></i>
+                      {isSending ? (
+                        <i
+                          className="bx bx-spin bx-loader-circle"
+                          style={{ fontSize: "clamp(1.2rem, 2dvw, 1.5rem)" }}
+                        ></i>
+                      ) : (
+                        <i
+                          className="bx bxs-send"
+                          style={{ fontSize: "clamp(1.2rem, 2dvw, 1.5rem)" }}
+                        ></i>
+                      )}
                     </button>
                   </div>
                 </div>

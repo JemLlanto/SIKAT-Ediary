@@ -15,7 +15,7 @@ const FiledCases = ({ userID }) => {
         .get(
           `${
             import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
-          }/filedCases/${userID}`
+          }/incidents/filedCases/${userID}`
         )
         .then((response) => {
           setFiledCases(response.data);

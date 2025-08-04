@@ -19,6 +19,7 @@ const ChatButton = ({ user, entry, userToChat }) => {
   const [selectedUser, setSelectedUser] = useState(entry);
   const [users, setUsers] = useState([]);
   const [isLoadingMess, setIsLoadingMess] = useState(false);
+  const [isSending, setIsSending] = useState(false);
   const messagesEndRef = useRef(null);
 
   const handleClose = () => {
@@ -105,6 +106,7 @@ const ChatButton = ({ user, entry, userToChat }) => {
 
   const sendMessage = async () => {
     if (newMessage.trim() === "" || !user || !entry) return;
+    setIsSending(true);
     try {
       const response = await axios.post(
         `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/message`,
@@ -133,6 +135,8 @@ const ChatButton = ({ user, entry, userToChat }) => {
     } catch (error) {
       console.error("Error sending message:", error);
       alert("Failed to send message. Please try again.");
+    } finally {
+      setIsSending(false);
     }
   };
 
@@ -319,11 +323,19 @@ const ChatButton = ({ user, entry, userToChat }) => {
                       bottom: "10px",
                       color: "var(--primary)",
                     }}
+                    disabled={isSending || newMessage.trim() === ""}
                   >
-                    <i
-                      className="bx bxs-send "
-                      style={{ fontSize: "clamp(1.2rem, 2dvw, 1.5rem)" }}
-                    ></i>
+                    {isSending ? (
+                      <i
+                        className="bx bx-spin bx-loader-circle"
+                        style={{ fontSize: "clamp(1.2rem, 2dvw, 1.5rem)" }}
+                      ></i>
+                    ) : (
+                      <i
+                        className="bx bxs-send"
+                        style={{ fontSize: "clamp(1.2rem, 2dvw, 1.5rem)" }}
+                      ></i>
+                    )}
                   </button>
                 </div>
               </div>

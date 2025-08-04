@@ -35,6 +35,7 @@ function FlagButton({
   const handleSubmit = async () => {
     const reportData = {
       userID: entry,
+      actorID: userID,
       entryID,
       reason: selectedReason,
     };

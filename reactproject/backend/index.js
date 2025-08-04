@@ -2332,15 +2332,15 @@ app.get("/user_profile/:userID", (req, res) => {
 });
 
 app.post("/flags", (req, res) => {
-  const { userID, entryID, reason } = req.body;
+  const { userID, entryID, actorID, reason } = req.body;
 
-  if (!userID || !entryID || !reason) {
+  if (!userID || !entryID || !actorID || !reason) {
     return res.status(400).json({ message: "Missing required fields" });
   }
 
   db.query(
-    "INSERT INTO flagged_reports (userID, entryID, reason) VALUES ( ?, ?, ?)",
-    [userID, entryID, reason],
+    "INSERT INTO flagged_reports (userID, entryID, actorID, reason) VALUES ( ?, ?, ?, ?)",
+    [userID, entryID, actorID, reason],
     (error, results) => {
       if (error) {
         console.error("Error saving report:", error);
@@ -2877,9 +2877,9 @@ app.get("/actvity_logs/comments/:userID", (req, res) => {
 
   db.query(
     `
-    SELECT comments.*, user_table.firstName
+    SELECT comments.*, diary_entries.title
     FROM comments
-    JOIN user_table ON comments.userID = user_table.userID
+    JOIN diary_entries ON comments.entryID = diary_entries.entryID
     WHERE comments.userID = ?
     ORDER BY comments.created_at DESC
     `,
@@ -2899,9 +2899,9 @@ app.get("/actvity_logs/flags/:userID", (req, res) => {
 
   db.query(
     `
-    SELECT flagged_reports.*, user_table.firstName
+    SELECT flagged_reports.*, diary_entries.title
     FROM flagged_reports
-    JOIN user_table ON flagged_reports.actorID = user_table.userID
+    JOIN diary_entries ON flagged_reports.entryID = diary_entries.entryID
     WHERE flagged_reports.actorID = ?
     ORDER BY flagged_reports.created_at DESC
     `,
@@ -2911,6 +2911,7 @@ app.get("/actvity_logs/flags/:userID", (req, res) => {
         console.error("Error fetching activity logs:", err);
         return res.status(500).send("Error fetching activity logs.");
       }
+      console.log("Flagged Reports Results:", results);
       res.json(results);
     }
   );

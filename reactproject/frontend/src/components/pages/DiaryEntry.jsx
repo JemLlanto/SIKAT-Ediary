@@ -100,6 +100,7 @@ const DiaryEntry = () => {
     } catch (error) {
       console.error("Error fetching entry:", error);
       setError("Error loading entry.");
+      setEntry(null);
     } finally {
       setIsLoading(false);
     }
@@ -229,7 +230,7 @@ const DiaryEntry = () => {
           <>
             <DiaryLoader />
           </>
-        ) : (
+        ) : entry ? (
           <>
             <DiaryEntryLayout
               flaggingOptions={flaggingOptions}
@@ -242,6 +243,31 @@ const DiaryEntry = () => {
             />
             {/* <DiaryLoader /> */}
           </>
+        ) : (
+          <div
+            style={{
+              textAlign: "center",
+              padding: "2rem",
+              color: "#555",
+              fontSize: "1.2rem",
+            }}
+          >
+            <i
+              className="bx bx-error-circle"
+              style={{
+                fontSize: "3rem",
+                color: "#ff5e57",
+                marginBottom: "1rem",
+              }}
+            ></i>
+            <p>
+              <strong>Entry Not Found</strong>
+            </p>
+            <p>
+              It might have been deleted or you may not have permission to view
+              it.
+            </p>
+          </div>
         )}
       </div>
     </div>

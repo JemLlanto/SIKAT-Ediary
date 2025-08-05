@@ -114,9 +114,11 @@ const DiaryEntryLayout = ({
     const timeDiff = now - entryDate;
 
     if (timeDiff < 24 * 60 * 60 * 1000) {
+      // Use UTC methods to get the original time
       return entryDate.toLocaleTimeString([], {
         hour: "2-digit",
         minute: "2-digit",
+        timeZone: "UTC",
       });
     } else {
       return entryDate.toLocaleDateString("en-US", {
@@ -124,6 +126,7 @@ const DiaryEntryLayout = ({
         day: "numeric",
         hour: "2-digit",
         minute: "2-digit",
+        timeZone: "UTC",
       });
     }
   };

@@ -73,6 +73,7 @@ function PostButton({ setLoad, onEntrySaved }) {
         prevDate.getMinutes()
       );
     });
+    console.log("Scheduled Date:", scheduledDate);
   };
 
   const handleTimeChange = (time) => {
@@ -86,6 +87,7 @@ function PostButton({ setLoad, onEntrySaved }) {
         time.getMinutes()
       );
     });
+    console.log("Scheduled Date:", scheduledDate);
   };
 
   const handleChangeAnonimity = (event) => {
@@ -274,6 +276,7 @@ function PostButton({ setLoad, onEntrySaved }) {
                   value={visibility}
                   onChange={handleChangeVisibility}
                   style={{ fontSize: "clamp(0.8rem, 2dvw, 0.9rem)" }}
+                  disabled
                 >
                   <option value="now">
                     <p className="m-0">Post Now</p>

@@ -332,28 +332,16 @@ const CenterLayout = ({ setLoad, user, fetchUserData }) => {
           {/* FOR SCHEDULED POST */}
           {entries.length === 0
             ? ""
-            : [
-                // Making sure entries only display once
-                ...new Map(
-                  entries.map((entry) => [entry.entryID, entry])
-                ).values(),
-              ]
+            : entries
                 .filter((entry) => {
                   const now = new Date();
-                  const scheduledDate = entry.scheduledDate
-                    ? new Date(entry.scheduledDate)
-                    : null;
+                  const scheduledDate = new Date(entry.scheduledDate);
 
-                  const shouldShow =
-                    scheduledDate !== null &&
-                    scheduledDate.getTime() <= now.getTime();
-
-                  console.log("EntryID:", entry.entryID);
                   console.log("Now:", now.toISOString());
-                  console.log("Scheduled:", scheduledDate?.toISOString());
-                  console.log("Should show:", shouldShow);
+                  console.log("Scheduled:", scheduledDate.toISOString());
+                  console.log("Should show:", scheduledDate > now);
 
-                  return shouldShow;
+                  return scheduledDate > now;
                 })
                 .map((entry) => (
                   <>
@@ -361,7 +349,6 @@ const CenterLayout = ({ setLoad, user, fetchUserData }) => {
                       className="position-relative rounded shadow-sm p-3 mb-3"
                       style={{ backgroundColor: "white", width: "100%" }}
                     >
-                      {entry.entryID}
                       <div className="d-flex align-items-start justify-content-between border-bottom pb-2">
                         <div className="d-flex align-items-center gap-2 text-secondary">
                           <Link
@@ -517,14 +504,11 @@ const CenterLayout = ({ setLoad, user, fetchUserData }) => {
         <CenterLoader />
       ) : (
         <>
+          asdasd
           {entries.length === 0 ? (
             <p>No entries available.</p>
           ) : (
-            [
-              ...new Map(
-                entries.map((entry) => [entry.entryID, entry])
-              ).values(),
-            ].map((entry, index) => (
+            entries.map((entry, index) => (
               <DiaryEntryLayout
                 key={index}
                 flaggingOptions={flaggingOptions}

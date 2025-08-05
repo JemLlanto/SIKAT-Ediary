@@ -27,7 +27,7 @@ const RightSide = ({ user }) => {
                     import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
                 }/incidents/reports`
             );
-            console.log("Reported students: ", response.data);
+            // console.log("Reported students: ", response.data);
             setReports(response.data);
         } catch (error) {
             console.error("Error fetching users:", error);

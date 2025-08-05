@@ -1474,6 +1474,7 @@ app.get("/announcement", async (req, res) => {
     } else if (results.length === 0) {
       res.status(404).send("No announcement found");
     } else {
+      // console.log("Announcement fetched successfully", results[0]);
       res.status(200).json(results[0]); // Send the latest announcement with user info
     }
   });

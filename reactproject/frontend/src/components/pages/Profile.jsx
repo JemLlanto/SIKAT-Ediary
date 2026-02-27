@@ -68,7 +68,7 @@ const Profile = () => {
     const fetchFlaggingOptions = async () => {
       try {
         const response = await axios.get(
-          `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/flaggingOptions`
+          `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/flaggingOptions`,
         );
         // console.log("flagging options", response.data);
         setFlaggingOptions(response.data);
@@ -96,7 +96,7 @@ const Profile = () => {
       const response = await fetch(
         `${
           import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
-        }/fetchUser/user/${userID}`
+        }/fetchUser/user/${userID}`,
       );
       if (!response.ok) throw new Error("User not found");
       const data = await response.json();
@@ -113,14 +113,14 @@ const Profile = () => {
 
   useEffect(() => {
     if (userID) {
-      console.log("Fetching profile data...");
+      // console.log("Fetching profile data...");
       fetchProfileData();
     }
   }, [userID, navigate]);
 
   useEffect(() => {
     if (Object.keys(profileOwner).length > 0) {
-      console.log(Object.keys(profileOwner).length);
+      // console.log(Object.keys(profileOwner).length);
       fetchFollowedUsers(user?.userID);
       fetchEntries();
     }
@@ -129,25 +129,25 @@ const Profile = () => {
   const fetchEntries = async () => {
     try {
       setLoadingEntries(true);
-      console.log("Fetching entry data...");
+      // console.log("Fetching entry data...");
       const response = await axios.get(
         `${
           import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
-        }/entries/fetchLeftSideEntry/${userID}`
+        }/entries/fetchLeftSideEntry/${userID}`,
       );
 
       if (response.data.entries && Array.isArray(response.data.entries)) {
         const gadifyStatusResponse = await axios.get(
           `${
             import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
-          }/gadifyStatus/${userID}`
+          }/gadifyStatus/${userID}`,
         );
 
         // console.log("Gadify status response:", gadifyStatusResponse.data);
 
         const updatedEntries = response.data.entries.map((entry) => {
           const isGadified = gadifyStatusResponse.data.some(
-            (g) => g.entryID === entry.entryID
+            (g) => g.entryID === entry.entryID,
           );
           // console.log("Gadified", isGadified);
           return { ...entry, isGadified };
@@ -217,9 +217,9 @@ const Profile = () => {
           `${
             import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
           }/uploadProfileAPI/uploadProfile`,
-          formData
+          formData,
         );
-        console.log("Profile uploaded successfully", res.data);
+        // console.log("Profile uploaded successfully", res.data);
         await Swal.fire({
           icon: "success",
           title: "Uploaded",
@@ -227,7 +227,7 @@ const Profile = () => {
           timer: 2000,
           showConfirmButton: true,
         });
-        console.log("New profile URL: ", res.data.filePath);
+        // console.log("New profile URL: ", res.data.filePath);
         const updatedUser = {
           ...profileOwner,
           profile_image: res.data.filePath,
@@ -260,7 +260,7 @@ const Profile = () => {
       const response = await axios.get(
         `${
           import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
-        }/follow/fetchFollowedUsers/${user.userID}`
+        }/follow/fetchFollowedUsers/${user.userID}`,
       );
       const followedUsersData = response.data.map((user) => user.userID);
       setFollowedUsers(followedUsersData);
@@ -299,12 +299,12 @@ const Profile = () => {
                 }/unfollow/${followUserId}`,
                 {
                   data: { followerId: user.userID },
-                }
+                },
               );
 
               // Update followed users list after unfollowing
               setFollowedUsers((prev) =>
-                prev.filter((id) => id !== followUserId)
+                prev.filter((id) => id !== followUserId),
               );
 
               // Close confirmation modal and show success modal
@@ -333,7 +333,7 @@ const Profile = () => {
           }/follow/${followUserId}`,
           {
             followerId: user.userID,
-          }
+          },
         );
 
         if (response.data.message === "Already following this user") {
@@ -361,7 +361,7 @@ const Profile = () => {
             profile_image: user.profile_image,
             type: "follow",
             message: `${user.firstName} ${user.lastName} has followed you.`,
-          }
+          },
         );
       }
 
@@ -388,7 +388,7 @@ const Profile = () => {
         }/entry/${entryID}/gadify`,
         {
           userID: user.userID,
-        }
+        },
       )
       .then((res) => {
         const isGadified =
@@ -403,8 +403,8 @@ const Profile = () => {
                     ? entry.gadifyCount + 1
                     : entry.gadifyCount - 1,
                 }
-              : entry
-          )
+              : entry,
+          ),
         );
 
         if (isGadified && user.userID !== entry.userID) {
@@ -419,10 +419,10 @@ const Profile = () => {
                 profile_image: user.profile_image,
                 type: "gadify",
                 message: `${user.firstName} ${user.lastName} gadified your diary entry.`,
-              }
+              },
             )
             .then((res) => {
-              console.log("Notification response:", res.data);
+              // console.log("Notification response:", res.data);
             })
             .catch((err) => {
               console.error("Error sending gadify notification:", err);
@@ -437,8 +437,8 @@ const Profile = () => {
       prevEntries.map((entry) =>
         entry.entryID === entryID
           ? { ...entry, isGadified: !entry.isGadified }
-          : entry
-      )
+          : entry,
+      ),
     );
 
     const updatedExpandButtons = { ...expandButtons, [entryID]: true };
@@ -482,10 +482,10 @@ const Profile = () => {
 
     const year = Math.floor(diff / (1000 * 60 * 60 * 24 * 365));
     const month = Math.floor(
-      (diff % (1000 * 60 * 60 * 24 * 365)) / (1000 * 60 * 60 * 24 * 30)
+      (diff % (1000 * 60 * 60 * 24 * 365)) / (1000 * 60 * 60 * 24 * 30),
     );
     const day = Math.floor(
-      (diff % (1000 * 60 * 60 * 24 * 30)) / (1000 * 60 * 60 * 24)
+      (diff % (1000 * 60 * 60 * 24 * 30)) / (1000 * 60 * 60 * 24),
     );
     const hour = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
     const minute = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
@@ -815,7 +815,7 @@ const Profile = () => {
                       user?.isAdmin ||
                       ownProfile ||
                       (entry.visibility !== "private" &&
-                        entry.anonimity !== "private")
+                        entry.anonimity !== "private"),
                   )
                   .map((entry, index) => (
                     <>

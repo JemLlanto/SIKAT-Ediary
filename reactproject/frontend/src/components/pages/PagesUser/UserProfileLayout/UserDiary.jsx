@@ -22,7 +22,7 @@ const UserDiary = ({ userID }) => {
       fetch(
         `${
           import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
-        }/entries/fetchLeftSideEntry/${fetchUser.userID}`
+        }/entries/fetchLeftSideEntry/${fetchUser.userID}`,
       )
         .then((response) => {
           if (!response.ok) {
@@ -57,7 +57,7 @@ const UserDiary = ({ userID }) => {
         }/entry/${entryID}/gadify`,
         {
           userID: user.userID,
-        }
+        },
       )
       .then((res) => {
         const isGadified =
@@ -72,8 +72,8 @@ const UserDiary = ({ userID }) => {
                     ? entry.gadifyCount + 1
                     : entry.gadifyCount - 1,
                 }
-              : entry
-          )
+              : entry,
+          ),
         );
 
         // Only send notification if gadified (count is incremented) and user is not the owner
@@ -88,10 +88,10 @@ const UserDiary = ({ userID }) => {
                 entryID: entryID,
                 type: "gadify",
                 message: `${user.username} gadified your diary entry.`,
-              }
+              },
             )
             .then((res) => {
-              console.log("Notification response:", res.data);
+              // console.log("Notification response:", res.data);
             })
             .catch((err) => {
               console.error("Error sending gadify notification:", err);
@@ -107,8 +107,8 @@ const UserDiary = ({ userID }) => {
       prevEntries.map((entry) =>
         entry.entryID === entryID
           ? { ...entry, isGadified: !entry.isGadified }
-          : entry
-      )
+          : entry,
+      ),
     );
 
     // Trigger the expand animation

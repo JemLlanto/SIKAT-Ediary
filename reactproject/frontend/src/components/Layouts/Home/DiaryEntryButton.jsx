@@ -208,10 +208,10 @@ function DiaryEntryButton({ setLoad, onEntrySaved }) {
           headers: {
             "Content-Type": "multipart/form-data",
           },
-        }
+        },
       );
 
-      console.log(response.data.message);
+      // console.log(response.data.message);
       setTitle("");
       setDescription("");
       setFile(null);

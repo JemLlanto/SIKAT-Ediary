@@ -62,7 +62,7 @@ const CenterLayout = ({ setLoad, user, fetchUserData }) => {
     const fetchFlaggingOptions = async () => {
       try {
         const response = await axios.get(
-          `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/flaggingOptions`
+          `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/flaggingOptions`,
         );
         // console.log("flagging options", response.data);
         setFlaggingOptions(response.data);
@@ -86,7 +86,7 @@ const CenterLayout = ({ setLoad, user, fetchUserData }) => {
       const response = await axios.get(
         `${
           import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
-        }/follow/fetchFollowedUsers/${userID}`
+        }/follow/fetchFollowedUsers/${userID}`,
       );
       const followedUsersData = response.data.map((user) => user.userID);
       setFollowedUsers(followedUsersData);
@@ -98,7 +98,7 @@ const CenterLayout = ({ setLoad, user, fetchUserData }) => {
   const fetchEntries = async (userID, filters, pageNum = 1, append = false) => {
     try {
       // console.log("Fetching entries for user:", userID);
-      console.log("Loading Page:", pageNum);
+      // console.log("Loading Page:", pageNum);
       const loadingState = append ? setIsLoadingMore : setIsLoading;
       loadingState(true);
 
@@ -120,7 +120,7 @@ const CenterLayout = ({ setLoad, user, fetchUserData }) => {
             page: pageNum,
             limit: ENTRIES_PER_PAGE,
           },
-        }
+        },
       );
 
       // console.log("Entries response:", response.data);
@@ -128,28 +128,28 @@ const CenterLayout = ({ setLoad, user, fetchUserData }) => {
       const gadifyStatusResponse = await axios.get(
         `${
           import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
-        }/gadifyStatus/${userID}`
+        }/gadifyStatus/${userID}`,
       );
 
       // console.log("Gadify status response:", gadifyStatusResponse.data);
 
       const updatedEntries = response.data.entries.map((entry) => {
         const isGadified = gadifyStatusResponse.data.some(
-          (g) => g.entryID === entry.entryID
+          (g) => g.entryID === entry.entryID,
         );
         return { ...entry, isGadified };
       });
-      console.log("Updated entries: ", [...entries, ...updatedEntries]);
+      // console.log("Updated entries: ", [...entries, ...updatedEntries]);
       setEntries((prevEntries) => [...prevEntries, ...updatedEntries]);
       // console.log("Current entries after fetch:", currentEntries);
       // Check if there are more entries to load
       setHasMore(
-        response.data.hasMore || updatedEntries.length === ENTRIES_PER_PAGE
+        response.data.hasMore || updatedEntries.length === ENTRIES_PER_PAGE,
       );
-      console.log(
-        "Has more: ",
-        response.data.hasMore || updatedEntries.length === ENTRIES_PER_PAGE
-      );
+      // console.log(
+      //   "Has more: ",
+      //   response.data.hasMore || updatedEntries.length === ENTRIES_PER_PAGE
+      // );
       // setEntries(updatedEntries);
     } catch (error) {
       console.error("There was an error fetching the diary entries!", error);
@@ -164,15 +164,15 @@ const CenterLayout = ({ setLoad, user, fetchUserData }) => {
   const loadMoreEntries = useCallback(() => {
     if (!isLoadingMore && hasMore && doneFetched) {
       const nextPage = page + 1;
-      console.log("Loading more entries for page:", nextPage);
+      // console.log("Loading more entries for page:", nextPage);
       setPage(nextPage);
       fetchEntries(user.userID, filters, nextPage, true);
     } else {
-      console.log("Cannot load more:", {
-        isLoadingMore,
-        hasMore,
-        doneFetched,
-      });
+      // console.log("Cannot load more:", {
+      //   isLoadingMore,
+      //   hasMore,
+      //   doneFetched,
+      // });
     }
   }, [page, isLoadingMore, hasMore, user.userID, filters, doneFetched]);
 
@@ -183,7 +183,7 @@ const CenterLayout = ({ setLoad, user, fetchUserData }) => {
       document.documentElement.offsetHeight - 200;
 
     if (isNearBottom && !isLoadingMore && hasMore && doneFetched) {
-      console.log("Near bottom, loading more entries");
+      // console.log("Near bottom, loading more entries");
       loadMoreEntries();
     }
   }, [isLoadingMore, hasMore, doneFetched, loadMoreEntries]);
@@ -216,7 +216,7 @@ const CenterLayout = ({ setLoad, user, fetchUserData }) => {
 
   // Refresh all entries
   const refreshEntries = () => {
-    console.log("Refreshing entries");
+    // console.log("Refreshing entries");
     // setEntries([]);
     setPage(1);
     setHasMore(true);
@@ -250,7 +250,7 @@ const CenterLayout = ({ setLoad, user, fetchUserData }) => {
     try {
       await axios.post(
         `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/updateEngagement`,
-        { entryID }
+        { entryID },
       );
     } catch (error) {
       console.error("Error updating engagement:", error);
@@ -335,7 +335,7 @@ const CenterLayout = ({ setLoad, user, fetchUserData }) => {
             : [
                 // Making sure entries only display once
                 ...new Map(
-                  entries.map((entry) => [entry.entryID, entry])
+                  entries.map((entry) => [entry.entryID, entry]),
                 ).values(),
               ]
                 .filter((entry) => {
@@ -348,10 +348,10 @@ const CenterLayout = ({ setLoad, user, fetchUserData }) => {
                     scheduledDate !== null &&
                     scheduledDate.getTime() <= now.getTime();
 
-                  console.log("EntryID:", entry.entryID);
-                  console.log("Now:", now.toISOString());
-                  console.log("Scheduled:", scheduledDate?.toISOString());
-                  console.log("Should show:", shouldShow);
+                  // console.log("EntryID:", entry.entryID);
+                  // console.log("Now:", now.toISOString());
+                  // console.log("Scheduled:", scheduledDate?.toISOString());
+                  // console.log("Should show:", shouldShow);
 
                   return shouldShow;
                 })
@@ -397,10 +397,10 @@ const CenterLayout = ({ setLoad, user, fetchUserData }) => {
                                     {entry.isAdmin === 1
                                       ? "Gender and Development"
                                       : entry.firstName && entry.lastName
-                                      ? entry.firstName + " " + entry.lastName
-                                      : user.firstName +
-                                        " " +
-                                        user.lastName}{" "}
+                                        ? entry.firstName + " " + entry.lastName
+                                        : user.firstName +
+                                          " " +
+                                          user.lastName}{" "}
                                     <span
                                       className=""
                                       style={{ color: "var(--primary)" }}
@@ -522,7 +522,7 @@ const CenterLayout = ({ setLoad, user, fetchUserData }) => {
           ) : (
             [
               ...new Map(
-                entries.map((entry) => [entry.entryID, entry])
+                entries.map((entry) => [entry.entryID, entry]),
               ).values(),
             ].map((entry, index) => (
               <DiaryEntryLayout

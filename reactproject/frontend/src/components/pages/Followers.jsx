@@ -67,8 +67,8 @@ const UserList = ({
                     <button
                       className="primaryButton"
                       onClick={(e) => {
-                        e.stopPropagation(),
-                          handleFollowToggle(user.userID, user.firstName);
+                        (e.stopPropagation(),
+                          handleFollowToggle(user.userID, user.firstName));
                       }}
                       style={{ right: "0" }}
                     >
@@ -136,10 +136,10 @@ const Followers = () => {
       const response = await axios.get(
         `${
           import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
-        }/follow/fetchFollowers/${userID}`
+        }/follow/fetchFollowers/${userID}`,
       );
       setFollowers(response.data);
-      console.log("Fetched followers: ", response.data);
+      // console.log("Fetched followers: ", response.data);
     } catch (error) {
       console.error("Error fetching followers:", error);
     } finally {
@@ -153,18 +153,18 @@ const Followers = () => {
       const response = await axios.get(
         `${
           import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
-        }/follow/fetchFollowedUsers/${userID}`
+        }/follow/fetchFollowedUsers/${userID}`,
       );
       if (response.status === 200) {
         if (response.data.length === 0) {
-          console.log("No followed users found.");
+          // console.log("No followed users found.");
         } else {
           const followedUsersData = response.data;
           setFollowedUsers(followedUsersData);
-          console.log("Fetched followed users: ", response.data);
+          // console.log("Fetched followed users: ", response.data);
           localStorage.setItem(
             "followedUsers",
-            JSON.stringify(followedUsersData)
+            JSON.stringify(followedUsersData),
           );
         }
       }
@@ -201,12 +201,12 @@ const Followers = () => {
                 }/unfollow/${followUserId}`,
                 {
                   data: { followerId: user.userID },
-                }
+                },
               );
 
               // Update followed users list after unfollowing
               setFollowedUsers((prev) =>
-                prev.filter((id) => id !== followUserId)
+                prev.filter((id) => id !== followUserId),
               );
 
               // Close confirmation modal and show success modal
@@ -235,7 +235,7 @@ const Followers = () => {
           }/follow/${followUserId}`,
           {
             followerId: user.userID,
-          }
+          },
         );
         const followedUserData = response.data;
 

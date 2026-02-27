@@ -46,26 +46,26 @@ const ReportedComment = ({ user }) => {
       const response = await fetch(
         `${
           import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
-        }/analytics/getReportedUsers`
+        }/analytics/getReportedUsers`,
       );
 
       if (!response.ok) {
         throw new Error(
-          `Failed to fetch reported users: ${response.statusText}`
+          `Failed to fetch reported users: ${response.statusText}`,
         );
       }
 
       const data = await response.json();
-      console.log("Fetching data for user role:", user.isAdmin);
+      // console.log("Fetching data for user role:", user.isAdmin);
 
       let filteredData = data;
 
       if (user.isAdmin === 2) {
         filteredData = data.filter(
-          (userItem) => userItem.departmentID === user.departmentID
+          (userItem) => userItem.departmentID === user.departmentID,
         );
       }
-      console.log("Fetched reported users:", filteredData);
+      // console.log("Fetched reported users:", filteredData);
 
       setReportedUsers(filteredData);
     } catch (error) {
@@ -88,7 +88,7 @@ const ReportedComment = ({ user }) => {
         const response = await axios.get(
           `${
             import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
-          }/fetchReportedUserReasons`
+          }/fetchReportedUserReasons`,
         );
         setReportUserReasons(response.data);
       } catch (error) {
@@ -111,10 +111,10 @@ const ReportedComment = ({ user }) => {
             reportedUser.lastName
               .toLowerCase()
               .includes(searchQuery.toLowerCase()) ||
-            reportedUser.studentNumber.toString().includes(searchQuery)
+            reportedUser.studentNumber.toString().includes(searchQuery),
         );
       }
-      console.log("Filtered users: ", filtered);
+      // console.log("Filtered users: ", filtered);
       setFilteredUsers(filtered);
       setCurrentPage(1);
     };
@@ -157,7 +157,7 @@ const ReportedComment = ({ user }) => {
         await axios.put(
           `${
             import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
-          }/reportingUsersAddress/${userID}`
+          }/reportingUsersAddress/${userID}`,
         );
 
         await Swal.fire({
@@ -295,13 +295,13 @@ const ReportedComment = ({ user }) => {
                                   .filter(
                                     (reportUserReason) =>
                                       reportUserReason.userID ===
-                                      reportedUser.userID
+                                      reportedUser.userID,
                                   )
                                   .reduce((count, reportUserReason) => {
                                     count[reportUserReason.reason] =
                                       (count[reportUserReason.reason] || 0) + 1;
                                     return count;
-                                  }, {})
+                                  }, {}),
                               ).map(([reason, count]) => (
                                 <div key={reason}>
                                   <p className="m-0">

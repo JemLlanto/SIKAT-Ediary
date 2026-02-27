@@ -83,7 +83,7 @@ export default function Register() {
         {
           username,
           cvsuEmail,
-        }
+        },
       );
       if (response.data.exists) {
         setErrors((prevErrors) => ({
@@ -109,10 +109,10 @@ export default function Register() {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    console.log("Form submitted, current step:", step);
+    // console.log("Form submitted, current step:", step);
 
     if (step === 3) {
-      console.log("Verifying OTP for email:", values.cvsuEmail);
+      // console.log("Verifying OTP for email:", values.cvsuEmail);
 
       try {
         Swal.fire({
@@ -129,7 +129,7 @@ export default function Register() {
           {
             email: values.cvsuEmail,
             otp: values.OTP,
-          }
+          },
         );
 
         if (response.data.success) {
@@ -144,7 +144,7 @@ export default function Register() {
           try {
             await axios.post(
               `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/Register`,
-              values
+              values,
             );
 
             Swal.fire({
@@ -185,14 +185,14 @@ export default function Register() {
         });
       }
     } else if (step === 2) {
-      console.log("Step 2: Validating registration fields...");
+      // console.log("Step 2: Validating registration fields...");
       const validationErrors = RegisterValidation(values);
       setErrors(validationErrors);
 
       if (Object.keys(validationErrors).length === 0) {
         const isEmailValid = await validateEmail(values.cvsuEmail);
         if (isEmailValid) {
-          console.log("Validation passed, sending OTP...");
+          // console.log("Validation passed, sending OTP...");
 
           Swal.fire({
             icon: "info",
@@ -212,7 +212,7 @@ export default function Register() {
           });
         }
       } else {
-        console.log("Validation errors:", validationErrors);
+        // console.log("Validation errors:", validationErrors);
         Swal.fire({
           icon: "warning",
           // title: "Incomplete Fields",
@@ -225,7 +225,7 @@ export default function Register() {
   };
 
   const sendOTP = async (email) => {
-    console.log("Sending OTP to:", email);
+    // console.log("Sending OTP to:", email);
 
     // Show loading state using SweetAlert2
     Swal.fire({
@@ -241,10 +241,10 @@ export default function Register() {
     try {
       const response = await axios.post(
         `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/send-register-otp`,
-        { email }
+        { email },
       );
 
-      console.log("OTP sent response:", response.data);
+      // console.log("OTP sent response:", response.data);
       setOtpSent(true);
       setResendCountdown(60);
 

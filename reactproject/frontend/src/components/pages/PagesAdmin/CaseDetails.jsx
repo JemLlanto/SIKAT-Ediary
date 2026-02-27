@@ -43,10 +43,10 @@ const CaseDetails = () => {
       .get(
         `${
           import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
-        }/incidents/reports/${reportID}`
+        }/incidents/reports/${reportID}`,
       )
       .then((response) => {
-        console.log(response.data);
+        // console.log(response.data);
         setCaseDetails(response.data);
         setError(null);
       })
@@ -80,7 +80,7 @@ const CaseDetails = () => {
         const res = await axios.put(
           `${
             import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
-          }/incidents/reports/${reportID}`
+          }/incidents/reports/${reportID}`,
         );
 
         if (res.status === 200) {

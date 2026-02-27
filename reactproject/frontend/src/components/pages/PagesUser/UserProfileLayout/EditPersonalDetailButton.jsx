@@ -23,13 +23,13 @@ const EditPersonalDetailButton = () => {
 
   const handleClose = () => setShow(false);
   const handleShow = () => {
-    console.log("Edit Personal Details button clicked");
+    // console.log("Edit Personal Details button clicked");
     setShow(true);
   };
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem("user"));
-    console.log("User data from local storage:", user);
+    // console.log("User data from local storage:", user);
 
     if (user && user.username) {
       const fetchUserDetails = async () => {
@@ -37,7 +37,7 @@ const EditPersonalDetailButton = () => {
           const response = await axios.get(
             `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/fetchUser/user/${
               user.userID
-            }`
+            }`,
           );
           const userDetails = response.data;
 
@@ -74,7 +74,7 @@ const EditPersonalDetailButton = () => {
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    console.log("Form submitted with values:", values);
+    // console.log("Form submitted with values:", values);
     const validationErrors = UpdateValidation(values);
     setErrors(validationErrors);
 
@@ -82,7 +82,7 @@ const EditPersonalDetailButton = () => {
       const userID = JSON.parse(localStorage.getItem("user")).userID;
       const updatedValues = { ...values };
 
-      console.log("Sending update request to server:", updatedValues);
+      // console.log("Sending update request to server:", updatedValues);
 
       if (!updatedValues.password) {
         delete updatedValues.password;
@@ -96,16 +96,16 @@ const EditPersonalDetailButton = () => {
           `${
             import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
           }/EditProfile/${userID}`,
-          updatedValues
+          updatedValues,
         )
         .then((res) => {
-          console.log("Profile updated successfully:", res);
+          // console.log("Profile updated successfully:", res);
           localStorage.setItem(
             "user",
             JSON.stringify({
               ...updatedValues,
               userID: userID,
-            })
+            }),
           );
           handleClose();
           window.location.reload();

@@ -44,12 +44,12 @@ function NotificationButton() {
       const channel = pusher.subscribe(`notifications-${parsedUser.userID}`);
 
       channel.bind("new-notification", (data) => {
-        console.log("New notification received:", data);
+        // console.log("New notification received:", data);
         setNotifications((prevNotifications) => {
           const updatedNotifications = [...prevNotifications, data];
           localStorage.setItem(
             "notifications",
-            JSON.stringify(updatedNotifications)
+            JSON.stringify(updatedNotifications),
           );
           setUnreadCount((prevCount) => prevCount + 1);
           setNewNotif(true);
@@ -71,7 +71,7 @@ function NotificationButton() {
         const response = await axios.get(
           `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/getnotifications/${
             user.userID
-          }`
+          }`,
         );
 
         const fetchedNotifications = response.data.map((notification) => ({
@@ -86,13 +86,13 @@ function NotificationButton() {
         setNotifications(fetchedNotifications);
 
         const unread = fetchedNotifications.filter(
-          (notification) => !notification.read
+          (notification) => !notification.read,
         ).length;
         setUnreadCount(unread);
 
         localStorage.setItem(
           "notifications",
-          JSON.stringify(fetchedNotifications)
+          JSON.stringify(fetchedNotifications),
         );
       } catch (error) {
         console.error("Error fetching notifications:", error);
@@ -111,7 +111,7 @@ function NotificationButton() {
       setNotifications(parsedNotifications);
 
       const unread = parsedNotifications.filter(
-        (notification) => !notification.read
+        (notification) => !notification.read,
       ).length;
       setUnreadCount(unread);
     }
@@ -128,7 +128,7 @@ function NotificationButton() {
 
       localStorage.setItem(
         "notifications",
-        JSON.stringify(updatedNotifications)
+        JSON.stringify(updatedNotifications),
       );
 
       axios
@@ -139,10 +139,10 @@ function NotificationButton() {
           {
             userID: user.userID,
             notificationIDs: notifications.map((n) => n.notificationID),
-          }
+          },
         )
         .catch((error) =>
-          console.error("Error marking notifications as read:", error)
+          console.error("Error marking notifications as read:", error),
         );
     }
   }, [show]);
@@ -158,10 +158,10 @@ function NotificationButton() {
         {
           userID: user.userID,
           notificationID,
-        }
+        },
       )
       .catch((error) =>
-        console.error("Error marking notification as read:", error)
+        console.error("Error marking notification as read:", error),
       );
 
     if (notificationID) {

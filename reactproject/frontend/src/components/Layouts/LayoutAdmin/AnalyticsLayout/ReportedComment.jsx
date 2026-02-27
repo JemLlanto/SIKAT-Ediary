@@ -49,26 +49,26 @@ const ReportedComment = ({ user }) => {
       const response = await fetch(
         `${
           import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
-        }/analytics/getReportedComments`
+        }/analytics/getReportedComments`,
       );
 
       if (!response.ok) {
         throw new Error(
-          `Failed to fetch reported comments: ${response.statusText}`
+          `Failed to fetch reported comments: ${response.statusText}`,
         );
       }
 
       const data = await response.json();
-      console.log("Fetching data for user role:", user.isAdmin);
+      // console.log("Fetching data for user role:", user.isAdmin);
 
       let filteredData = data;
 
       if (user.isAdmin === 2) {
         filteredData = data.filter(
-          (userItem) => userItem.departmentID === user.departmentID
+          (userItem) => userItem.departmentID === user.departmentID,
         );
       }
-      console.log("Fetched reported comments:", filteredData);
+      // console.log("Fetched reported comments:", filteredData);
 
       setReportedComments(filteredData);
     } catch (error) {
@@ -89,7 +89,7 @@ const ReportedComment = ({ user }) => {
     const fetchReportComments = async () => {
       try {
         const response = await axios.get(
-          `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/reportComments`
+          `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/reportComments`,
         );
         setOption(response.data);
       } catch (error) {
@@ -106,7 +106,7 @@ const ReportedComment = ({ user }) => {
         const response = await axios.get(
           `${
             import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
-          }/fetchReportedCommentReasons`
+          }/fetchReportedCommentReasons`,
         );
         setCommentReportReasons(response.data);
       } catch (error) {
@@ -125,7 +125,7 @@ const ReportedComment = ({ user }) => {
         filtered = filtered.filter((reportedComment) =>
           reportedComment.reason
             .toLowerCase()
-            .includes(selectedSubject.toLowerCase())
+            .includes(selectedSubject.toLowerCase()),
         );
       }
 
@@ -144,7 +144,7 @@ const ReportedComment = ({ user }) => {
             // reportedComment.reason
             //   .toLowerCase()
             //   .includes(searchQuery.toLowerCase()) ||
-            reportedComment.isReviewed.toString().includes(searchQuery)
+            reportedComment.isReviewed.toString().includes(searchQuery),
         );
       }
 
@@ -190,7 +190,7 @@ const ReportedComment = ({ user }) => {
         await axios.put(
           `${
             import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
-          }/commentAddress/${commentID}`
+          }/commentAddress/${commentID}`,
         );
 
         await Swal.fire({
@@ -329,14 +329,14 @@ const ReportedComment = ({ user }) => {
                                   .filter(
                                     (commentReportReason) =>
                                       commentReportReason.commentID ===
-                                      reportedComment.commentID
+                                      reportedComment.commentID,
                                   )
                                   .reduce((count, commentReportReason) => {
                                     count[commentReportReason.reason] =
                                       (count[commentReportReason.reason] || 0) +
                                       1;
                                     return count;
-                                  }, {})
+                                  }, {}),
                               ).map(([reason, count]) => (
                                 <div key={reason}>
                                   <p className="m-0">

@@ -30,12 +30,12 @@ function NotificationButton() {
       const channel = pusher.subscribe(`notifications-${parsedUser.userID}`);
 
       channel.bind("new-notification", (data) => {
-        console.log("New notification received:", data);
+        // console.log("New notification received:", data);
         setNotifications((prevNotifications) => {
           const updatedNotifications = [...prevNotifications, data];
           localStorage.setItem(
             "notifications",
-            JSON.stringify(updatedNotifications)
+            JSON.stringify(updatedNotifications),
           );
           setUnreadCount((prevCount) => prevCount + 1);
           return updatedNotifications;
@@ -50,8 +50,8 @@ function NotificationButton() {
         setTimeout(() => {
           setToasts((prevToasts) =>
             prevToasts.map((toast) =>
-              toast.id === newToast.id ? { ...toast, visible: false } : toast
-            )
+              toast.id === newToast.id ? { ...toast, visible: false } : toast,
+            ),
           );
         }, 5000);
       });
@@ -69,13 +69,13 @@ function NotificationButton() {
       const response = await axios.get(
         `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/getnotifications/${
           user.userID
-        }`
+        }`,
       );
 
       setNotifications(response.data);
 
       const unread = response.data.filter(
-        (notification) => !notification.read
+        (notification) => !notification.read,
       ).length;
       setUnreadCount(unread);
 
@@ -98,7 +98,7 @@ function NotificationButton() {
       setNotifications(parsedNotifications);
 
       const unread = parsedNotifications.filter(
-        (notification) => !notification.read
+        (notification) => !notification.read,
       ).length;
       setUnreadCount(unread);
     }
@@ -115,7 +115,7 @@ function NotificationButton() {
 
       localStorage.setItem(
         "notifications",
-        JSON.stringify(updatedNotifications)
+        JSON.stringify(updatedNotifications),
       );
 
       axios
@@ -126,10 +126,10 @@ function NotificationButton() {
           {
             userID: user.userID,
             notificationIDs: notifications.map((n) => n.notificationID),
-          }
+          },
         )
         .catch((error) =>
-          console.error("Error marking notifications as read:", error)
+          console.error("Error marking notifications as read:", error),
         );
     }
   }, [show]);
@@ -145,11 +145,11 @@ function NotificationButton() {
         {
           userID: user.userID,
           notificationID,
-        }
+        },
       )
       .then(fetchNotifications())
       .catch((error) =>
-        console.error("Error marking notification as read:", error)
+        console.error("Error marking notification as read:", error),
       );
 
     if (notificationID) {
@@ -176,7 +176,7 @@ function NotificationButton() {
         }/notifications/mark-all-as-read`,
         {
           userID: user.userID,
-        }
+        },
       );
     } catch (error) {
       console.error("Error marking all notifications as read:", error);
@@ -224,7 +224,7 @@ function NotificationButton() {
               key={toast.id}
               onClose={() =>
                 setToasts((prevToasts) =>
-                  prevToasts.filter((t) => t.id !== toast.id)
+                  prevToasts.filter((t) => t.id !== toast.id),
                 )
               }
               show={toast.visible}

@@ -39,7 +39,7 @@ app.use(
     origin: allowedOrigins,
     credentials: true,
     allowedHeaders: ["authorization", "Content-Type"],
-  })
+  }),
 );
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -72,7 +72,7 @@ const pusher = new Pusher({
 const diaryImagesDirAdmin = path.join(
   __dirname,
   "uploads",
-  "admin_diary_images"
+  "admin_diary_images",
 );
 
 if (!fs.existsSync(diaryImagesDirAdmin)) {
@@ -999,7 +999,7 @@ app.put(
         const alarmingWords = rows.map((row) => row.alarmingWord.toLowerCase());
         const containsAlarmingWords = (text) => {
           return alarmingWords.some((word) =>
-            text.toLowerCase().includes(word)
+            text.toLowerCase().includes(word),
           );
         };
 
@@ -1045,7 +1045,7 @@ app.put(
               if (updateError) {
                 console.error(
                   `Error updating count for subject '${subject}':`,
-                  updateError
+                  updateError,
                 );
               }
             });
@@ -1084,7 +1084,7 @@ app.put(
                       if (notificationError) {
                         console.error(
                           "Error inserting admin notification:",
-                          notificationError
+                          notificationError,
                         );
                         return res.status(500).send({
                           message: "Failed to save admin notification.",
@@ -1101,20 +1101,20 @@ app.put(
                             entryID: entryID,
                             type: "alarming_entry",
                             timestamp: new Date().toISOString(),
-                          }
+                          },
                         )
                         .then(() => {
                           console.log(
-                            `Admin ${admin.userID} notified of alarming diary entry.`
+                            `Admin ${admin.userID} notified of alarming diary entry.`,
                           );
                         })
                         .catch((err) => {
                           console.error(
                             "Error sending admin Pusher notification:",
-                            err
+                            err,
                           );
                         });
-                    }
+                    },
                   );
                 });
               }
@@ -1128,7 +1128,7 @@ app.put(
         });
       });
     });
-  }
+  },
 );
 
 app.put(
@@ -1188,7 +1188,7 @@ app.put(
         .status(200)
         .send({ message: "Diary entry updated successfully." });
     });
-  }
+  },
 );
 
 app.post("/updateEngagement", (req, res) => {
@@ -1209,7 +1209,7 @@ app.post("/updateEngagement", (req, res) => {
       } else {
         res.status(200).send({ message: "Engagement count updated" });
       }
-    }
+    },
   );
 });
 
@@ -1231,7 +1231,7 @@ app.put("/hideComment", (req, res) => {
       } else {
         res.status(200).send({ message: "Hide updated" });
       }
-    }
+    },
   );
 });
 
@@ -1253,7 +1253,7 @@ app.put("/hide", (req, res) => {
       } else {
         res.status(200).send({ message: "Hide updated" });
       }
-    }
+    },
   );
 });
 
@@ -1275,7 +1275,7 @@ app.put("/isReviewed", (req, res) => {
       } else {
         res.status(200).send({ message: "Hide updated" });
       }
-    }
+    },
   );
 });
 
@@ -1297,7 +1297,7 @@ app.put("/reviewed", (req, res) => {
       } else {
         res.status(200).send({ message: "Reviewed updated" });
       }
-    }
+    },
   );
 });
 
@@ -1319,7 +1319,7 @@ app.put("/isNewAccount", (req, res) => {
       } else {
         res.status(200).send({ message: "Reviewed updated" });
       }
-    }
+    },
   );
 });
 
@@ -1341,7 +1341,7 @@ app.put("/reviewedProfile/:userID", (req, res) => {
       } else {
         res.status(200).send({ message: "Reviewed updated" });
       }
-    }
+    },
   );
 });
 
@@ -1363,7 +1363,7 @@ app.put("/reviewedComments", (req, res) => {
       } else {
         res.status(200).send({ message: "Reviewed updated" });
       }
-    }
+    },
   );
 });
 
@@ -1525,7 +1525,7 @@ app.delete("/deleteEntry/:entryID", (req, res) => {
           __dirname,
           "uploads",
           imageDirectory,
-          path.basename(diaryImagePath)
+          path.basename(diaryImagePath),
         );
 
         fs.unlink(imagePath, (err) => {
@@ -1757,7 +1757,7 @@ app.get("/admin", (req, res) => {
         return res.status(404).send("No admin found.");
       }
       res.json(results[0]);
-    }
+    },
   );
 });
 
@@ -1854,7 +1854,7 @@ app.post("/follow/:followUserId", (req, res) => {
             });
           });
         });
-      }
+      },
     );
   });
 });
@@ -1943,7 +1943,7 @@ app.delete("/unfollow/:followUserId", (req, res) => {
             });
           });
         });
-      }
+      },
     );
   });
 });
@@ -2027,7 +2027,7 @@ app.post("/comments", (req, res) => {
           commentID: results.insertId,
         });
       });
-    }
+    },
   );
 });
 
@@ -2093,17 +2093,17 @@ app.post("/reportuserComment", (req, res) => {
           if (updateError) {
             console.error(
               `Error updating count for reason: ${error}`,
-              updateError
+              updateError,
             );
           }
-        }
+        },
       );
 
       // Send response once the main report is saved
       res
         .status(200)
         .json({ message: "Report submitted and counts updated successfully" });
-    }
+    },
   );
 });
 
@@ -2222,7 +2222,7 @@ app.post("/message", (req, res) => {
       });
 
       res.status(200).send("Message sent successfully");
-    }
+    },
   );
 });
 
@@ -2270,7 +2270,7 @@ app.get("/messages", (req, res) => {
           return res.status(500).send("Error fetching messages.");
         }
         res.json(messages);
-      }
+      },
     );
   }
 });
@@ -2316,7 +2316,7 @@ app.post("/notifications/:userID", async (req, res) => {
         });
 
       res.status(200).send("Notification sent");
-    }
+    },
   );
 });
 
@@ -2373,7 +2373,7 @@ app.post("/flags", (req, res) => {
           message: "Report submitted and counts updated successfully",
         });
       });
-    }
+    },
   );
 });
 
@@ -2703,7 +2703,7 @@ app.delete("/filterDelete/:subjectID", (req, res) => {
           res.status(404).json({ error: "Subject not found" });
         }
       }
-    }
+    },
   );
 });
 
@@ -2783,22 +2783,25 @@ app.post("/reset-password", (req, res) => {
       }
 
       res.json({ message: "Password reset successfully" });
-    }
+    },
   );
 });
 
-setInterval(() => {
-  db.query(
-    "UPDATE user_table SET isSuspended = 0, suspendReason = NULL, suspendUntil = NULL WHERE suspendUntil < NOW()",
-    (err) => {
-      if (err) {
-        console.error("Error lifting suspensions:", err);
-      } else {
-        console.log("Suspensions lifted for eligible users.");
-      }
-    }
-  );
-}, 60 * 60 * 1000);
+setInterval(
+  () => {
+    db.query(
+      "UPDATE user_table SET isSuspended = 0, suspendReason = NULL, suspendUntil = NULL WHERE suspendUntil < NOW()",
+      (err) => {
+        if (err) {
+          console.error("Error lifting suspensions:", err);
+        } else {
+          console.log("Suspensions lifted for eligible users.");
+        }
+      },
+    );
+  },
+  60 * 60 * 1000,
+);
 
 app.post("/suspendUser", (req, res) => {
   const { userID, reason, period, entryID } = req.body;
@@ -2830,10 +2833,10 @@ app.post("/suspendUser", (req, res) => {
             if (logErr) {
               console.error("Error logging suspension:", logErr);
             }
-          }
+          },
         );
       }
-    }
+    },
   );
   db.query(
     `
@@ -2846,7 +2849,7 @@ app.post("/suspendUser", (req, res) => {
         return res.status(500).send("Error updating report count.");
       }
       res.json(results);
-    }
+    },
   );
 });
 
@@ -2869,7 +2872,7 @@ app.get("/actvity_logs/gadify/:userID", (req, res) => {
         return res.status(500).send("Error fetching activity logs.");
       }
       res.json(results);
-    }
+    },
   );
 });
 
@@ -2891,7 +2894,7 @@ app.get("/actvity_logs/comments/:userID", (req, res) => {
         return res.status(500).send("Error fetching activity logs.");
       }
       res.json(results);
-    }
+    },
   );
 });
 
@@ -2914,7 +2917,7 @@ app.get("/actvity_logs/flags/:userID", (req, res) => {
       }
       console.log("Flagged Reports Results:", results);
       res.json(results);
-    }
+    },
   );
 });
 
@@ -3005,7 +3008,7 @@ app.delete("/deleteUserFilters", (req, res) => {
           res.status(404).json({ error: "filter not found" });
         }
       }
-    }
+    },
   );
 });
 
@@ -3031,7 +3034,7 @@ app.post("/assignModerator", (req, res) => {
         return res.status(500).json({ error: err.message });
       }
       res.json({ message: "Moderator assigned successfully!", result });
-    }
+    },
   );
 });
 

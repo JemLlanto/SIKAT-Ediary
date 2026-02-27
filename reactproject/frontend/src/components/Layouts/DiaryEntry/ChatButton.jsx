@@ -29,7 +29,7 @@ const ChatButton = ({ user, entry, userToChat }) => {
   };
 
   const handleShow = () => {
-    console.log("Fetching messages");
+    // console.log("Fetching messages");
     fetchMessages(entry.userID);
     setShow(true);
   };
@@ -93,7 +93,7 @@ const ChatButton = ({ user, entry, userToChat }) => {
             userID: user.userID,
             withUserID: userID,
           },
-        }
+        },
       );
       setMessages(response.data);
       setSelectedUser(userID);
@@ -114,7 +114,7 @@ const ChatButton = ({ user, entry, userToChat }) => {
           senderID: user.userID,
           recipientID: entry.userID,
           message: newMessage,
-        }
+        },
       );
 
       if (response.status !== 200) {

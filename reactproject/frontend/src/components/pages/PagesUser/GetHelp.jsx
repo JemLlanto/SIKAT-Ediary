@@ -86,15 +86,15 @@ const GetHelp = () => {
   const handleRemoveImage = (indexToRemove) => {
     // Filter out the item to remove and keep the rest
     const filteredDocs = formData.supportingDocuments.filter(
-      (doc, i) => i !== indexToRemove && doc !== null
+      (doc, i) => i !== indexToRemove && doc !== null,
     );
     // Fill the remaining slots with nulls to maintain length 5
     const updatedDocuments = [
       ...filteredDocs,
       ...Array(5 - filteredDocs.length).fill(null),
     ];
-    console.log("Before:", formData.supportingDocuments);
-    console.log("After:", updatedDocuments);
+    // console.log("Before:", formData.supportingDocuments);
+    // console.log("After:", updatedDocuments);
 
     setFormData({ ...formData, supportingDocuments: updatedDocuments });
   };
@@ -135,7 +135,7 @@ const GetHelp = () => {
           import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
         }/incidents/submit-report/${userID}`,
         data,
-        { headers: { "Content-Type": "multipart/form-data" } }
+        { headers: { "Content-Type": "multipart/form-data" } },
       );
       if (response.status === 200) {
         setModal({

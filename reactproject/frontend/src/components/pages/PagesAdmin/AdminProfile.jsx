@@ -27,7 +27,7 @@ const UserProfile = () => {
       fetch(
         `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/fetchUser/user/${
           fetchUser.userID
-        }`
+        }`,
       )
         .then((response) => {
           if (!response.ok) {
@@ -65,10 +65,10 @@ const UserProfile = () => {
     axios
       .post(
         `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/uploadProfile`,
-        formData
+        formData,
       )
       .then((res) => {
-        console.log("Profile uploaded successfully", res.data);
+        // console.log("Profile uploaded successfully", res.data);
         alert("Profile uploaded successfully");
       })
       .catch((error) => {

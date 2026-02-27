@@ -46,26 +46,26 @@ const FlaggedDiaries = ({ user }) => {
       setIsLoading(true);
 
       const response = await fetch(
-        `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/flagged`
+        `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/flagged`,
       );
 
       if (!response.ok) {
         throw new Error(
-          `Failed to fetch flagged diaries: ${response.statusText}`
+          `Failed to fetch flagged diaries: ${response.statusText}`,
         );
       }
 
       const data = await response.json();
-      console.log("Fetching data for user role:", user.isAdmin);
+      // console.log("Fetching data for user role:", user.isAdmin);
 
       let filteredData = data;
 
       if (user.isAdmin === 2) {
         filteredData = data.filter(
-          (userItem) => userItem.departmentID === user.departmentID
+          (userItem) => userItem.departmentID === user.departmentID,
         );
       }
-      console.log("Fetched flagged diaries:", filteredData);
+      // console.log("Fetched flagged diaries:", filteredData);
 
       setFlags(filteredData);
     } catch (error) {
@@ -88,7 +88,7 @@ const FlaggedDiaries = ({ user }) => {
         const response = await axios.get(
           `${
             import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
-          }/fetchFlaggedDiaryReasons`
+          }/fetchFlaggedDiaryReasons`,
         );
         // console.log("API Response:", response.data);
         setFlaggedDiaryReasons(response.data);
@@ -104,7 +104,7 @@ const FlaggedDiaries = ({ user }) => {
     const fetchAlarmingWords = async () => {
       try {
         const response = await axios.get(
-          `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/flaggingOptions`
+          `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/flaggingOptions`,
         );
         setAlarmingWords(response.data);
       } catch (error) {
@@ -122,7 +122,7 @@ const FlaggedDiaries = ({ user }) => {
       // Apply subject filter
       if (selectedSubject !== "All") {
         filtered = filtered.filter((flag) =>
-          flag.reason.toLowerCase().includes(selectedSubject.toLowerCase())
+          flag.reason.toLowerCase().includes(selectedSubject.toLowerCase()),
         );
       }
 
@@ -192,7 +192,7 @@ const FlaggedDiaries = ({ user }) => {
         await axios.put(
           `${
             import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
-          }/flaggedAddress/${entryID}`
+          }/flaggedAddress/${entryID}`,
         );
 
         await Swal.fire({
@@ -352,13 +352,13 @@ const FlaggedDiaries = ({ user }) => {
                                 flaggedDiaryReasons
                                   .filter(
                                     (flaggedReason) =>
-                                      flaggedReason.entryID === flag.entryID
+                                      flaggedReason.entryID === flag.entryID,
                                   )
                                   .reduce((count, flaggedReason) => {
                                     count[flaggedReason.reason] =
                                       (count[flaggedReason.reason] || 0) + 1;
                                     return count;
-                                  }, {})
+                                  }, {}),
                               ).map(([reason, count]) => (
                                 <div key={reason}>
                                   <p className="m-0">

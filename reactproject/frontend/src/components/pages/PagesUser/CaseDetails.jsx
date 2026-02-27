@@ -20,10 +20,10 @@ const CaseDetails = () => {
       .get(
         `${
           import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
-        }/incidents/reports/${reportID}`
+        }/incidents/reports/${reportID}`,
       )
       .then((response) => {
-        console.log(response.data);
+        // console.log(response.data);
         setCaseDetails(response.data);
         setError(null);
       })
@@ -37,14 +37,14 @@ const CaseDetails = () => {
 
   const handleAddressed = (reportID) => {
     const confirmed = window.confirm(
-      "Are you sure you want to address this entry?"
+      "Are you sure you want to address this entry?",
     );
     if (confirmed) {
       axios
         .put(
           `${
             import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
-          }/incidents/reports/${reportID}`
+          }/incidents/reports/${reportID}`,
         )
         .then(() => {
           alert("The case has been addressed!");
@@ -231,7 +231,7 @@ const CaseDetails = () => {
                           />
                         </div>
                       </div>
-                    )
+                    ),
                   )
                 ) : (
                   <p>No supporting documents available.</p>

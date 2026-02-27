@@ -89,7 +89,7 @@ function EditDiaryEntryButton({
     if (selectedFile) {
       if (selectedFile.size > maxSize) {
         setFileError(
-          "File size exceeds the 2MB limit. Please select a smaller file."
+          "File size exceeds the 2MB limit. Please select a smaller file.",
         );
         setFile(null);
         setImagePreview(null);
@@ -139,7 +139,7 @@ function EditDiaryEntryButton({
 
     if (containsAlarmingWords(title) || containsAlarmingWords(description)) {
       setAlarmingWordWarning(
-        "Warning: Your entry contains potentially harmful words. Proceed with caution."
+        "Warning: Your entry contains potentially harmful words. Proceed with caution.",
       );
     } else {
       setAlarmingWordWarning("");
@@ -180,10 +180,10 @@ function EditDiaryEntryButton({
           headers: {
             "Content-Type": "multipart/form-data",
           },
-        }
+        },
       )
       .then((response) => {
-        console.log(response.data.message);
+        // console.log(response.data.message);
         setTitle("");
         setDescription("");
         setFile(null);

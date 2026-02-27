@@ -45,7 +45,7 @@ const MainLayoutContext = ({ children, ActiveTab }) => {
       // 🔓 Decrypt userID
       const bytes = CryptoJS.AES.decrypt(
         encryptedUserID,
-        import.meta.env.VITE_REACT_APP_ENCRYPT_SECRET
+        import.meta.env.VITE_REACT_APP_ENCRYPT_SECRET,
       );
       const decryptedUserID = bytes.toString(CryptoJS.enc.Utf8);
       // console.log("Decrypted userID: ", decryptedUserID);
@@ -55,7 +55,7 @@ const MainLayoutContext = ({ children, ActiveTab }) => {
       const response = await fetch(
         `${
           import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
-        }/fetchUser/user/${decryptedUserID}`
+        }/fetchUser/user/${decryptedUserID}`,
       );
       if (!response.ok) throw new Error("User not found");
       const data = await response.json();
@@ -63,7 +63,7 @@ const MainLayoutContext = ({ children, ActiveTab }) => {
       // console.log("User data:", data);
       setUser(data);
     } catch (err) {
-      console.log("Unexpected error occured: ", err.message);
+      // console.log("Unexpected error occured: ", err.message);
       localStorage.removeItem("user");
       window.location.href = "/";
     } finally {

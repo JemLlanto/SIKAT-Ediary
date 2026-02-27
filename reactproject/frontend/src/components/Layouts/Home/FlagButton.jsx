@@ -40,7 +40,7 @@ function FlagButton({
       reason: selectedReason,
     };
 
-    console.log("Submitting report data:", reportData);
+    // console.log("Submitting report data:", reportData);
 
     try {
       // Show loading alert
@@ -54,7 +54,7 @@ function FlagButton({
 
       const response = await axios.post(
         `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/flags`,
-        reportData
+        reportData,
       );
 
       if (response.status === 200) {
@@ -63,7 +63,7 @@ function FlagButton({
           title: "Report Submitted",
           text: "Flagged successfully.",
         });
-        console.log("Report submitted successfully");
+        // console.log("Report submitted successfully");
         setFlagCount(flagCount + 1);
         updateEngagement(entryID);
         handleClose();
@@ -89,7 +89,7 @@ function FlagButton({
     try {
       await axios.post(
         `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/updateEngagement`,
-        { entryID }
+        { entryID },
       );
     } catch (error) {
       console.error("Error updating engagement:", error);

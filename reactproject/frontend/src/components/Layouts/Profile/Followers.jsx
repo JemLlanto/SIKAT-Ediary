@@ -41,7 +41,7 @@ const Followers = ({ ownProfile, user, currentUser }) => {
   useEffect(() => {
     fetchFollowers(user.userID);
     fetchFollowedUsers(user.userID);
-    console.log("userID", user.userID);
+    // console.log("userID", user.userID);
   }, [user.userID]);
 
   const fetchFollowers = async (userID) => {
@@ -49,7 +49,7 @@ const Followers = ({ ownProfile, user, currentUser }) => {
       const response = await axios.get(
         `${
           import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
-        }/follow/fetchFollowers/${userID}`
+        }/follow/fetchFollowers/${userID}`,
       );
       setFollowers(response.data);
     } catch (error) {
@@ -62,7 +62,7 @@ const Followers = ({ ownProfile, user, currentUser }) => {
       const response = await axios.get(
         `${
           import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
-        }/follow/fetchFollowedUsers/${userID}`
+        }/follow/fetchFollowedUsers/${userID}`,
       );
       const followedUsersData = response.data;
       setFollowedUsers(followedUsersData);
@@ -97,11 +97,11 @@ const Followers = ({ ownProfile, user, currentUser }) => {
               }/unfollow/${followUserId}`,
               {
                 data: { followerId: user.userID },
-              }
+              },
             );
 
             setFollowedUsers((prev) =>
-              prev.filter((u) => u.userID !== followUserId)
+              prev.filter((u) => u.userID !== followUserId),
             );
             closeConfirmModal();
             setModal({
@@ -118,7 +118,7 @@ const Followers = ({ ownProfile, user, currentUser }) => {
           }/follow/${followUserId}`,
           {
             followerId: user.userID,
-          }
+          },
         );
         const followedUserData = response.data;
 

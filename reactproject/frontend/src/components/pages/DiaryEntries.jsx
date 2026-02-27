@@ -36,10 +36,10 @@ const DiaryEntries = () => {
       const response = await axios.get(
         `${
           import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
-        }/entries/fetchLeftSideEntry/${user.userID}`
+        }/entries/fetchLeftSideEntry/${user.userID}`,
       );
       if (response.data.entries && Array.isArray(response.data.entries)) {
-        console.log(response.data);
+        // console.log(response.data);
 
         setEntries(response.data.entries);
       } else {
@@ -74,7 +74,7 @@ const DiaryEntries = () => {
 
   const years = Array.from(
     { length: currentYear - 2024 + 1 },
-    (_, i) => 2024 + i
+    (_, i) => 2024 + i,
   );
 
   const [selectedMonth, setSelectedMonth] = useState(months[currentMonthIndex]);
@@ -114,7 +114,7 @@ const DiaryEntries = () => {
     return entries.filter((entry) => {
       const entryDate = new Date(entry.created_at);
       const localEntryDate = new Date(
-        entryDate.getTime() + entryDate.getTimezoneOffset() * 60000
+        entryDate.getTime() + entryDate.getTimezoneOffset() * 60000,
       );
 
       return (
@@ -213,8 +213,8 @@ const DiaryEntries = () => {
                                         ? "Posts"
                                         : "Post"
                                       : entriesForDay.length > 1
-                                      ? "Entries"
-                                      : "Entry"}
+                                        ? "Entries"
+                                        : "Entry"}
                                   </h6>
                                 </button>
                               </>

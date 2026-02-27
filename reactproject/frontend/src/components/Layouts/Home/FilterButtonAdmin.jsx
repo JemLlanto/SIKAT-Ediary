@@ -15,7 +15,7 @@ const FilterButtonAdmin = ({ fetchEntries, onFilterChange, userID }) => {
     const fetchFilters = async () => {
       try {
         const response = await axios.get(
-          `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/adminFilters`
+          `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/adminFilters`,
         );
         const filters = response.data;
 
@@ -30,7 +30,7 @@ const FilterButtonAdmin = ({ fetchEntries, onFilterChange, userID }) => {
           const userFiltersResponse = await axios.get(
             `${
               import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
-            }/getUserFilters/${userID}`
+            }/getUserFilters/${userID}`,
           );
           const savedFilters = userFiltersResponse.data.filters;
 
@@ -74,7 +74,7 @@ const FilterButtonAdmin = ({ fetchEntries, onFilterChange, userID }) => {
       const allSelected = filterOptions.every(
         (filter) =>
           filter.adminFilterSubject === "General" ||
-          updatedItems[filter.adminFilterSubject]
+          updatedItems[filter.adminFilterSubject],
       );
       updatedItems["General"] = allSelected;
     }
@@ -88,7 +88,7 @@ const FilterButtonAdmin = ({ fetchEntries, onFilterChange, userID }) => {
       }
     });
 
-    console.log("Fetching entries based on updated filters.");
+    // console.log("Fetching entries based on updated filters.");
     fetchEntries(userID, selectedadminFilterSubjectsText);
     onFilterChange(selectedadminFilterSubjectsText);
 
@@ -107,7 +107,7 @@ const FilterButtonAdmin = ({ fetchEntries, onFilterChange, userID }) => {
               {
                 userID,
                 filter: filter.adminFilterSubject,
-              }
+              },
             );
           } else {
             await axios.delete(
@@ -119,7 +119,7 @@ const FilterButtonAdmin = ({ fetchEntries, onFilterChange, userID }) => {
                   userID,
                   filter: filter.adminFilterSubject,
                 },
-              }
+              },
             );
           }
         }

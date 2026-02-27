@@ -49,7 +49,7 @@ const DiaryEntry = () => {
     const fetchFlaggingOptions = async () => {
       try {
         const response = await axios.get(
-          `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/flaggingOptions`
+          `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/flaggingOptions`,
         );
         // console.log("flagging options", response.data);
         setFlaggingOptions(response.data);
@@ -75,23 +75,23 @@ const DiaryEntry = () => {
       const response = await axios.get(
         `${
           import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
-        }/entries/fetchDiaryEntry/${entryID}`
+        }/entries/fetchDiaryEntry/${entryID}`,
       );
       const gadifyStatusResponse = await axios.get(
         `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/gadifyStatus/${
           user.userID
-        }`
+        }`,
       );
       if (response.data && response.data.entry) {
         const entry = response.data.entry;
         const isGadified = gadifyStatusResponse.data.some(
-          (g) => g.entryID === entry.entryID
+          (g) => g.entryID === entry.entryID,
         );
-        console.log("Entry data: ", entry);
-        console.log("Is gadified: ", isGadified);
+        // console.log("Entry data: ", entry);
+        // console.log("Is gadified: ", isGadified);
 
         const finalEntry = { ...entry, isGadified };
-        console.log("Final entry: ", finalEntry);
+        // console.log("Final entry: ", finalEntry);
 
         setEntry({ ...entry, isGadified });
       } else {
@@ -111,7 +111,7 @@ const DiaryEntry = () => {
       const response = await axios.get(
         `${
           import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
-        }/fetchComments/${entryID}`
+        }/fetchComments/${entryID}`,
       );
       setComments(response.data);
     } catch (error) {
@@ -125,7 +125,7 @@ const DiaryEntry = () => {
       const response = await axios.get(
         `${
           import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
-        }/follow/fetchFollowedUsers/${userID}`
+        }/follow/fetchFollowedUsers/${userID}`,
       );
       const followedUsersData = response.data.map((user) => user.userID);
       setFollowedUsers(followedUsersData);
@@ -147,7 +147,7 @@ const DiaryEntry = () => {
         }/entry/${entryID}/gadify`,
         {
           userID: user.userID,
-        }
+        },
       )
       .then((res) => {
         const isGadified =
@@ -162,8 +162,8 @@ const DiaryEntry = () => {
                     ? entry.gadifyCount + 1
                     : entry.gadifyCount - 1,
                 }
-              : entry
-          )
+              : entry,
+          ),
         );
 
         if (isGadified && user.userID !== entry.userID) {
@@ -178,10 +178,10 @@ const DiaryEntry = () => {
                 profile_image: user.profile_image,
                 type: "gadify",
                 message: `${user.firstName} ${user.lastName} gadified your diary entry.`,
-              }
+              },
             )
             .then((res) => {
-              console.log("Notification response:", res.data);
+              // console.log("Notification response:", res.data);
             })
             .catch((err) => {
               console.error("Error sending gadify notification:", err);
@@ -196,13 +196,13 @@ const DiaryEntry = () => {
       prevEntry.map((entry) =>
         entry.entryID === entryID
           ? { ...entry, isGadified: !entry.isGadified }
-          : entry
-      )
+          : entry,
+      ),
     );
     setExpandButtons((prev) => ({ ...prev, [entryID]: true }));
     setTimeout(
       () => setExpandButtons((prev) => ({ ...prev, [entryID]: false })),
-      300
+      300,
     );
     handleGadify(entryID);
   };

@@ -43,26 +43,26 @@ const RegisteredUsers = ({ user }) => {
       setIsLoading(true);
 
       const response = await fetch(
-        `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/users`
+        `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/users`,
       );
 
       if (!response.ok) {
         throw new Error(
-          `Failed to fetch registered users: ${response.statusText}`
+          `Failed to fetch registered users: ${response.statusText}`,
         );
       }
 
       const data = await response.json();
-      console.log("Fetching data for user role:", user.isAdmin);
+      // console.log("Fetching data for user role:", user.isAdmin);
 
       let filteredData = data;
 
       if (user.isAdmin === 2) {
         filteredData = data.filter(
-          (userItem) => userItem.departmentID === user.departmentID
+          (userItem) => userItem.departmentID === user.departmentID,
         );
       }
-      console.log("Fetched registered users:", filteredData);
+      // console.log("Fetched registered users:", filteredData);
 
       setUsers(filteredData);
     } catch (error) {
@@ -99,7 +99,7 @@ const RegisteredUsers = ({ user }) => {
           user.course.toLowerCase().includes(lowerCaseQuery) ||
           user.sex.toLowerCase() === lowerCaseQuery ||
           user.year.toLowerCase().includes(lowerCaseQuery) ||
-          user.studentNumber.toString().includes(lowerCaseQuery)
+          user.studentNumber.toString().includes(lowerCaseQuery),
       );
     }
 

@@ -70,10 +70,10 @@ function PostButton({ setLoad, onEntrySaved }) {
         date.getMonth(),
         date.getDate(),
         prevDate.getHours(),
-        prevDate.getMinutes()
+        prevDate.getMinutes(),
       );
     });
-    console.log("Scheduled Date:", scheduledDate);
+    // console.log("Scheduled Date:", scheduledDate);
   };
 
   const handleTimeChange = (time) => {
@@ -84,10 +84,10 @@ function PostButton({ setLoad, onEntrySaved }) {
         prevDate.getMonth(),
         prevDate.getDate(),
         time.getHours(),
-        time.getMinutes()
+        time.getMinutes(),
       );
     });
-    console.log("Scheduled Date:", scheduledDate);
+    // console.log("Scheduled Date:", scheduledDate);
   };
 
   const handleChangeAnonimity = (event) => {
@@ -159,7 +159,7 @@ function PostButton({ setLoad, onEntrySaved }) {
       const manilaOffset = 8 * 60;
       manilaScheduledDate = new Date(scheduledDate);
       manilaScheduledDate.setMinutes(
-        manilaScheduledDate.getMinutes() + manilaOffset
+        manilaScheduledDate.getMinutes() + manilaOffset,
       );
     }
 
@@ -188,10 +188,10 @@ function PostButton({ setLoad, onEntrySaved }) {
           headers: {
             "Content-Type": "multipart/form-data",
           },
-        }
+        },
       )
       .then((response) => {
-        console.log("Post created:", response.data.message);
+        // console.log("Post created:", response.data.message);
         setTitle("");
         setDescription("");
         setFile(null);

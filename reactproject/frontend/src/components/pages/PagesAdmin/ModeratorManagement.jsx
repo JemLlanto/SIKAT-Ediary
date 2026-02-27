@@ -41,12 +41,12 @@ const ModeratorManagement = () => {
   }, [navigate]);
 
   useEffect(() => {
-    console.log("Fetching departments...");
+    // console.log("Fetching departments...");
     axios
       .get(`${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/fetchDepartments`)
       .then((response) => {
         setDepartment(response.data);
-        console.log("Departments fetched...");
+        // console.log("Departments fetched...");
       })
       .catch((error) => {
         console.error("Error fetching departments:", error);
@@ -55,13 +55,13 @@ const ModeratorManagement = () => {
 
   useEffect(() => {
     if (department) {
-      console.log("Fetching courses...");
+      // console.log("Fetching courses...");
 
       axios
         .get(`${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/getCourses`)
         .then((response) => {
           setCourses(response.data);
-          console.log("Courses fetched...");
+          // console.log("Courses fetched...");
         })
         .catch((error) => {
           console.error("Error fetching courses:", error);
@@ -70,17 +70,17 @@ const ModeratorManagement = () => {
   }, [department]);
 
   const fetchModerator = () => {
-    console.log("Fetching administrators...");
+    // console.log("Fetching administrators...");
 
     axios
       .get(
         `${
           import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
-        }/fetchDepartmentModerators`
+        }/fetchDepartmentModerators`,
       )
       .then((response) => {
         setModerators(response.data);
-        console.log("Moderators fetched...");
+        // console.log("Moderators fetched...");
         setIsLoading(false);
       })
       .catch((error) => {
@@ -171,12 +171,12 @@ const ModeratorManagement = () => {
                         <td className="text-center align-middle py-2">
                           {courses.filter(
                             (course) =>
-                              dept.departmentID === course.departmentID
+                              dept.departmentID === course.departmentID,
                           ).length > 0 ? (
                             courses
                               .filter(
                                 (course) =>
-                                  dept.departmentID === course.departmentID
+                                  dept.departmentID === course.departmentID,
                               )
                               .map((course) => (
                                 <p
@@ -196,11 +196,11 @@ const ModeratorManagement = () => {
                         </td>
                         <td className="text-center align-middle py-2">
                           {moderators.filter(
-                            (mod) => dept.departmentID === mod.departmentID
+                            (mod) => dept.departmentID === mod.departmentID,
                           ).length > 0 ? (
                             moderators
                               .filter(
-                                (mod) => dept.departmentID === mod.departmentID
+                                (mod) => dept.departmentID === mod.departmentID,
                               )
                               .map((mod) => (
                                 <p

@@ -49,7 +49,7 @@ const FilterButton = ({ onFilterChange }) => {
     if (selectedItems.domesticAbuse) selectedFilters.push("Domestic Abuse");
     if (selectedItems.genderRelated) selectedFilters.push("Gender Related");
 
-    console.log("Selected Filters:", JSON.stringify(selectedFilters, null, 2));
+    // console.log("Selected Filters:", JSON.stringify(selectedFilters, null, 2));
 
     onFilterChange(selectedFilters); // This will now pass the array of selected filters
   };

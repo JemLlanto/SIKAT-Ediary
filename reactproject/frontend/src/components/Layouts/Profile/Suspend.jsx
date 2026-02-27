@@ -24,15 +24,15 @@ function Suspend({ fetchComments, profileOwner }) {
           userID: profileOwner.userID,
           reason: selectedReason,
           period: selectedPeriod,
-        }
+        },
       );
       if (profileOwner.isReported && profileOwner.commentID) {
         const commentID = profileOwner.commentID;
-        console.log("marking as reviewed: ", commentID);
+        // console.log("marking as reviewed: ", commentID);
         const responseMark = await axios.put(
           `${
             import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
-          }/commentAddress/${commentID}`
+          }/commentAddress/${commentID}`,
         );
       }
 
@@ -67,7 +67,7 @@ function Suspend({ fetchComments, profileOwner }) {
         const response = await axios.get(
           `${
             import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
-          }/reportingUserAPI/reportUsers`
+          }/reportingUserAPI/reportUsers`,
         );
         setReasons(response.data);
       } catch (error) {

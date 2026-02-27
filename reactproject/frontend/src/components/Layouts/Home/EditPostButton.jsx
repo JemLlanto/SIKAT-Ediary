@@ -34,12 +34,12 @@ function EditPostButton({
   const [formErrors, setFormErrors] = useState({});
   const [serverError, setServerError] = useState("");
   const [visibility, setVisibility] = useState(
-    scheduledDate ? "later" : "null"
+    scheduledDate ? "later" : "null",
   );
   const [anonimity, setAnonimity] = useState("now");
   const [file, setFile] = useState(null);
   const [selectedDate, setSelectedDate] = useState(
-    scheduledDate ? new Date(scheduledDate) : null
+    scheduledDate ? new Date(scheduledDate) : null,
   );
 
   const [imagePreview, setImagePreview] = useState(imageFile);
@@ -65,7 +65,7 @@ function EditPostButton({
         date.getMonth(),
         date.getDate(),
         prevDate.getHours(),
-        prevDate.getMinutes()
+        prevDate.getMinutes(),
       );
     });
   };
@@ -78,7 +78,7 @@ function EditPostButton({
         prevDate.getMonth(),
         prevDate.getDate(),
         time.getHours(),
-        time.getMinutes()
+        time.getMinutes(),
       );
     });
   };
@@ -140,7 +140,7 @@ function EditPostButton({
       // Use `selectedDate` instead of `scheduledDate`
       utcScheduledDate = new Date(selectedDate);
       utcScheduledDate.setMinutes(
-        utcScheduledDate.getMinutes() - utcScheduledDate.getTimezoneOffset()
+        utcScheduledDate.getMinutes() - utcScheduledDate.getTimezoneOffset(),
       );
     }
 
@@ -169,10 +169,10 @@ function EditPostButton({
           headers: {
             "Content-Type": "multipart/form-data",
           },
-        }
+        },
       )
       .then((response) => {
-        console.log("Post created:", response.data.message);
+        // console.log("Post created:", response.data.message);
         setTitle("");
         setDescription("");
         setFile(null);
